@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+import os 
 from pathlib import Path
 from decouple import config
 
@@ -32,6 +33,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -39,7 +41,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'user.apps.UserConfig'
+    'django_celery_results',
+    'user.apps.UserConfig',
+    'task',
+    'summary.apps.SummaryConfig'
 ]
 
 MIDDLEWARE = [
@@ -120,6 +125,8 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR,'media')
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -135,3 +142,17 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CLERK_ISSUER=config("CLERK_ISSUER")
 CLERK_JWT_PUBLIC_KEY=config("CLERK_JWT_PUBLIC_KEY")
+
+ASGI_APPLICATION='backend.asgi.application'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
+
+CELERY_BROKER_URL = 'amqp://guest:guest@localhost:5672//'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_TIME_LIMIT=200
+
+GEMINI_API_KEY=config('GEMINI_API_KEY')

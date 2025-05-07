@@ -1,5 +1,55 @@
+import { useThemeContext } from '@/context/Theme'
+import UserChannelContextProvider from '@/context/UserChannelContext'
+import { SignedIn, useAuth } from '@clerk/clerk-expo'
 import { Tabs } from 'expo-router'
+import { Feather } from '@expo/vector-icons'
 
-export default function TabLayout(){
-  return <Tabs />
+export default function TabLayout() {
+
+  const { theme } = useThemeContext()
+
+  return (
+    <SignedIn>
+      <UserChannelContextProvider>
+        <Tabs
+          screenOptions={({ route }) => ({
+            sceneStyle: {
+              backgroundColor: theme.background
+            },
+            headerStyle: {
+              backgroundColor: theme.background,
+              shadowColor: theme.surface,
+            },
+            headerTintColor: theme.textPrimary,
+            tabBarStyle: {
+              backgroundColor: theme.background,
+              paddingTop: 4,
+            },
+            animation: 'shift',
+            tabBarLabel: "",
+            tabBarActiveTintColor: theme.iconPrimary,
+            tabBarInactiveTintColor: theme.iconSecondary,
+            tabBarIcon: ({ size, color, focused }) => {
+              let icon: keyof typeof Feather.glyphMap | null = null
+
+              if (route.name === 'index') {
+                icon = 'file-text'
+              } else {
+                icon = 'menu'
+              }
+
+              return (
+                <Feather
+                  name={icon}
+                  color={color}
+                  size={size}
+                />
+              )
+            }
+          })}
+        />
+      </UserChannelContextProvider>
+    </SignedIn>
+  )
 }
+

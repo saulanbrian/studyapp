@@ -1,9 +1,10 @@
-# your_app/authentication.py
 import jwt
+from urllib.parse import parse_qs
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from rest_framework import authentication
 from rest_framework.exceptions import AuthenticationFailed
+from channels.middleware import BaseMiddleware
+from channels.db import database_sync_to_async
 
 from . models import ClerkUser as User
 
@@ -48,3 +49,35 @@ class ClerkJWTAuthentication(authentication.BaseAuthentication):
 
         return (user, None)
         
+
+class ClerkJWTAuthenticationMiddleware(BaseMiddleware):
+  async def __call__(self, scope, receive, send):
+    query_params = parse_qs(scope['query_string'].decode())
+    token = query_params.get('token',[None])[0]
+    user = None
+    
+    if token:
+      try:
+        payload = jwt.decode(
+          token,
+          settings.CLERK_JWT_PUBLIC_KEY,
+          algorithms=['RS256'],
+          issuer=settings.CLERK_ISSUER
+        )
+        user_id = payload.get('sub')
+        if user_id:
+          user = await self.get_user(user_id)
+          
+      except Exception as e:
+        logger.error(e)
+        
+    scope['user'] = user
+    return await super().__call__(scope,receive,send)
+  
+  @database_sync_to_async
+  def get_user(self,clerk_id):
+    try:
+      user = User.objects.get(clerk_id=clerk_id)
+      return user 
+    except User.DoesNotExist:
+      return None

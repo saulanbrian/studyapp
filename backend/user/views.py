@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import status 
 import json
 
-
+from task.task import greet
 from .models import ClerkUser
 
 @api_view(['POST'])
@@ -32,4 +32,5 @@ def webhook_listener(request):
 @permission_classes([IsAuthenticated])
 def me(request):
   user_id = request.user.clerk_id
-  return Response({'data':user_id})
+  task = greet.delay(user_id)
+  return Response({'task':task.id})

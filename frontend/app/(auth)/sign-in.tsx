@@ -4,26 +4,29 @@ import { useSSO } from '@clerk/clerk-expo'
 import * as Linking from 'expo-linking'
 
 import { useWarmUpBrowser } from '@/hooks/useWarmUpBrowser'
+import { ThemedButton, ThemedText, ThemedView } from "@/components/ui";
 
 const SignIn = () => {
   useWarmUpBrowser()
   const { startSSOFlow } = useSSO()
   const redirectUrl = Linking.createURL('/')
-  
-  async function handleSignIn(){
-    const { createdSessionId, setActive} = await startSSOFlow({
-      strategy:'oauth_google',
+
+  async function handleSignIn() {
+    const { createdSessionId, setActive } = await startSSOFlow({
+      strategy: 'oauth_google',
       redirectUrl,
     })
-    if(createdSessionId){
+    if (createdSessionId) {
       setActive!({ session: createdSessionId })
     }
   }
-  
+
   return (
-    <View style={styles.container}>
-      <Button title='google' onPress={handleSignIn}/>
-    </View>
+    <ThemedView style={styles.container}>
+      <ThemedButton onPress={handleSignIn}>
+        <ThemedText>googlr</ThemedText>
+      </ThemedButton>
+    </ThemedView>
   );
 };
 
