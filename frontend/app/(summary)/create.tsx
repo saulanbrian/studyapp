@@ -86,12 +86,12 @@ const OptionalFields = () => {
 
   const { setTitle, setImage, image } = useSummaryCreationPage()
 
-  const handleSelectImage = useCallback(async () => {
+  const handleSelectImage = async () => {
     const res = await ImagePicker.launchImageLibraryAsync()
     if (!res.canceled) {
       setImage(res.assets[0])
     }
-  }, [image])
+  }
 
   return (
     <ThemedView style={styles.optionalFieldsContainer}>
@@ -155,7 +155,7 @@ const SubmitButtonContainer = () => {
 
     mutate({ title, image, file: document, })
 
-  }, [document, title])
+  }, [document, title, image])
 
 
   return (

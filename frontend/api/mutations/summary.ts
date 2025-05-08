@@ -41,10 +41,10 @@ export const useUploadFileToSummarize = () => {
 
       if (image) {
         data.append('cover_image', {
-          type: 'image/jpg',
+          type: image.mimeType || 'image/jpeg',
           uri: image.uri,
           name: image?.fileName || 'cover_image.jpg'
-        } as any)
+        } as unknown as Blob)
       }
 
       const res = await api.post('summary/', data, {
@@ -52,13 +52,13 @@ export const useUploadFileToSummarize = () => {
           'Content-Type': 'multipart/form-data'
         }
       })
-      console.log('wtf')
       return res.data
     },
     onError: (e) => {
       console.log(e)
     },
     onSuccess: (summary: Summary) => {
+      console.log(summary)
       queryClient.setQueryData<InfiniteData<InfiniteQueryPage<Summary>>>(
         ['summaries'],
         data => {
