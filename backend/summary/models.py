@@ -23,3 +23,7 @@ class Summary(models.Model):
   status = models.CharField(choices=STATUS,max_length=20,default='processing')
   cover = models.ImageField(upload_to=generate_path,null=True)  
   error_message = models.TextField(null=True)
+  created_at = models.DateTimeField(auto_now_add=True)
+
+  class Meta:
+    ordering = ['-created_at']

@@ -58,7 +58,6 @@ export const useUploadFileToSummarize = () => {
       console.log(e)
     },
     onSuccess: (summary: Summary) => {
-      console.log(summary)
       queryClient.setQueryData<InfiniteData<InfiniteQueryPage<Summary>>>(
         ['summaries'],
         data => {

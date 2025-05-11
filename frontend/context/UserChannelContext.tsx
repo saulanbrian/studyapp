@@ -1,5 +1,11 @@
-import useAuthenticatedWebSocket from "@/hooks/useAuthenticatedWebSocket"
-import { createContext, PropsWithChildren, useContext, useEffect } from "react"
+import useAuthenticatedWebSocket, { useAuthenticatedSocket } from "@/hooks/useAuthenticatedWebSocket"
+import { useAuth } from "@clerk/clerk-expo"
+import { createContext, PropsWithChildren, useContext, useEffect, useRef } from "react"
+import ReconnectingWebSocket from "reconnecting-websocket"
+
+const WS_URL = process.env.EXPO_PUBLIC_WS_URL!
+
+const SocketUrl = `${WS_URL}/ws/user_channels`
 
 type UserChannelContextType = {
 
@@ -15,17 +21,38 @@ export function useUserChannel() {
 
 export default function UserChannelContextProvider({ children }: PropsWithChildren) {
 
-  const { socket } = useAuthenticatedWebSocket('ws/user_channels/')
+  const socketRef = useRef<ReconnectingWebSocket | null>(null)
+  const { getToken } = useAuth()
 
   useEffect(() => {
 
-    if (socket) {
-      socket.onopen = () => {
-        console.log('connected')
-      }
-    }
+    (async () => {
 
-  }, [socket])
+      const urlProvider = async () => {
+        const token = await getToken()
+        return `${WS_URL}/ws/user_channels?token=${token}`
+      }
+
+      const socket = new ReconnectingWebSocket(urlProvider)
+
+      socket.onopen = () => {
+        console.log('opened')
+      }
+
+      socket.onmessage = (e) => {
+        const data = JSON.parse(e.data)
+        console.log(typeof data)
+      }
+
+      socket.onclose = () => {
+        console.log('closed')
+      }
+
+      socketRef.current = socket
+
+    })()
+
+  }, [])
 
   return (
     <UserChannelContext.Provider value={{}}>

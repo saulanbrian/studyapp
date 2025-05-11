@@ -61,6 +61,7 @@ const SummaryList = () => {
           )}
           refreshing={isRefetching}
           onRefresh={refetch}
+          estimatedItemSize={253}
         />
       )}
     </SuspendedViewWithErrorBoundary>

@@ -17,3 +17,16 @@ class UserChannelConsumer(AsyncWebsocketConsumer):
     )
     
     await self.accept()
+
+    await self.send(json.dumps({
+      "conneced":self.room_group_name
+    }))
+
+  
+  async def summary_update(self,event):
+
+    await self.send(json.dumps({
+      'msg_type':'summary_update',
+      'updated_summary':event['updated_summary']
+    }))
+

@@ -8,6 +8,13 @@ from .models import Summary
 from google import genai
 from google.genai import errors 
 
+from channels.layers import get_channel_layer
+from .serializers import SummarySerializer
+from asgiref.sync import async_to_sync
+
+import logging 
+
+logger = logging.getLogger(__name__)
 
 client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
@@ -23,6 +30,21 @@ def get_summary(text):
     return response.text, None 
 
 
+
+def notify_user(summary):
+
+  channel_layer = get_channel_layer()
+  serializer = SummarySerializer(summary)
+
+  async_to_sync(channel_layer.group_send)(
+    f'user_{summary.user.clerk_id}',
+    {
+      'type':'summary_update',
+      'updated_summary':serializer.data
+    }
+  )
+
+
 @shared_task()
 def summarize_file(summary_id,file):
   
@@ -31,6 +53,7 @@ def summarize_file(summary_id,file):
   except Summary.DoesNotExist:
     return
   else:
+
     file_bytes = base64.b64decode(file)
     pdf_reader = PdfReader(BytesIO(file_bytes))
     
@@ -55,4 +78,7 @@ def summarize_file(summary_id,file):
       summary.error_message = 'no content available'
     
     summary.save()
+    notify_user(summary)
+
     return summary.status
+
