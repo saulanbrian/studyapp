@@ -32,3 +32,26 @@ export function prependDataToInfiniteQuery<T>(
     }))
   }
 }
+
+
+export function updateInifiniteQueryResultById<T extends { id: string }>({
+  data,
+  id,
+  updatedResult
+}: {
+  data: InfiniteData<InfiniteQueryPage<T>>,
+  id: string;
+  updatedResult: T
+}) {
+
+  return {
+    ...data,
+    pages: data.pages.map((page) => ({
+      ...page,
+      results: page.results.map(result => {
+        return result.id === id ? updatedResult : result
+      })
+    }))
+  }
+
+}

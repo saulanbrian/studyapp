@@ -1,4 +1,6 @@
+import useSummaryUpdater from "@/api/updater/summary"
 import useAuthenticatedWebSocket, { useAuthenticatedSocket } from "@/hooks/useAuthenticatedWebSocket"
+import { Summary } from "@/types/data"
 import { useAuth } from "@clerk/clerk-expo"
 import { createContext, PropsWithChildren, useContext, useEffect, useRef } from "react"
 import ReconnectingWebSocket from "reconnecting-websocket"
@@ -23,6 +25,7 @@ export default function UserChannelContextProvider({ children }: PropsWithChildr
 
   const socketRef = useRef<ReconnectingWebSocket | null>(null)
   const { getToken } = useAuth()
+  const { updateSummary } = useSummaryUpdater()
 
   useEffect(() => {
 
@@ -41,7 +44,10 @@ export default function UserChannelContextProvider({ children }: PropsWithChildr
 
       socket.onmessage = (e) => {
         const data = JSON.parse(e.data)
-        console.log(typeof data)
+        if (data.msg_type && data.msg_type === 'summary_update') {
+          const updatedSummary: Summary = data.updated_summary
+          updateSummary(updatedSummary.id, updatedSummary)
+        }
       }
 
       socket.onclose = () => {
