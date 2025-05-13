@@ -48,17 +48,19 @@ const SummaryList = () => {
         <FlashList
           data={summaries}
           keyExtractor={item => item.id}
-          renderItem={({ item: summary }) => (
-            <SummaryPreview {...summary}
-              style={{ flex: 1 }} />
+          renderItem={({ item: summary, index: i }) => (
+            <View style={{
+              flex: 1,
+              paddingHorizontal: 8,
+              paddingVertical: 2,
+              ...(i % 2 === 0
+                ? { paddingRight: 2 }
+                : { paddingLeft: 2 })
+            }}>
+              <SummaryPreview {...summary} />
+            </View>
           )}
           numColumns={2}
-          contentContainerStyle={{
-            paddingHorizontal: 8,
-          }}
-          ItemSeparatorComponent={() => (
-            <View style={{ height: 4, width: 4 }} />
-          )}
           refreshing={isRefetching}
           onRefresh={refetch}
           estimatedItemSize={253}

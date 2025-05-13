@@ -7,13 +7,12 @@ export default function SummaryLayout() {
   const { theme } = useThemeContext()
 
   return (
-    <SafeAreaProvider>
-      <Stack screenOptions={{
-        headerStyle: {
-          backgroundColor: theme.background,
-        },
-        headerTintColor: theme.textPrimary,
-      }} />
-    </SafeAreaProvider>
+    <Stack screenOptions={{
+      headerShadowVisible: false,
+      headerStyle: {
+        backgroundColor: theme.background,
+      },
+      headerTintColor: theme.textPrimary,
+    }} />
   )
 }
