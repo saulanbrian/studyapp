@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_celery_results',
     'user.apps.UserConfig',
-    'summary.apps.SummaryConfig'
+    'summary.apps.SummaryConfig',
+    'quiz.apps.QuizConfig'
 ]
 
 MIDDLEWARE = [
