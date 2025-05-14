@@ -4,6 +4,8 @@ from .models import Summary
 
 class SummarySerializer(serializers.ModelSerializer):
   
+  quiz_id = serializers.SerializerMethodField()
+
   class Meta:
     model = Summary
     fields = (
@@ -13,8 +15,14 @@ class SummarySerializer(serializers.ModelSerializer):
       'title',
       'status',
       'cover',
-      'error_message'
+      'error_message',
+      'quiz_id'
     )
+
+
+  def get_quiz_id(self,obj):
+    return obj.quiz.id if hasattr(obj,'quiz') else None
+
 
   def to_representation(self, obj):
     representation = super().to_representation(obj)
