@@ -26,6 +26,8 @@ def get_summary(text):
     )
   except errors.ClientError as e:
     return None, str(e)
+  except Exception as e:
+    return None, str(e)
   else:
     return response.text, None 
 
