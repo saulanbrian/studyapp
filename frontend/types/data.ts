@@ -13,7 +13,7 @@ export type Summary = {
 
 export type Quiz = {
   id: string;
-  sunmary_id: string;
+  summary_id: string;
   summary_title: string;
   questions: Question[];
 }
@@ -28,3 +28,6 @@ type Option = {
   option_text: string;
   is_correct: boolean;
 }
+
+export type UpdatableDataFields<T extends { id: string }> = Partial<Omit<T, 'id'>>
+

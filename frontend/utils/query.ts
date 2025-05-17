@@ -1,3 +1,4 @@
+import { Summary, UpdatableDataFields } from '@/types/data';
 import { InfiniteData } from '@tanstack/react-query'
 
 export type InfiniteQueryPage<T> = {
@@ -37,11 +38,11 @@ export function prependDataToInfiniteQuery<T>(
 export function updateInifiniteQueryResultById<T extends { id: string }>({
   data,
   id,
-  updatedResult
+  updateField
 }: {
   data: InfiniteData<InfiniteQueryPage<T>>,
   id: string;
-  updatedResult: T
+  updateField: UpdatableDataFields<Summary>
 }) {
 
   return {
@@ -49,7 +50,10 @@ export function updateInifiniteQueryResultById<T extends { id: string }>({
     pages: data.pages.map((page) => ({
       ...page,
       results: page.results.map(result => {
-        return result.id === id ? updatedResult : result
+        return result.id === id ? {
+          ...result,
+          ...updateField
+        } : result
       })
     }))
   }

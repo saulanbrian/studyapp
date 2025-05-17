@@ -1,10 +1,14 @@
+import { useGenerateQuiz } from "@/api/mutations/quiz";
 import { useGetSummary } from "@/api/queries/summary";
+import useSummaryUpdater from "@/api/updater/summary";
 import SuspendedViewWithErrorBoundary from "@/components/SuspendedViewWithErrorBoundary";
 import { ThemedButton, ThemedText, ThemedView } from "@/components/ui";
+import { useThemeContext } from "@/context/Theme";
 import { Summary } from "@/types/data";
-import { useLocalSearchParams, useNavigation } from "expo-router";
-import { useEffect } from "react";
-import { ScrollView, StyleSheet } from 'react-native'
+import { Feather } from "@expo/vector-icons";
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
+import { useCallback, useEffect } from "react";
+import { ActivityIndicator, Alert, ScrollView, StyleSheet } from 'react-native'
 
 export default function DetailedSummary() {
 
@@ -12,12 +16,16 @@ export default function DetailedSummary() {
   const { id } = useLocalSearchParams()
   const { status, data } = useGetSummary(id as string)
 
-  useAttachQuizButton(data?.quiz_id)
-
   useEffect(() => {
     if (data) {
       navigation.setOptions({
-        headerTitle: data.title
+        headerTitle: data.title,
+        headerRight: () => (
+          <QuizButton
+            summaryId={data.id}
+            quizId={data.quiz_id}
+          />
+        )
       })
     }
   }, [data])
@@ -34,32 +42,78 @@ export default function DetailedSummary() {
 
 }
 
-const useAttachQuizButton = (quizId?: string | null) => {
 
-  const navigation = useNavigation()
+type QuizButtonProps = {
+  quizId: string | null;
+  summaryId: string
+}
 
-  useEffect(() => {
+const QuizButton = ({ quizId, summaryId }: QuizButtonProps) => {
 
-    if (quizId !== undefined) {
-      navigation.setOptions({
-        headerRight: () => {
-          return (
-            <ThemedButton style={styles.quizButton}>
-              <ThemedText>
-                {quizId ? 'take a quiz' : 'generate quiz'}
-              </ThemedText>
-            </ThemedButton>
-          )
-        }
+  const { theme } = useThemeContext()
+  const router = useRouter()
+  const { mutate: generateQuiz, status, data } = useGenerateQuiz()
+  const { updateSummary } = useSummaryUpdater()
+
+  const handlePress = useCallback(() => {
+
+    if (quizId) {
+      router.navigate({
+        pathname: '/(quiz)/[id]',
+        params: { id: quizId }
       })
+    } else {
+      generateQuiz({ summaryId })
     }
 
-  }, [quizId])
+  }, [quizId, summaryId])
+
+
+  useEffect(() => {
+    if (status === 'success' && data.quiz_id) {
+      updateSummary({
+        id: summaryId,
+        updateField: { quiz_id: data.quiz_id }
+      })
+      router.navigate({
+        pathname: '/(quiz)/[id]',
+        params: { id: data.quiz_id }
+      })
+    }
+  }, [status, data])
+
+
+  return (
+    <ThemedButton
+      style={styles.quizButton}
+      onPress={handlePress}
+      disabled={status === 'pending'}
+    >
+      {status === 'pending' ? (
+        <ActivityIndicator />
+      ) : (
+        <>
+          <ThemedText>take a quiz</ThemedText>
+          <Feather
+            name={'arrow-right-circle'}
+            color={theme.textPrimary}
+            size={16}
+          />
+        </>
+      )}
+    </ThemedButton>
+  )
 }
+
+
 
 const styles = StyleSheet.create({
   quizButton: {
     padding: 8,
-    borderRadius: 16
+    borderRadius: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    justifyContent: 'center'
   }
 })

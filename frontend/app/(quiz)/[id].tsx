@@ -9,8 +9,12 @@ export default function QuizPage() {
   const { status, data } = useGetQuiz(id as string)
 
   return (
-    <SuspendedViewWithErrorBoundary status={status}>
-      <ThemedText>{data!.id}</ThemedText>
+    <SuspendedViewWithErrorBoundary
+      style={{ flex: 1 }}
+      status={status}>
+      {data && (
+        <ThemedText>{data.id}</ThemedText>
+      )}
     </SuspendedViewWithErrorBoundary>
   )
 }

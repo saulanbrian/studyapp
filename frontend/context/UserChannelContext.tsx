@@ -46,7 +46,8 @@ export default function UserChannelContextProvider({ children }: PropsWithChildr
         const data = JSON.parse(e.data)
         if (data.msg_type && data.msg_type === 'summary_update') {
           const updatedSummary: Summary = data.updated_summary
-          updateSummary(updatedSummary.id, updatedSummary)
+          const { id, ...updateField } = updatedSummary;
+          updateSummary({ id, updateField })
         }
       }
 
