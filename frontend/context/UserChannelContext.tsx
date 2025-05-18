@@ -1,6 +1,7 @@
+import useQuizUpdater from "@/api/updater/quiz"
 import useSummaryUpdater from "@/api/updater/summary"
 import useAuthenticatedWebSocket, { useAuthenticatedSocket } from "@/hooks/useAuthenticatedWebSocket"
-import { Summary } from "@/types/data"
+import { Quiz, Summary } from "@/types/data"
 import { useAuth } from "@clerk/clerk-expo"
 import { createContext, PropsWithChildren, useContext, useEffect, useRef } from "react"
 import ReconnectingWebSocket from "reconnecting-websocket"
@@ -26,6 +27,7 @@ export default function UserChannelContextProvider({ children }: PropsWithChildr
   const socketRef = useRef<ReconnectingWebSocket | null>(null)
   const { getToken } = useAuth()
   const { updateSummary } = useSummaryUpdater()
+  const { updateQuiz } = useQuizUpdater()
 
   useEffect(() => {
 
@@ -44,10 +46,17 @@ export default function UserChannelContextProvider({ children }: PropsWithChildr
 
       socket.onmessage = (e) => {
         const data = JSON.parse(e.data)
-        if (data.msg_type && data.msg_type === 'summary_update') {
-          const updatedSummary: Summary = data.updated_summary
-          const { id, ...updateField } = updatedSummary;
-          updateSummary({ id, updateField })
+        const msg_type = data.msg_type
+        if (msg_type) {
+          if (msg_type === 'summary_update') {
+            const updatedSummary: Summary = data.updated_summary
+            const { id, ...updateField } = updatedSummary;
+            updateSummary({ id, updateField })
+          } else if (msg_type === 'quiz_update') {
+            const updatedQuiz: Quiz = data.updated_quiz
+            const { id, ...updateField } = updatedQuiz
+            updateQuiz({ quizId: id, updateField })
+          }
         }
       }
 

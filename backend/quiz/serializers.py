@@ -48,7 +48,7 @@ class QuizSerializer(serializers.ModelSerializer):
 
 
     def get_summary_id(self,obj):
-        return obj.summary.id 
+        return str(obj.summary.id) 
 
 
     def get_summary_title(self,obj):

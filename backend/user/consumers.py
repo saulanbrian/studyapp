@@ -7,7 +7,7 @@ class UserChannelConsumer(AsyncWebsocketConsumer):
     user = self.scope['user']
     
     if not user:
-      self.close(code=4000)
+      await self.close(code=4000)
     
     self.room_group_name = f'user_{user.clerk_id}'
     
@@ -25,8 +25,17 @@ class UserChannelConsumer(AsyncWebsocketConsumer):
   
   async def summary_update(self,event):
 
+    print('updated summary')
+
     await self.send(json.dumps({
       'msg_type':'summary_update',
       'updated_summary':event['updated_summary']
     }))
 
+
+  async def quiz_update(self,event):
+
+    await self.send(json.dumps({
+      'msg_type':'quiz_update',
+      'updated_quiz':event['updated_quiz']
+    }))

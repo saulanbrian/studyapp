@@ -7,9 +7,32 @@ from summary.models import Summary
 from quiz.models import Quiz, Question, Option
 import json
 
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+
+from .serializers import QuizSerializer
+
 import logging 
 
 logger = logging.getLogger(__name__)
+
+
+
+def notify_user(quiz):
+
+    channel_layer = get_channel_layer()
+    serializer = QuizSerializer(quiz)
+
+    clerk_id = str(quiz.summary.user.clerk_id)
+
+    async_to_sync(channel_layer.group_send)(
+        f'user_{clerk_id}',
+        {
+            'type':'quiz_update',
+            'updated_quiz':serializer.data
+        }
+    )
+ 
  
 @shared_task()
 def generate_quiz(summary_id,quiz_id):
@@ -69,6 +92,7 @@ def generate_quiz(summary_id,quiz_id):
 
             quiz.status = 'processed'
             quiz.save()
+            notify_user(quiz)
             return quiz.status
 
         except Exception as e:
