@@ -5,7 +5,6 @@ from io import BytesIO
 import base64
 
 from .models import Summary
-from google import genai
 from google.genai import errors 
 
 from channels.layers import get_channel_layer
@@ -14,9 +13,10 @@ from asgiref.sync import async_to_sync
 
 import logging 
 
+from common.genai_client import client
+
 logger = logging.getLogger(__name__)
 
-client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
 def get_summary(text):
   try:

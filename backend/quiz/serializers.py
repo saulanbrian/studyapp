@@ -7,7 +7,7 @@ class OptionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Option
-        fields = ('option_text','is_correct')
+        fields = ('id','option_text','is_correct')
 
 
 class QuestionSerializer(serializers.ModelSerializer):
@@ -42,7 +42,8 @@ class QuizSerializer(serializers.ModelSerializer):
             'id',
             'summary_id',
             'summary_title',
-            'questions'
+            'questions',
+            'status'
         )
 
 

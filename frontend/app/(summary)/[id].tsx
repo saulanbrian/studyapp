@@ -52,7 +52,7 @@ const QuizButton = ({ quizId, summaryId }: QuizButtonProps) => {
 
   const { theme } = useThemeContext()
   const router = useRouter()
-  const { mutate: generateQuiz, status, data } = useGenerateQuiz()
+  const { mutate: generateQuiz, status, data: generatedQuiz } = useGenerateQuiz()
   const { updateSummary } = useSummaryUpdater()
 
   const handlePress = useCallback(() => {
@@ -70,17 +70,17 @@ const QuizButton = ({ quizId, summaryId }: QuizButtonProps) => {
 
 
   useEffect(() => {
-    if (status === 'success' && data.quiz_id) {
+    if (status === 'success' && generatedQuiz.id) {
       updateSummary({
         id: summaryId,
-        updateField: { quiz_id: data.quiz_id }
+        updateField: { quiz_id: generatedQuiz.id }
       })
       router.navigate({
         pathname: '/(quiz)/[id]',
-        params: { id: data.quiz_id }
+        params: { id: generatedQuiz.id }
       })
     }
-  }, [status, data])
+  }, [status, generatedQuiz])
 
 
   return (
@@ -114,6 +114,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    justifyContent: 'center'
+    justifyContent: 'center',
+    alignSelf: 'flex-end'
   }
 })

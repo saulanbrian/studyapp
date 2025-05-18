@@ -15,6 +15,7 @@ export type Quiz = {
   id: string;
   summary_id: string;
   summary_title: string;
+  status: 'processing' | 'processed' | 'error';
   questions: Question[];
 }
 
@@ -25,6 +26,7 @@ type Question = {
 }
 
 type Option = {
+  id: string;
   option_text: string;
   is_correct: boolean;
 }
