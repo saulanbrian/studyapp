@@ -19,13 +19,13 @@ export type Quiz = {
   questions: Question[];
 }
 
-type Question = {
+export type Question = {
   id: string;
   question_text: string;
   options: Option[];
 }
 
-type Option = {
+export type Option = {
   id: string;
   option_text: string;
   is_correct: boolean;
