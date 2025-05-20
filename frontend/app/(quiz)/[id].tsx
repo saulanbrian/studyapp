@@ -5,7 +5,8 @@ import { useThemeContext } from "@/context/Theme";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ActivityIndicator, Pressable, StyleSheet, TouchableOpacity } from "react-native";
 import { Quiz, Question } from "@/types/data";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useNavigation } from "@react-navigation/native";
 
 export default function QuizPage() {
 
@@ -25,31 +26,81 @@ export default function QuizPage() {
 }
 
 
+type QuestionWithNumber = {
+  question: Question;
+  questionNumber: number
+}
+
 const MainScreen = ({ quiz }: { quiz: Quiz }) => {
 
-  const [currentQuestion, setCurrentQuestion] = useState<Question>(quiz.questions[0])
-  const { theme: { textPrimary } } = useThemeContext()
+  const [currentQuestion, setCurrentQuestion] = useState<QuestionWithNumber>({
+    question: quiz.questions[0],
+    questionNumber: 1
+  })
+  const [correctAnswers, setCorrectAnswers] = useState(0)
+  const [isFinished, setIsFinished] = useState(false)
+  const questionLength = useMemo(() => quiz.questions.length, [quiz])
 
-  const next = useCallback(() => {
-    const currentIndex = quiz.questions.findIndex(question => question.id === currentQuestion.id)
-    if (quiz.questions.length > currentIndex + 1) {
-      setCurrentQuestion(quiz.questions[currentIndex + 2])
+  const { theme: { textPrimary } } = useThemeContext()
+  const navigation = useNavigation()
+
+  const next = useCallback((isPreviousAnswerCorrect: boolean) => {
+    if (isPreviousAnswerCorrect) setCorrectAnswers(prev => prev + 1)
+    if (questionLength > currentQuestion.questionNumber) {
+      setCurrentQuestion({
+        question: quiz.questions[currentQuestion.questionNumber],
+        questionNumber: currentQuestion.questionNumber + 1
+      })
+    } else {
+      setIsFinished(true)
     }
   }, [quiz, currentQuestion])
+
+  const reset = useCallback(() => {
+    setCurrentQuestion({
+      question: quiz.questions[0],
+      questionNumber: 1
+    })
+    setCorrectAnswers(0)
+    setIsFinished(false)
+  }, [quiz])
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerRight: () => {
+        if (!isFinished) {
+          return (
+            <QuestionCounter
+              currentQuestionNumber={currentQuestion.questionNumber}
+              totalQuestionLength={questionLength}
+            />
+          )
+        }
+      }
+    })
+  }, [currentQuestion, questionLength, quiz, isFinished])
+
+  if (isFinished) return (
+    <ResultScreen
+      correctAnswers={correctAnswers}
+      questionLength={questionLength}
+      resetCallback={reset}
+    />
+  )
 
   return (
     <ThemedView style={styles.mainScreenContainer}>
       <ThemedView style={styles.questionContainer}>
         <ThemedText style={styles.currentQuestion} adjustsFontSizeToFit>
-          {currentQuestion.question_text}
+          {currentQuestion.question.question_text}
         </ThemedText>
       </ThemedView>
       <ThemedView style={styles.optionsContainer}>
-        {currentQuestion.options.map(option => {
+        {currentQuestion.question.options.map(option => {
           return (
             <TouchableOpacity
               key={option.id}
-              onPress={next}
+              onPress={() => next(option.is_correct)}
               style={[{ borderColor: textPrimary }, styles.optionButton]}>
               <ThemedText adjustsFontSizeToFit style={styles.optionText}>
                 {option.option_text}
@@ -70,15 +121,101 @@ const ProcessingScreen = () => {
 
   return (
     <ThemedView style={{ flex: 1 }}>
-      <ActivityIndicator color={theme.textPrimary} />
-      <ThemedButton onPress={() => router.back()}>
-        <ThemedText> come back later</ThemedText>
-      </ThemedButton>
+      <ThemedView style={styles.autoCenterContainer}>
+        <ActivityIndicator color={theme.textPrimary} />
+        <ThemedText>working on your quiz</ThemedText>
+      </ThemedView>
+      <ThemedView style={styles.buttonContainer}>
+        <ThemedButton
+          onPress={() => router.back()}
+          style={styles.button}
+          outlined
+        >
+          <ThemedText style={{ color: theme.primary }}> come back later</ThemedText>
+        </ThemedButton>
+      </ThemedView>
     </ThemedView>
   )
 }
 
+
+const ResultScreen = ({
+  correctAnswers,
+  questionLength,
+  resetCallback
+}: {
+  correctAnswers: number;
+  questionLength: number;
+  resetCallback: () => void;
+}) => {
+
+  const navigation = useNavigation()
+  const { theme } = useThemeContext()
+
+  return (
+    <ThemedView style={{ flex: 1 }}>
+
+      <ThemedView style={styles.autoCenterContainer}>
+        <ThemedText style={styles.scoreText}>{correctAnswers} / {questionLength}</ThemedText>
+      </ThemedView>
+
+      <ThemedView style={styles.buttonContainer}>
+        <ThemedButton
+          onPress={resetCallback}
+          style={styles.button}
+          outlined>
+          <ThemedText style={[{ color: theme.primary }, styles.buttonText]}>
+            retake
+          </ThemedText>
+        </ThemedButton>
+        <ThemedButton
+          style={styles.button}
+          onPress={() => navigation.goBack()}>
+          <ThemedText style={styles.buttonText}>back</ThemedText>
+        </ThemedButton>
+      </ThemedView>
+
+    </ThemedView>
+  )
+
+}
+
+
+type QuestionCounterProps = {
+  currentQuestionNumber: number;
+  totalQuestionLength: number
+}
+
+const QuestionCounter = ({
+  currentQuestionNumber,
+  totalQuestionLength
+}: QuestionCounterProps) => {
+
+  return (
+    <ThemedView>
+      <ThemedText adjustsFontSizeToFit>{currentQuestionNumber} / {totalQuestionLength}</ThemedText>
+    </ThemedView>
+  )
+
+}
+
+
 const styles = StyleSheet.create({
+  autoCenterContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  button: {
+    borderRadius: 20,
+    padding: 12,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  buttonText: {
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
   currentQuestion: {
     fontWeight: 'bold',
     fontSize: 40,
@@ -112,5 +249,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center'
+  },
+  resultContainer: {
+    flex: 1,
+    padding: 12
+  },
+  buttonContainer: {
+    padding: 8,
+    gap: 4
+  },
+  scoreText: {
+    fontWeight: 'bold',
+    fontSize: 40,
   }
 })

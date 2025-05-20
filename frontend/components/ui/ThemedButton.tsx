@@ -3,11 +3,12 @@ import { forwardRef, useCallback } from 'react'
 import { TouchableOpacity, TouchableOpacityProps, View } from 'react-native'
 
 type ThemedButtonProps = TouchableOpacityProps & {
-  color?: 'secondary' | 'error' | 'primary'
+  color?: 'secondary' | 'error' | 'primary',
+  outlined?: boolean
 }
 
 const ThemedButton = forwardRef<typeof TouchableOpacity, ThemedButtonProps>(
-  ({ color, style, children, ...props }, ref) => {
+  ({ outlined, color, style, children, ...props }, ref) => {
 
     const { theme } = useThemeContext()
 
@@ -25,7 +26,16 @@ const ThemedButton = forwardRef<typeof TouchableOpacity, ThemedButtonProps>(
     }, [color])
 
     return (
-      <TouchableOpacity style={[{ backgroundColor: getThemeColor() }, style]} {...props}>
+      <TouchableOpacity style={[
+        {
+          ...(
+            outlined
+              ? { borderColor: getThemeColor(), borderWidth: 1 }
+              : { backgroundColor: getThemeColor() }
+          ),
+        },
+        style
+      ]} {...props}>
         {children}
       </TouchableOpacity>
     )

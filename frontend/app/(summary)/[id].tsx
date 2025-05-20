@@ -58,7 +58,7 @@ const QuizButton = ({ quizId, summaryId }: QuizButtonProps) => {
   const handlePress = useCallback(() => {
 
     if (quizId) {
-      router.navigate({
+      router.replace({
         pathname: '/(quiz)/[id]',
         params: { id: quizId }
       })

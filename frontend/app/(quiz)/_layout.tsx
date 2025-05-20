@@ -7,12 +7,13 @@ export default function QuizLayout() {
 
   return (
     <Stack screenOptions={{
-      headerTitle: 'quiz',
+      headerTitle: '',
       headerTintColor: theme.textPrimary,
       headerShadowVisible: false,
       headerStyle: {
         backgroundColor: theme.background
-      }
+      },
+      headerBackVisible: false,
     }}
     />
   )
