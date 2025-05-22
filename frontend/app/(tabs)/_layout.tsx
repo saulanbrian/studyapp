@@ -35,7 +35,7 @@ export default function TabLayout() {
               if (route.name === 'index') {
                 icon = 'file-text'
               } else {
-                icon = 'menu'
+                icon = 'grid'
               }
 
               return (
@@ -47,7 +47,10 @@ export default function TabLayout() {
               )
             }
           })}
-        />
+        >
+          <Tabs.Screen name='index' options={{ headerTitle: 'home' }} />
+          <Tabs.Screen name='dahsboard' />
+        </Tabs>
       </UserChannelContextProvider>
     </SignedIn>
   )
