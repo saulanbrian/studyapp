@@ -2,7 +2,7 @@ import { useThemeContext } from '@/context/Theme'
 import { forwardRef, useCallback } from 'react'
 import { TouchableOpacity, TouchableOpacityProps, View } from 'react-native'
 
-type ThemedButtonProps = TouchableOpacityProps & {
+export type ThemedButtonProps = TouchableOpacityProps & {
   color?: 'secondary' | 'error' | 'primary',
   outlined?: boolean
 }
