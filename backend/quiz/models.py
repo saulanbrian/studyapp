@@ -15,6 +15,7 @@ class Quiz(models.Model):
   id = models.UUIDField(default=uuid.uuid4,primary_key=True,unique=True)
   summary = models.OneToOneField(Summary,on_delete=models.CASCADE)
   status = models.CharField(max_length=20,choices=STATUS,default='processing')
+  highest_score = models.IntegerField(default=0)
 
 
 class Question(models.Model):

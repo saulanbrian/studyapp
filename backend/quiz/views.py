@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from rest_framework.generics import RetrieveAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView, RetrieveUpdateDestroyAPIView
 
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
@@ -12,9 +12,23 @@ from summary.models import Summary
 from .tasks import generate_quiz 
 
 
-class QuizRetrieveAPIView(RetrieveAPIView):
+
+class QuizRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = QuizSerializer
-    queryset = Quiz.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        id = self.request.user.clerk_id
+        return Quiz.objects.filter(summary__user__clerk_id=id)
+
+
+class QuizListAPIView(ListAPIView):
+    serializer_class = QuizSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        id = self.request.user.clerk_id
+        return Quiz.objects.filter(summary__user__clerk_id=id)
 
 
 @permission_classes([IsAuthenticated]) 

@@ -43,7 +43,8 @@ class QuizSerializer(serializers.ModelSerializer):
             'summary_id',
             'summary_title',
             'questions',
-            'status'
+            'status',
+            'highest_score'
         )
 
 
