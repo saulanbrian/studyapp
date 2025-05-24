@@ -18,17 +18,15 @@ export default function useQuiz(quiz: Quiz) {
   const [score, setScore] = useState(0)
   const [isFinished, setIsFinished] = useState(false)
 
-  const questionLength = useMemo(() => quiz.questions.length, [quiz])
-
   const chooseAnswer = useCallback((answer: Option) => {
     if (answer.is_correct) setScore(prevScore => prevScore + 1)
-    if (currentQuestion.questionNumber < questionLength) {
+    if (currentQuestion.questionNumber < quiz.number_of_questions) {
       setCurrentQuestion({
         ...quiz.questions[currentQuestion.questionNumber],
         questionNumber: currentQuestion.questionNumber + 1
       })
     } else setIsFinished(true)
-  }, [score, currentQuestion, questionLength])
+  }, [score, currentQuestion, quiz])
 
   const reset = useCallback(() => {
     setCurrentQuestion({
@@ -42,7 +40,6 @@ export default function useQuiz(quiz: Quiz) {
   return {
     currentQuestion,
     score,
-    questionLength,
     isFinished,
     chooseAnswer,
     reset

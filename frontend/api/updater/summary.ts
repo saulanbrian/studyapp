@@ -1,5 +1,5 @@
 import { Summary, UpdatableDataFields } from "@/types/data"
-import { InfiniteQueryPage, updateInifiniteQueryResultById } from "@/utils/query"
+import { InfiniteQueryPage, removeItemFromInfiniteQueryById, updateInifiniteQueryResultById } from "@/utils/query"
 import { InfiniteData, useQueryClient } from "@tanstack/react-query"
 
 
@@ -22,6 +22,22 @@ export default function useSummaryUpdater() {
           updateField
         })
         return updatedData
+      }
+    })
+
+    queryClient.setQueryData<InfiniteData<InfiniteQueryPage<Summary>>>(['summary', 'favorites'], prevData => {
+      if (prevData && updateField.favorite !== undefined) {
+        if (updateField.favorite) {
+          const updatedData = updateInifiniteQueryResultById({
+            data: prevData,
+            id,
+            updateField
+          })
+          return updatedData
+        } else {
+          const updatedData = removeItemFromInfiniteQueryById({ data: prevData, id })
+          return updatedData
+        }
       }
     })
 

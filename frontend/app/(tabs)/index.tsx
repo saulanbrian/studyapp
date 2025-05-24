@@ -1,5 +1,5 @@
-import React, { Suspense, useEffect, useMemo } from "react";
-import { ActivityIndicator, StyleSheet, TouchableOpacity, View } from "react-native";
+import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ActivityIndicator, Alert, StyleSheet, TouchableOpacity, View } from "react-native";
 import { AntDesign } from '@expo/vector-icons'
 import * as DocumentPicker from 'expo-document-picker'
 import { useUploadFileToSummarize } from '@/api/mutations/summary'
@@ -9,7 +9,10 @@ import { useGetSummaries } from "@/api/queries/summary";
 import { summarizeInfiniteQueryResult } from "@/utils/query";
 import SuspendedViewWithErrorBoundary from "@/components/SuspendedViewWithErrorBoundary";
 import SummaryPreview from "@/components/SummaryPreview";
+import { SummaryBottomSheet } from '@/components'
 import { useRouter } from "expo-router";
+import { Summary } from "@/types/data";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
 
 const Index = () => {
 
@@ -37,10 +40,18 @@ const Index = () => {
 const SummaryList = () => {
 
   const { status, data, refetch, isRefetching } = useGetSummaries()
+  const [selectedSummary, setSelectedSummary] = useState<Summary | null>(null)
+
+  const bottomSheetRef = useRef<BottomSheetModal>(null)
 
   const summaries = useMemo(() => {
     return data && summarizeInfiniteQueryResult(data)
   }, [data])
+
+  const handleLongPress = (summary: Summary) => {
+    setSelectedSummary(summary)
+    bottomSheetRef.current?.present()
+  }
 
   return (
     <SuspendedViewWithErrorBoundary status={status} style={{ flex: 1 }}>
@@ -49,44 +60,45 @@ const SummaryList = () => {
           data={summaries}
           keyExtractor={item => item.id}
           renderItem={({ item: summary, index: i }) => (
-            <View style={{
-              flex: 1,
-              paddingHorizontal: 8,
-              paddingVertical: 2,
-              ...(i % 2 === 0
-                ? { paddingRight: 2 }
-                : { paddingLeft: 2 })
-            }}>
-              <SummaryPreview {...summary} />
-            </View>
+            <SummaryPreview
+              style={[
+                {
+                  ...(
+                    i % 2 === 0
+                      ? { marginRight: 2 }
+                      : { marginLeft: 2 }
+                  )
+                },
+                styles.summary
+              ]}
+              onLongPress={() => handleLongPress(summary)}
+              {...summary}
+            />
           )}
           numColumns={2}
           refreshing={isRefetching}
           onRefresh={refetch}
           estimatedItemSize={253}
+          contentContainerStyle={{ padding: 8 }}
         />
       )}
+      <SummaryBottomSheet
+        onClose={() => setSelectedSummary(null)}
+        selectedSummary={selectedSummary}
+        ref={bottomSheetRef}
+      />
     </SuspendedViewWithErrorBoundary>
   )
 }
 
-const uploadSequence = {
-  getDocument: async () => {
-    const result = await DocumentPicker.getDocumentAsync()
-    return result?.canceled ? null : result.assets[0]
-  },
-  getDocumentExtension: async (asset: DocumentPicker.DocumentPickerAsset) => {
-    const splittedName = asset.name.split('.')
-    return splittedName.length > 1
-      ? splittedName[splittedName.length - 1]
-      : ''
-  },
-
-}
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  summary: {
+    flexGrow: 1,
+    marginVertical: 2
+  }
 });
 
 export default Index;

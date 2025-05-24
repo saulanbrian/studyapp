@@ -18,6 +18,7 @@ export default function DetailedSummary() {
 
   useEffect(() => {
     if (data) {
+      console.log(data)
       navigation.setOptions({
         headerTitle: data.title,
         headerRight: () => (

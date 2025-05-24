@@ -4,5 +4,6 @@ from . import views
 
 urlpatterns = [
     path('create',views.generate_quiz_view),
-    path('<pk>',views.QuizRetrieveUpdateDestroyAPIView.as_view())
+    path('all',views.QuizListAPIView.as_view()),
+    path('<pk>',views.QuizRetrieveUpdateDestroyAPIView.as_view()),
 ]

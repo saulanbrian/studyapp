@@ -49,7 +49,7 @@ export default function TabLayout() {
           })}
         >
           <Tabs.Screen name='index' options={{ headerTitle: 'home' }} />
-          <Tabs.Screen name='dahsboard' />
+          <Tabs.Screen name='dashboard' />
         </Tabs>
       </UserChannelContextProvider>
     </SignedIn>

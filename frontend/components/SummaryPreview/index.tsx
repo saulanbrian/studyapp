@@ -1,13 +1,13 @@
 import { Summary } from "@/types/data";
 import { Card, ThemedText, ThemedView } from "../ui";
 import { Image } from 'expo-image'
-import { Dimensions, StyleSheet, TouchableOpacity, ViewProps, ActivityIndicator, View } from "react-native";
+import { Dimensions, StyleSheet, TouchableOpacity, ViewProps, ActivityIndicator, View, TouchableOpacityProps } from "react-native";
 import { useThemeContext } from "@/context/Theme";
 import { useRouter } from "expo-router";
 import { BlurView } from "expo-blur";
 
 
-type SummaryPreviewProps = Summary & ViewProps
+type SummaryPreviewProps = Summary & Omit<TouchableOpacityProps, 'onPress'>
 
 export default function SummaryPreview({
   title,
@@ -23,21 +23,25 @@ export default function SummaryPreview({
   const router = useRouter()
 
   return (
-    <Card style={[styles.container, style]} {...props}>
-      <TouchableOpacity
-        disabled={status !== 'processed'}
-        onPress={() => router.push({ pathname: '/(summary)/[id]', params: { id: id } })}
-      >
-        <Image source={{ uri: cover }} placeholder={require('@/assets/images/pdf.png')} style={styles.image} />
-        <ThemedText style={styles.title} numberOfLines={1}>{title}</ThemedText>
-      </TouchableOpacity>
+    <TouchableOpacity
+      style={[{ backgroundColor: theme.surface }, styles.container, style]}
+      disabled={status !== 'processed'}
+      onPress={() => router.push({ pathname: '/(summary)/[id]', params: { id: id } })}
+      {...props}
+    >
+      <Image
+        source={cover}
+        placeholder={require('@/assets/images/pdf.png')}
+        style={styles.image}
+      />
+      <ThemedText style={styles.title} numberOfLines={1}>{title}</ThemedText>
       {status !== 'processed' && (
         <BlurView style={styles.blur}>
           <ThemedText>processing</ThemedText>
           <ActivityIndicator />
         </BlurView>
       )}
-    </Card>
+    </TouchableOpacity>
   )
 }
 
@@ -52,7 +56,8 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: 8,
-    gap: 4
+    gap: 4,
+    borderRadius: 8
   },
   image: {
     borderRadius: 8,

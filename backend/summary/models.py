@@ -24,6 +24,7 @@ class Summary(models.Model):
   cover = models.ImageField(upload_to=generate_path,null=True)  
   error_message = models.TextField(null=True)
   created_at = models.DateTimeField(auto_now_add=True)
+  favorite = models.BooleanField(default=False)
 
   class Meta:
     ordering = ['-created_at']

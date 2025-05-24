@@ -9,6 +9,8 @@ import * as NavigationBar from 'expo-navigation-bar'
 import { ThemedView } from '@/components/ui'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { StatusBar } from 'react-native'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 
 const InitialLayout = () => {
 
@@ -56,7 +58,11 @@ export default function RootLayout() {
       <ClerkLoaded>
         <ThemeContextProvider>
           <QueryClientProvider client={queryClient}>
-            <InitialLayout />
+            <GestureHandlerRootView>
+              <BottomSheetModalProvider>
+                <InitialLayout />
+              </BottomSheetModalProvider>
+            </GestureHandlerRootView>
           </QueryClientProvider>
         </ThemeContextProvider>
       </ClerkLoaded>

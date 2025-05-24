@@ -34,6 +34,7 @@ class QuizSerializer(serializers.ModelSerializer):
     questions = serializers.SerializerMethodField()
     summary_id = serializers.SerializerMethodField()
     summary_title = serializers.SerializerMethodField()
+    number_of_questions = serializers.SerializerMethodField()
 
 
     class Meta:
@@ -44,7 +45,8 @@ class QuizSerializer(serializers.ModelSerializer):
             'summary_title',
             'questions',
             'status',
-            'highest_score'
+            'highest_score',
+            'number_of_questions'
         )
 
 
@@ -60,3 +62,6 @@ class QuizSerializer(serializers.ModelSerializer):
         questions = obj.questions.all()
         serializer = QuestionSerializer(questions,many=True)
         return serializer.data
+
+    def get_number_of_questions(self,obj):
+        return obj.questions.count()

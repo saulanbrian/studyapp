@@ -13,7 +13,7 @@ export const useGetSummaries = () => {
     queryFn: async ({ pageParam }) => {
       const token = await getToken()
       if (token) {
-        const api = await createAxiosInstance(token)
+        const api = createAxiosInstance(token)
         const res = await api.get(`summary/?page=${pageParam}`)
         return res.data
       }
@@ -45,5 +45,29 @@ export const useGetSummary = (id: string) => {
 
     },
     staleTime: 5 * 60 * 1000
+  })
+}
+
+
+export const useGetFavoriteSummaries = () => {
+
+  const { getToken } = useAuth()
+
+  return useInfiniteQuery<InfiniteQueryPage<Summary>>({
+    queryKey: ['summary', 'favorites'],
+    queryFn: async ({ pageParam }) => {
+      const token = await getToken()
+      if (token) {
+        const api = createAxiosInstance(token)
+        const res = await api.get(`summary/favorites?page=${pageParam}`)
+        return res.data
+      } else throw new Error("authentication failed")
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, pages) => {
+      if (lastPage.next) {
+        return pages.length + 1
+      }
+    }
   })
 }

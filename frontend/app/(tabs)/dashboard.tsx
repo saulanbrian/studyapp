@@ -2,6 +2,9 @@ import { Card, ThemedButton, ThemedText, ThemedView, UserAvatar } from "@/compon
 import { useThemeContext } from "@/context/Theme"
 import { useAuth, useUser } from "@clerk/clerk-expo"
 import { Feather, MaterialIcons, SimpleLineIcons } from "@expo/vector-icons"
+import { useNavigation } from "@react-navigation/native"
+import { useRouter } from "expo-router"
+import { useCallback } from "react"
 import { Dimensions, StyleSheet, TouchableOpacity } from "react-native"
 
 export default function DashBoard() {
@@ -38,9 +41,14 @@ const UserContainer = () => {
 const QuizzesCard = () => {
 
   const { theme: { textPrimary } } = useThemeContext()
+  const router = useRouter()
+
+  const handlePress = useCallback(() => {
+    router.push({ pathname: '/(quiz)/my-quizzes' })
+  }, [])
 
   return (
-    <TouchableOpacity>
+    <TouchableOpacity onPress={handlePress}>
       <Card style={styles.card}>
         <SimpleLineIcons
           name='game-controller'
@@ -53,12 +61,20 @@ const QuizzesCard = () => {
   )
 }
 
+
 const FavoritesCard = () => {
 
   const { theme: { textPrimary } } = useThemeContext()
+  const router = useRouter()
+
+  const handlePress = useCallback(() => {
+    router.push({
+      pathname: '/(summary)/favorites',
+    })
+  }, [])
 
   return (
-    <TouchableOpacity>
+    <TouchableOpacity onPress={handlePress}>
       <Card style={styles.card}>
         <MaterialIcons
           name='favorite-outline'

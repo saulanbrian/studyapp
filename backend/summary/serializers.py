@@ -16,7 +16,8 @@ class SummarySerializer(serializers.ModelSerializer):
       'status',
       'cover',
       'error_message',
-      'quiz_id'
+      'quiz_id',
+      'favorite'
     )
 
 

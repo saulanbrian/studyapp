@@ -5,6 +5,8 @@ import { DocumentPickerAsset } from 'expo-document-picker'
 import { InfiniteQueryPage, prependDataToInfiniteQuery } from '@/utils/query'
 import { Summary } from '@/types/data'
 import { ImagePickerAsset } from 'expo-image-picker'
+import useSummaryUpdater from '../updater/summary'
+import { useState } from 'react'
 
 export const useUploadFileToSummarize = () => {
 
@@ -70,3 +72,29 @@ export const useUploadFileToSummarize = () => {
     }
   })
 }
+
+
+export const useToggleFavorite = (id: string) => {
+
+  const { getToken } = useAuth()
+  const { updateSummary } = useSummaryUpdater()
+  const [isFavorite, setIsFavorite] = useState<boolean | null>(null)
+
+  return useMutation({
+    mutationFn: async ({ id, favorite }: { id: string; favorite: boolean }) => {
+      const token = await getToken()
+      if (token) {
+        setIsFavorite(favorite)
+        updateSummary({ id, updateField: { favorite } })
+        const api = createAxiosInstance(token)
+        const res = await api.patch(`summary/${id}`, { favorite })
+        return res.data
+      } else throw new Error('authentication failed')
+    },
+    onError: () => {
+      updateSummary({ id, updateField: { favorite: !isFavorite } })
+    }
+  })
+}
+
+

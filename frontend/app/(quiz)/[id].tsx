@@ -30,7 +30,6 @@ const MainScreen = ({ quiz }: { quiz: Quiz }) => {
 
   const {
     currentQuestion,
-    questionLength,
     isFinished,
     chooseAnswer,
     reset,
@@ -47,18 +46,18 @@ const MainScreen = ({ quiz }: { quiz: Quiz }) => {
           return (
             <QuestionCounter
               currentQuestionNumber={currentQuestion.questionNumber}
-              totalQuestionLength={questionLength}
+              numberOfQuestions={quiz.number_of_questions}
             />
           )
         }
       }
     })
-  }, [currentQuestion, questionLength, quiz, isFinished])
+  }, [currentQuestion, quiz, isFinished])
 
   if (isFinished) return (
     <ResultScreen
       score={score}
-      questionLength={questionLength}
+      numberOfQuestions={quiz.number_of_questions}
       resetCallback={reset}
     />
   )
@@ -120,16 +119,15 @@ const ProcessingScreen = () => {
 
 const ResultScreen = ({
   score,
-  questionLength,
+  numberOfQuestions,
   resetCallback
 }: {
   score: number;
-  questionLength: number;
+  numberOfQuestions: number;
   resetCallback: () => void;
 }) => {
 
   const navigation = useNavigation()
-  const { theme } = useThemeContext()
   const [calculatingScore, setCalculatingScore] = useState(true)
 
   useEffect(() => {
@@ -147,7 +145,7 @@ const ResultScreen = ({
     <ThemedView style={{ flex: 1 }}>
 
       <ThemedView style={styles.autoCenterContainer}>
-        <ThemedText style={styles.scoreText}>{score} / {questionLength}</ThemedText>
+        <ThemedText style={styles.scoreText}>{score} / {numberOfQuestions}</ThemedText>
       </ThemedView>
 
       <ThemedView style={styles.buttonContainer}>
@@ -163,17 +161,19 @@ const ResultScreen = ({
 
 type QuestionCounterProps = {
   currentQuestionNumber: number;
-  totalQuestionLength: number
+  numberOfQuestions: number
 }
 
 const QuestionCounter = ({
   currentQuestionNumber,
-  totalQuestionLength
+  numberOfQuestions
 }: QuestionCounterProps) => {
 
   return (
     <ThemedView>
-      <ThemedText adjustsFontSizeToFit>{currentQuestionNumber} / {totalQuestionLength}</ThemedText>
+      <ThemedText adjustsFontSizeToFit>
+        {currentQuestionNumber} / {numberOfQuestions}
+      </ThemedText>
     </ThemedView>
   )
 

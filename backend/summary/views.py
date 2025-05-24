@@ -1,4 +1,4 @@
-from rest_framework.generics import GenericAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import GenericAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -52,9 +52,24 @@ class SummaryAPIView(GenericAPIView):
     serializer = self.get_serializer(summary)
     return Response(serializer.data,status=status.HTTP_201_CREATED)
 
+
 class SummaryRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = SummarySerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return Summary.objects.filter(user__clerk_id=self.request.user.clerk_id)
+
+
+class FavoriteSummaryListAPIView(ListAPIView):
+    serializer_class = SummarySerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = SummaryPaginator
+
+    def get_queryset(self):
+        user_id = self.request.user.clerk_id
+        return Summary.objects.filter(
+            user__clerk_id=user_id,
+            favorite=True
+        )
+

@@ -59,3 +59,22 @@ export function updateInifiniteQueryResultById<T extends { id: string }>({
   }
 
 }
+
+
+export function removeItemFromInfiniteQueryById<T extends { id: string }>({
+  id,
+  data
+}: {
+  id: string;
+  data: InfiniteData<InfiniteQueryPage<T>>
+}): InfiniteData<InfiniteQueryPage<T>> {
+
+  return {
+    ...data,
+    pages: data.pages.map(page => ({
+      ...page,
+      results: page.results.filter(res => res.id !== id)
+    }))
+  }
+
+}
