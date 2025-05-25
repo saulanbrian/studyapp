@@ -16,6 +16,7 @@ export type Quiz = {
   id: string;
   summary_id: string;
   summary_title: string;
+  summary_cover: string | null;
   status: 'processing' | 'processed' | 'error';
   highest_score: number;
   number_of_questions: number;

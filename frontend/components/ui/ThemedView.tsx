@@ -1,6 +1,7 @@
 import { useThemeContext } from "@/context/Theme";
 import { forwardRef } from "react";
 import { View, ViewProps } from "react-native";
+import Animated from "react-native-reanimated";
 
 
 const ThemedView = forwardRef<View, ViewProps>(
@@ -21,3 +22,5 @@ const ThemedView = forwardRef<View, ViewProps>(
 
 
 export default ThemedView
+
+export const AnimatedThemedView = Animated.createAnimatedComponent(ThemedView)

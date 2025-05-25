@@ -42,8 +42,8 @@ export function updateInifiniteQueryResultById<T extends { id: string }>({
 }: {
   data: InfiniteData<InfiniteQueryPage<T>>,
   id: string;
-  updateField: UpdatableDataFields<Summary>
-}) {
+  updateField: UpdatableDataFields<T>
+}): InfiniteData<InfiniteQueryPage<T>> {
 
   return {
     ...data,

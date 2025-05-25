@@ -1,5 +1,6 @@
 import { Quiz, UpdatableDataFields } from "@/types/data";
-import { useQueryClient } from "@tanstack/react-query";
+import { InfiniteQueryPage, updateInifiniteQueryResultById } from "@/utils/query";
+import { InfiniteData, useQueryClient } from "@tanstack/react-query";
 
 
 
@@ -22,6 +23,20 @@ export default function useQuizUpdater() {
         }
       }
     })
+
+    queryClient.setQueryData<InfiniteData<InfiniteQueryPage<Quiz>>>(
+      ['quizzes'],
+      prevData => {
+        if (prevData) {
+          const updatedData = updateInifiniteQueryResultById({
+            data: prevData,
+            id: quizId,
+            updateField,
+          })
+          return updatedData
+        }
+      }
+    )
 
   }
 

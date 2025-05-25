@@ -1,6 +1,7 @@
 import { useThemeContext } from "@/context/Theme";
 import { PropsWithChildren } from "react";
 import { Text, TextProps } from "react-native";
+import Animated from "react-native-reanimated";
 
 type ThemedTextProps = TextProps & {
   secondary?: boolean;
@@ -30,3 +31,5 @@ export default function ThemedText({
     </Text>
   )
 }
+
+export const AnimatedThemedText = Animated.createAnimatedComponent(ThemedText)

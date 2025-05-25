@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from .models import Quiz, Question, Option
 
+from django.conf import settings
 
 class OptionSerializer(serializers.ModelSerializer):
 
@@ -35,6 +36,7 @@ class QuizSerializer(serializers.ModelSerializer):
     summary_id = serializers.SerializerMethodField()
     summary_title = serializers.SerializerMethodField()
     number_of_questions = serializers.SerializerMethodField()
+    summary_cover = serializers.SerializerMethodField()
 
 
     class Meta:
@@ -46,7 +48,8 @@ class QuizSerializer(serializers.ModelSerializer):
             'questions',
             'status',
             'highest_score',
-            'number_of_questions'
+            'number_of_questions',
+            'summary_cover'
         )
 
 
@@ -56,6 +59,11 @@ class QuizSerializer(serializers.ModelSerializer):
 
     def get_summary_title(self,obj):
         return obj.summary.title
+
+    def get_summary_cover(self,obj):
+        if obj.summary.cover:
+            return f'{settings.BASE_URL}{obj.summary.cover.url}'
+        return None 
 
 
     def get_questions(self,obj):
