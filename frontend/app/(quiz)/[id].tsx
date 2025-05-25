@@ -17,12 +17,14 @@ import { AnimatedThemedText } from "@/components/ui/ThemedText";
 export default function QuizPage() {
 
   const { id } = useLocalSearchParams()
-  const { status, data } = useGetQuiz(id as string)
+  const { status, data, refetch } = useGetQuiz(id as string)
 
   return (
     <SuspendedViewWithErrorBoundary
       style={{ flex: 1 }}
-      status={status}>
+      status={status}
+      retryCallback={refetch}
+    >
       {data && (data.status === 'processing'
         ? <ProcessingScreen />
         : <MainScreen quiz={data} />

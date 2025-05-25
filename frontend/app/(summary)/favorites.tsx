@@ -12,7 +12,7 @@ import { SummaryBottomSheet } from "@/components"
 
 export default function FavoriteSummaries() {
 
-  const { data, status } = useGetFavoriteSummaries()
+  const { data, status, refetch } = useGetFavoriteSummaries()
   const bottomSheetRef = useRef<BottomSheetModal>(null)
   const [selectedSummary, setSelectedSumarry] = useState<Summary | null>(null)
 
@@ -23,7 +23,11 @@ export default function FavoriteSummaries() {
   }
 
   return (
-    <SuspendedViewWithErrorBoundary status={status} style={{ flex: 1 }}>
+    <SuspendedViewWithErrorBoundary
+      status={status}
+      style={{ flex: 1 }}
+      retryCallback={refetch}
+    >
       {data && (
         <FlashList
           data={summarizeInfiniteQueryResult(data)}

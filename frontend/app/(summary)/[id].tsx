@@ -14,7 +14,7 @@ export default function DetailedSummary() {
 
   const navigation = useNavigation()
   const { id } = useLocalSearchParams()
-  const { status, data } = useGetSummary(id as string)
+  const { status, data, refetch } = useGetSummary(id as string)
 
   useEffect(() => {
     if (data) {
@@ -32,7 +32,11 @@ export default function DetailedSummary() {
   }, [data])
 
   return (
-    <SuspendedViewWithErrorBoundary style={{ flex: 1 }} status={status}>
+    <SuspendedViewWithErrorBoundary 
+      style={{ flex: 1 }} 
+      status={status}
+      retryCallback={refetch}
+    >
       <ScrollView>
         {data && (
           <ThemedText>{data.content}</ThemedText>

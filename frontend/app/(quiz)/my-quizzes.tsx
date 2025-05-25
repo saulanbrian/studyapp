@@ -10,7 +10,7 @@ import { StyleSheet } from "react-native";
 
 export default function UserQuizzes() {
 
-  const { data, status } = useGetQuizzes()
+  const { data, status, refetch } = useGetQuizzes()
   const router = useRouter()
 
   const handlePress = useCallback((id: string) => {
@@ -21,7 +21,11 @@ export default function UserQuizzes() {
   }, [])
 
   return (
-    <SuspendedViewWithErrorBoundary style={{ flex: 1 }} status={status}>
+    <SuspendedViewWithErrorBoundary
+      style={{ flex: 1 }}
+      status={status}
+      retryCallback={refetch}
+    >
       {data && (
         <FlashList
           data={summarizeInfiniteQueryResult(data)}

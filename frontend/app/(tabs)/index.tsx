@@ -54,7 +54,11 @@ const SummaryList = () => {
   }
 
   return (
-    <SuspendedViewWithErrorBoundary status={status} style={{ flex: 1 }}>
+    <SuspendedViewWithErrorBoundary 
+      status={status} 
+      style={{ flex: 1 }}
+      retryCallback={refetch}
+    >
       {summaries && (
         <FlashList
           data={summaries}
@@ -83,7 +87,6 @@ const SummaryList = () => {
         />
       )}
       <SummaryBottomSheet
-        onClose={() => setSelectedSummary(null)}
         selectedSummary={selectedSummary}
         ref={bottomSheetRef}
       />
