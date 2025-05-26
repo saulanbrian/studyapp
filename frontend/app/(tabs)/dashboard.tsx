@@ -2,22 +2,59 @@ import { Card, ThemedButton, ThemedText, ThemedView, UserAvatar } from "@/compon
 import { useThemeContext } from "@/context/Theme"
 import { useAuth, useUser } from "@clerk/clerk-expo"
 import { Feather, MaterialIcons, SimpleLineIcons } from "@expo/vector-icons"
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet"
 import { useNavigation } from "@react-navigation/native"
 import { useRouter } from "expo-router"
-import { useCallback } from "react"
+import { useCallback, useRef } from "react"
 import { Dimensions, StyleSheet, TouchableOpacity } from "react-native"
 
 export default function DashBoard() {
 
+  const sheetRef = useRef<BottomSheetModal>(null)
+  const { signOut } = useAuth()
+  const { theme } = useThemeContext()
+
   return (
     <ThemedView style={styles.container}>
-      <TouchableOpacity>
+      <TouchableOpacity onPress={() => sheetRef.current?.present()}>
         <UserContainer />
       </TouchableOpacity>
       <ThemedView style={styles.cardsContainer}>
         <QuizzesCard />
         <FavoritesCard />
       </ThemedView>
+      <BottomSheetModal
+        ref={sheetRef}
+        backgroundStyle={{ backgroundColor: theme.surface }}
+        backdropComponent={(props) => (
+          <BottomSheetBackdrop
+            appearsOnIndex={0}
+            disappearsOnIndex={-1}
+            {...props}
+          />
+        )}
+      >
+        <BottomSheetView>
+          <TouchableOpacity
+            style={styles.signOutButton}
+            onPress={() => signOut()}
+          >
+            <Feather
+              name='log-out'
+              size={24}
+              color={theme.error}
+            />
+            <ThemedText
+              style={[
+                { color: theme.error },
+                styles.signOutButtonText
+              ]}
+            >
+              signout
+            </ThemedText>
+          </TouchableOpacity>
+        </BottomSheetView>
+      </BottomSheetModal>
     </ThemedView>
   )
 }
@@ -74,7 +111,8 @@ const FavoritesCard = () => {
   }, [])
 
   return (
-    <TouchableOpacity onPress={handlePress}>
+    <TouchableOpacity onPress={handlePress
+    }>
       <Card style={styles.card}>
         <MaterialIcons
           name='favorite-outline'
@@ -114,6 +152,18 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 4,
     gap: 2
+  },
+  signOutButton: {
+    margin: 12,
+    padding: 8,
+    gap: 12,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  signOutButtonText: {
+    fontSize: 20,
+    letterSpacing: 2
   },
   userContainer: {
     flexDirection: 'row',
