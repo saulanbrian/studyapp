@@ -43,7 +43,7 @@ const ErrorView = ({ retryCallback }: { retryCallback: () => void }) => {
         autoPlay
         loop
       />
-      <TouchableOpacity 
+      <TouchableOpacity
         style={[
           { borderColor: theme.textPrimary },
           styles.retryButton

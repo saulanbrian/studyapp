@@ -7,7 +7,7 @@ import { useThemeContext } from "@/context/Theme";
 import { Summary } from "@/types/data";
 import { Feather } from "@expo/vector-icons";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
-import { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import { ActivityIndicator, Alert, ScrollView, StyleSheet } from 'react-native'
 
 export default function DetailedSummary() {
@@ -32,14 +32,52 @@ export default function DetailedSummary() {
   }, [data])
 
   return (
-    <SuspendedViewWithErrorBoundary 
-      style={{ flex: 1 }} 
+    <SuspendedViewWithErrorBoundary
+      style={{ flex: 1 }}
       status={status}
       retryCallback={refetch}
     >
-      <ScrollView>
+      <ScrollView style={{ padding: 8 }}>
         {data && (
-          <ThemedText>{data.content}</ThemedText>
+          data.content.split('\n')
+            .filter(line => !!line.trim())
+            .map((line, i) => {
+
+              const highlight = line.startsWith('**')
+              const subHighlight = line.split(':').length >= 2
+
+              line = line.replaceAll('*', '').trim()
+
+              if (line === '') return null
+              if (highlight) {
+                line = line.replace(':', '')
+              }
+
+              return line.split(':').length >= 2 ? (
+                <React.Fragment key={i.toString()}>
+                  <ThemedText style={styles.subHighlight}>
+                    {line.split(':')[0].trim() + ':'}
+                  </ThemedText>
+                  <ThemedText
+                    style={[styles.text, { marginBottom: 16 }]}
+                  >
+                    {line.split(':')[1].trim()}
+                  </ThemedText>
+                </React.Fragment>
+              ) : (
+                <ThemedText
+                  style={
+                    highlight
+                      ? styles.highlight
+                      : [styles.text, { marginBottom: 20 }]
+                  }
+                  key={i.toString()}
+                  selectable
+                >
+                  {line}
+                </ThemedText>
+              )
+            })
         )}
       </ScrollView>
     </SuspendedViewWithErrorBoundary>
@@ -113,6 +151,14 @@ const QuizButton = ({ quizId, summaryId }: QuizButtonProps) => {
 
 
 const styles = StyleSheet.create({
+  highlight: {
+    fontSize: 24,
+    marginBottom: 20
+  },
+  subHighlight: {
+    fontSize: 18,
+    marginBottom: 12
+  },
   quizButton: {
     padding: 8,
     borderRadius: 16,
@@ -121,5 +167,9 @@ const styles = StyleSheet.create({
     gap: 4,
     justifyContent: 'center',
     alignSelf: 'flex-end'
+  },
+  text: {
+    fontWeight: 'semibold',
+    marginBottom: 12
   }
 })
