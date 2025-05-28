@@ -14,6 +14,7 @@ from asgiref.sync import async_to_sync
 import logging 
 
 from common.genai_client import client
+from google.genai import types
 
 logger = logging.getLogger(__name__)
 
@@ -21,9 +22,30 @@ logger = logging.getLogger(__name__)
 def get_summary(text):
   try:
     response = client.models.generate_content(
-      model="gemini-2.0-flash-lite",
-      contents=f"provide a summary of this whole paper. this will be used as a reviewer so make sure to highlight the important things and ensure good and proper formatting without saying anything unnecessary. content: { text }",
-    )
+    model="gemini-2.0-flash",
+    config=types.GenerateContentConfig(
+      system_instruction="""
+      You are to provide a document for students to study.
+
+      🔍 Your task:
+      You receive a raw document from your superior. Students struggle reading full-length materials, so your job is to trim the document – **keeping all important content** – to make it effective for learning.
+
+      ✅ Guidelines:
+      1. **No unnecessary details** like course descriptions or author notes.
+      2. Use only **headings, subheadings, and concise descriptions** – avoid deep nesting.
+      3. Add **emojis** to headings/subheadings for visual clarity.
+      4. VERY IMPORTANT: **Do NOT include introductions** like “Here’s the summary…” or “Okay…” – go straight into the content.
+      5. Include **key takeaways** for the whole document as the last part.
+      6. Make explanations shorter but **don’t remove key information**.
+
+      ❗️Important:
+      - Your output will be sent directly to students.
+      - **Make it look original** – not like it was processed by an AI.
+      - Do NOT include comments, disclaimers, or acknowledge the request.
+      """ 
+    ),
+    contents={text}
+)
   except errors.ClientError as e:
     return None, str(e)
   except Exception as e:

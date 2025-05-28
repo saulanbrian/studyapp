@@ -33,58 +33,46 @@ export default function DetailedSummary() {
 
   return (
     <SuspendedViewWithErrorBoundary
-      style={{ flex: 1 }}
       status={status}
       retryCallback={refetch}
+      style={{ flex: 1 }}
     >
       <ScrollView style={{ padding: 8 }}>
-        {data && (
-          data.content.split('\n')
-            .filter(line => !!line.trim())
-            .map((line, i) => {
+        {data?.content.split('\n').map((line, i) => {
 
-              const highlight = line.startsWith('**')
-              const subHighlight = line.split(':').length >= 2
+          const isSubHeading = line.startsWith('###')
+          const isHeading = line.startsWith('##')
 
-              line = line.replaceAll('*', '').trim()
+          if (isHeading) {
+            return (
+              <ThemedText style={styles.heading} key={i.toString()}>
+                {line.replaceAll('#', '').trim()}
+              </ThemedText>
+            )
+          }
 
-              if (line === '') return null
-              if (highlight) {
-                line = line.replace(':', '')
-              }
+          if (isSubHeading) {
+            return (
+              <ThemedText style={styles.subHeading} key={i.toString()}>
+                {line.replaceAll('#', '').trim()}
+              </ThemedText>
+            )
+          }
 
-              return line.split(':').length >= 2 ? (
-                <React.Fragment key={i.toString()}>
-                  <ThemedText style={styles.subHighlight}>
-                    {line.split(':')[0].trim() + ':'}
-                  </ThemedText>
-                  <ThemedText
-                    style={[styles.text, { marginBottom: 16 }]}
-                  >
-                    {line.split(':')[1].trim()}
-                  </ThemedText>
-                </React.Fragment>
-              ) : (
-                <ThemedText
-                  style={
-                    highlight
-                      ? styles.highlight
-                      : [styles.text, { marginBottom: 20 }]
-                  }
-                  key={i.toString()}
-                  selectable
-                >
-                  {line}
-                </ThemedText>
-              )
-            })
-        )}
+          return (
+            <ThemedText style={styles.text} key={i.toString()}>
+              {line.replaceAll('*', '').trim()}
+            </ThemedText>
+          )
+
+        })}
       </ScrollView>
     </SuspendedViewWithErrorBoundary>
   )
 
-}
 
+
+}
 
 type QuizButtonProps = {
   quizId: string | null;
@@ -151,11 +139,11 @@ const QuizButton = ({ quizId, summaryId }: QuizButtonProps) => {
 
 
 const styles = StyleSheet.create({
-  highlight: {
+  heading: {
     fontSize: 24,
     marginBottom: 20
   },
-  subHighlight: {
+  subHeading: {
     fontSize: 18,
     marginBottom: 12
   },
