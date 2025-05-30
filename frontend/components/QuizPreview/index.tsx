@@ -55,15 +55,17 @@ const ScoreProgress = ({
 }) => {
 
   const { theme } = useThemeContext()
-  const rawScore = highestScore / numOfQuestions
+  const scorePercentage = highestScore > 0
+    ? highestScore / numOfQuestions
+    : 0
 
   return (
     <View style={[styles.containerItem, styles.progressContainer]}>
       <Progress.Circle
-        progress={rawScore}
+        progress={scorePercentage}
         formatText={() => `${highestScore}/${numOfQuestions}`}
         showsText
-        textStyle={{ color: rawScore !== 1 ? theme.textPrimary : theme.secondary }}
+        textStyle={{ color: scorePercentage !== 1 ? theme.textPrimary : theme.secondary }}
         unfilledColor={theme.textPrimary}
         borderWidth={0}
         color={theme.secondary}
