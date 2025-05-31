@@ -7,12 +7,13 @@ import { ActivityIndicator, Pressable, StyleSheet, TouchableOpacity } from "reac
 import { Quiz, Question } from "@/types/data";
 import { startTransition, useActionState, useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
-import useQuiz from "@/hooks/useQuiz";
+import useQuiz, { useQuizSync } from "@/hooks/useQuiz";
 import useAuthenticatedRequest from "@/hooks/useAuthenticatedRequest";
 import { AnimatedThemedView } from "@/components/ui/ThemedView";
 import { FadeIn, useSharedValue, ZoomIn } from "react-native-reanimated";
 import useQuizUpdater from "@/api/updater/quiz";
 import { AnimatedThemedText } from "@/components/ui/ThemedText";
+import { MutationStatus } from "@tanstack/react-query";
 
 export default function QuizPage() {
 
@@ -40,7 +41,7 @@ const MainScreen = ({ quiz }: { quiz: Quiz }) => {
     isFinished,
     chooseAnswer,
     reset,
-    score
+    score,
   } = useQuiz(quiz)
 
   const navigation = useNavigation()
@@ -73,13 +74,11 @@ const MainScreen = ({ quiz }: { quiz: Quiz }) => {
 
   return (
     <ThemedView style={styles.mainScreenContainer}>
-
       <ThemedView style={styles.questionContainer}>
         <ThemedText style={styles.currentQuestion} adjustsFontSizeToFit>
           {currentQuestion.question_text}
         </ThemedText>
       </ThemedView>
-
       <ThemedView style={styles.optionsContainer}>
         {currentQuestion.options.map(option => {
           return (
@@ -94,7 +93,6 @@ const MainScreen = ({ quiz }: { quiz: Quiz }) => {
           )
         })}
       </ThemedView>
-
     </ThemedView>
   )
 }
@@ -107,12 +105,10 @@ const ProcessingScreen = () => {
 
   return (
     <ThemedView style={{ flex: 1 }}>
-
       <ThemedView style={styles.autoCenterContainer}>
         <ActivityIndicator color={theme.textPrimary} />
         <ThemedText>working on your quiz</ThemedText>
       </ThemedView>
-
       <ThemedView style={styles.buttonContainer}>
         <StandardCTAButton
           label='come back later'
@@ -120,84 +116,58 @@ const ProcessingScreen = () => {
           outlined
         />
       </ThemedView>
-
     </ThemedView>
   )
 }
 
-enum SyncStatus {
-  isError = 'error',
-  isSuccess = 'success',
-  isIdle = 'idle'
+
+type ResultScreenProps = {
+  score: number;
+  numberOfQuestions: number;
+  quizId: string;
+  highestScore: number;
+  resetCallback: () => void
 }
+
 
 const ResultScreen = ({
   score,
   numberOfQuestions,
   resetCallback,
   quizId,
-  highestScore
-}: {
-  score: number;
-  numberOfQuestions: number;
-  resetCallback: () => void;
-  quizId: string;
-  highestScore: number
-}) => {
+  highestScore,
+}: ResultScreenProps) => {
 
   const navigation = useNavigation()
-  const { getApi } = useAuthenticatedRequest()
-  const { updateQuiz } = useQuizUpdater()
-  const [syncingData, setSyncingData] = useState(false)
-  const [syncStatus, setSyncStatus] = useState<SyncStatus>(SyncStatus.isIdle)
-
-
-  const syncData = useCallback(async () => {
-    setSyncingData(true)
-    const api = await getApi()
-    if (api) {
-      try {
-        const res = await api.patch(`quiz/${quizId}`, { highest_score: score })
-        if (res.status === 200) setSyncStatus(SyncStatus.isSuccess)
-        updateQuiz({ quizId, updateField: { highest_score: score } })
-      } catch (e) {
-        console.log(e)
-        setSyncStatus(SyncStatus.isError)
-      }
-    }
-    setSyncingData(false)
-  }, [])
+  const { syncStatus, syncData } = useQuizSync(quizId)
 
   useEffect(() => {
     if (score > highestScore) {
-      syncData()
+      syncData(score)
     }
   }, [])
 
   return (
     <ThemedView style={{ flex: 1 }} >
-
       <ThemedView style={styles.autoCenterContainer}>
         <ThemedText style={styles.scoreText}>{score} / {numberOfQuestions}</ThemedText>
-        {syncingData && <ThemedText style={{ fontSize: 8 }}>syncing data...</ThemedText>}
+        {syncStatus === 'pending' && (
+          <ThemedText style={{ fontSize: 8 }}>syncing data...</ThemedText>
+        )}
       </ThemedView>
-
-      <ThemedView
-        style={styles.buttonContainer}
-      >
+      <ThemedView style={styles.buttonContainer}>
         <StandardCTAButton
           label='retake'
           onPress={resetCallback}
           outlined
-          disabled={syncStatus === SyncStatus.isError || syncingData}
+          disabled={syncStatus === 'pending'}
         />
         <StandardCTAButton
           label='back'
           onPress={navigation.goBack}
-          disabled={syncStatus === SyncStatus.isError || syncingData}
+          disabled={syncStatus === 'pending'}
         />
       </ThemedView>
-
     </ThemedView>
   )
 

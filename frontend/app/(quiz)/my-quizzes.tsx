@@ -5,7 +5,7 @@ import { ThemedText, ThemedView } from "@/components/ui";
 import { summarizeInfiniteQueryResult } from "@/utils/query";
 import { FlashList } from "@shopify/flash-list";
 import { useRouter } from "expo-router";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { StyleSheet } from "react-native";
 
 export default function UserQuizzes() {
@@ -20,26 +20,28 @@ export default function UserQuizzes() {
     })
   }, [])
 
+  const quizzes = useMemo(() => {
+    return data && summarizeInfiniteQueryResult(data)
+  }, [data])
+
   return (
     <SuspendedViewWithErrorBoundary
       style={{ flex: 1 }}
       status={status}
       retryCallback={refetch}
     >
-      {data && (
-        <FlashList
-          data={summarizeInfiniteQueryResult(data)}
-          keyExtractor={quiz => quiz.id}
-          renderItem={({ item: quiz }) => (
-            <QuizPreview
-              quiz={quiz}
-              style={styles.quiz}
-              onPress={() => handlePress(quiz.id)}
-            />
-          )}
-          contentContainerStyle={{ padding: 4 }}
-        />
-      )}
+      <FlashList
+        data={quizzes}
+        keyExtractor={quiz => quiz.id}
+        renderItem={({ item: quiz }) => (
+          <QuizPreview
+            quiz={quiz}
+            style={styles.quiz}
+            onPress={() => handlePress(quiz.id)}
+          />
+        )}
+        contentContainerStyle={{ padding: 4 }}
+      />
     </SuspendedViewWithErrorBoundary>
   )
 }

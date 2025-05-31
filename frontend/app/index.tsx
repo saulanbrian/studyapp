@@ -19,6 +19,17 @@ export default () => {
     }
   }, [isLoaded, isSignedIn])
 
-  return <LoadingView style={{ marginBottom: 0 }} />
+  return (
+    <ThemedView style={styles.container}>
+      <ActivityIndicator size={40} />
+    </ThemedView>
+  )
 }
 
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
+  }
+})

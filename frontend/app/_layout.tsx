@@ -3,15 +3,16 @@ import { ClerkProvider, ClerkLoaded, useAuth } from '@clerk/clerk-expo'
 import { tokenCache } from '@/cache'
 import { useEffect } from 'react'
 import { useWarmUpBrowser } from '@/hooks/useWarmUpBrowser'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClient, QueryClientProvider, useQueryErrorResetBoundary } from '@tanstack/react-query'
 import ThemeContextProvider, { useThemeContext } from '@/context/Theme'
 import * as NavigationBar from 'expo-navigation-bar'
-import { ThemedView } from '@/components/ui'
+import { ErrorView, ThemedText, ThemedView, ThemedButton, StandardCTAButton } from '@/components/ui'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
-import { Button, StatusBar, Text, View } from 'react-native'
+import { Button, StatusBar, StyleSheet, Text, View } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import ErrorBoundary, { ErrorBoundaryProps } from 'react-native-error-boundary'
+import { isAxiosError } from 'axios'
 
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY
 
@@ -19,38 +20,37 @@ const queryClient = new QueryClient()
 
 export default function RootLayout() {
 
+  const { reset } = useQueryErrorResetBoundary()
+
   useWarmUpBrowser()
 
   return (
-    <ErrorBoundary
-      FallbackComponent={({ resetError, error }) => (
-        <ErrorBoundaryPage
-          error={error}
-          resetError={resetError}
-        />
-      )}
-    >
-      <ClerkProvider publishableKey={publishableKey!} tokenCache={tokenCache}>
-        <ClerkLoaded>
-          <ThemeContextProvider>
-            <QueryClientProvider client={queryClient}>
-              <GestureHandlerRootView>
-                <BottomSheetModalProvider>
-                  <InitialLayout />
-                </BottomSheetModalProvider>
-              </GestureHandlerRootView>
-            </QueryClientProvider>
-          </ThemeContextProvider>
-        </ClerkLoaded>
-      </ClerkProvider>
-    </ErrorBoundary>
+    <ThemeContextProvider>
+      <ErrorBoundary
+        onError={reset}
+        FallbackComponent={({ resetError, error }) => (
+          <ErrorBoundaryPage
+            error={error}
+            resetError={resetError}
+          />
+        )}
+      >
+        <ClerkProvider publishableKey={publishableKey!} tokenCache={tokenCache}>
+          <QueryClientProvider client={queryClient}>
+            <GestureHandlerRootView>
+              <BottomSheetModalProvider>
+                <InitialLayout />
+              </BottomSheetModalProvider>
+            </GestureHandlerRootView>
+          </QueryClientProvider>
+        </ClerkProvider>
+      </ErrorBoundary>
+    </ThemeContextProvider>
   )
 }
 
 
 const InitialLayout = () => {
-
-  const { } = useThemeContext()
 
   return (
     <ThemedView style={{ flex: 1 }}>
@@ -78,11 +78,30 @@ const ErrorBoundaryPage = ({
 }) => {
 
   return (
-    <View>
-      <Text>an error has occured</Text>
-      <Text>{error.message}</Text>
-      <Button title={'retry'} onPress={resetError} />
-    </View>
+    <ThemedView style={styles.container}>
+      <ThemedText style={{ fontSize: 40, marginTop: 'auto' }}>
+        System Error!
+      </ThemedText>
+      <ThemedText style={{ fontSize: 12 }}>
+        if the app continue crashing, kindly report or restart
+      </ThemedText>
+      <StandardCTAButton
+        label='try again'
+        onPress={resetError}
+        style={styles.button}
+      />
+    </ThemedView>
   )
 
 }
+
+const styles = StyleSheet.create({
+  button: {
+    marginTop: 8
+  },
+  container: {
+    flex: 1,
+    padding: 12,
+  },
+
+})

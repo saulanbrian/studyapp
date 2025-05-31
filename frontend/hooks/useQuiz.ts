@@ -1,4 +1,8 @@
+import createAxiosInstance from "@/api";
+import useQuizUpdater from "@/api/updater/quiz";
 import { Quiz, Question, Option } from "@/types/data";
+import { useAuth } from "@clerk/clerk-expo";
+import { MutationStatus } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
 
 
@@ -42,7 +46,71 @@ export default function useQuiz(quiz: Quiz) {
     score,
     isFinished,
     chooseAnswer,
-    reset
+    reset,
+  }
+
+}
+
+
+export const useQuizSync = (quizId: string) => {
+
+  const { getToken } = useAuth()
+  const [syncStatus, setSyncStatus] = useState<MutationStatus>('idle')
+  const { updateQuiz } = useQuizUpdater()
+
+  const syncData = useCallback(async (highestScore: number) => {
+
+    setSyncStatus('pending')
+
+    let attempts = 1
+
+    while (attempts <= 3) {
+
+      const token = await getToken()
+
+      if (!token) {
+        attempts++
+        await new Promise(resolve => {
+          setTimeout(
+            resolve,
+            1000 * Math.pow(2, attempts)
+          )
+        })
+        continue
+      }
+
+      const api = createAxiosInstance(token)
+
+      try {
+        const res = await api.patch(`quiz/${quizId}`, { highest_score: highestScore })
+        if (res.status === 200) {
+          updateQuiz({ quizId, updateField: { highest_score: highestScore } })
+          setSyncStatus('success')
+          break
+        }
+      } catch (e) {
+
+        if (attempts === 3) {
+          setSyncStatus('error')
+          break
+        }
+
+        attempts++
+        await new Promise(resolve => {
+          setTimeout(
+            resolve,
+            1000 * Math.pow(2, attempts)
+          )
+        })
+        continue
+      }
+    }
+
+  }, [])
+
+  return {
+    syncData,
+    syncStatus
   }
 
 }
