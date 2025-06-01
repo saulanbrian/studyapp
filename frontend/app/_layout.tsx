@@ -1,7 +1,7 @@
 import { Slot, Stack, useRouter } from 'expo-router'
 import { ClerkProvider, ClerkLoaded, useAuth } from '@clerk/clerk-expo'
 import { tokenCache } from '@/cache'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useWarmUpBrowser } from '@/hooks/useWarmUpBrowser'
 import { QueryClient, QueryClientProvider, useQueryErrorResetBoundary } from '@tanstack/react-query'
 import ThemeContextProvider, { useThemeContext } from '@/context/Theme'
@@ -52,6 +52,12 @@ export default function RootLayout() {
 
 const InitialLayout = () => {
 
+  const { isSignedIn } = useAuth()
+
+  const signedIn = useMemo(() => {
+    return isSignedIn ? isSignedIn : false
+  }, [isSignedIn])
+
   return (
     <ThemedView style={{ flex: 1 }}>
       <StatusBar
@@ -64,7 +70,16 @@ const InitialLayout = () => {
           headerShown: false,
           navigationBarHidden: true
         }}
-      />
+      >
+        <Stack.Protected guard={signedIn}>
+          <Stack.Screen name='(tabs)' />
+          <Stack.Screen name='(quiz)' />
+          <Stack.Screen name='(summary)' />
+        </Stack.Protected>
+        <Stack.Protected guard={!signedIn}>
+          <Stack.Screen name='(auth)' />
+        </Stack.Protected>
+      </Stack>
     </ThemedView>
   )
 }

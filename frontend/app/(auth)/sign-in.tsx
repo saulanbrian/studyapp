@@ -2,14 +2,17 @@ import React from "react";
 import { View, Text, StyleSheet, Button } from "react-native";
 import { useSSO } from '@clerk/clerk-expo'
 import * as Linking from 'expo-linking'
+import * as WebBrowser from 'expo-web-browser'
 
 import { useWarmUpBrowser } from '@/hooks/useWarmUpBrowser'
 import { ThemedButton, ThemedText, ThemedView } from "@/components/ui";
 
+WebBrowser.maybeCompleteAuthSession()
+
 const SignIn = () => {
   useWarmUpBrowser()
   const { startSSOFlow } = useSSO()
-  const redirectUrl = Linking.createURL('/')
+  const redirectUrl = Linking.createURL('/(tabs)')
 
   async function handleSignIn() {
     const { createdSessionId, setActive } = await startSSOFlow({
