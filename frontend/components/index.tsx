@@ -2,3 +2,4 @@ export { default as SuspendedViewWithErrorBoundary } from './SuspendedViewWithEr
 export { default as SummaryPreview } from './SummaryPreview'
 export { default as SummaryBottomSheet } from './SummaryBottomSheet'
 export { default as QuizPreview } from './QuizPreview'
+export { default as CodeInput } from './CodeInput'
