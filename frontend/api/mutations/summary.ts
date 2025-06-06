@@ -7,10 +7,11 @@ import { Summary } from '@/types/data'
 import { ImagePickerAsset } from 'expo-image-picker'
 import useSummaryUpdater from '../updater/summary'
 import { useState } from 'react'
+import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
 
 export const useUploadFileToSummarize = () => {
 
-  const { getToken } = useAuth()
+  const { getApi } = useAuthenticatedRequest()
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -26,35 +27,36 @@ export const useUploadFileToSummarize = () => {
       }
     ) => {
 
-      const token = await getToken()
-      const api = createAxiosInstance(token!)
+      const api = await getApi()
 
-      const data = new FormData()
+      if (api) {
+        const data = new FormData()
 
-      data.append('file', {
-        type: file.mimeType || 'application/pdf',
-        uri: file.uri,
-        name: file.name
-      } as any)
+        data.append('file', {
+          type: file.mimeType || 'application/pdf',
+          uri: file.uri,
+          name: file.name
+        } as any)
 
-      if (title) {
-        data.append('title', title)
-      }
-
-      if (image) {
-        data.append('cover_image', {
-          type: image.mimeType || 'image/jpeg',
-          uri: image.uri,
-          name: image?.fileName || 'cover_image.jpg'
-        } as unknown as Blob)
-      }
-
-      const res = await api.post('summary/', data, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
+        if (title) {
+          data.append('title', title)
         }
-      })
-      return res.data
+
+        if (image) {
+          data.append('cover_image', {
+            type: image.mimeType || 'image/jpeg',
+            uri: image.uri,
+            name: image?.fileName || 'cover_image.jpg'
+          } as unknown as Blob)
+        }
+
+        const res = await api.post('summary/', data, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        })
+        return res.data
+      }
     },
     onError: (e) => {
       console.log(e)
@@ -69,30 +71,6 @@ export const useUploadFileToSummarize = () => {
           }
         }
       )
-    }
-  })
-}
-
-
-export const useToggleFavorite = (id: string) => {
-
-  const { getToken } = useAuth()
-  const { updateSummary } = useSummaryUpdater()
-  const [isFavorite, setIsFavorite] = useState<boolean | null>(null)
-
-  return useMutation({
-    mutationFn: async ({ id, favorite }: { id: string; favorite: boolean }) => {
-      const token = await getToken()
-      if (token) {
-        setIsFavorite(favorite)
-        updateSummary({ id, updateField: { favorite } })
-        const api = createAxiosInstance(token)
-        const res = await api.patch(`summary/${id}`, { favorite })
-        return res.data
-      } else throw new Error('authentication failed')
-    },
-    onError: () => {
-      updateSummary({ id, updateField: { favorite: !isFavorite } })
     }
   })
 }

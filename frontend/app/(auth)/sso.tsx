@@ -32,6 +32,7 @@ const SSOPage = () => {
 
   return (
     <ThemedView style={styles.container}>
+      <ThemedText style={styles.headerText}>Ready to learn in an efficient way?</ThemedText>
       <ThemedView style={styles.lottieViewContainer}>
         <LottieView
           source={require('@/assets/animation/welcome.json')}
@@ -47,12 +48,11 @@ const SSOPage = () => {
         />
       </ThemedView>
       <SocialButtons />
-      <ThemedText
-        style={{ marginVertical: 4 }}
-        secondary
-      >
-        or
-      </ThemedText>
+      <ThemedView style={styles.buttonSeparator}>
+        <ThemedView style={styles.line} surface />
+        <ThemedText secondary>or</ThemedText>
+        <ThemedView style={styles.line} surface />
+      </ThemedView>
       <ThemedView style={styles.buttonContainer}>
         <TouchableOpacity
           style={[
@@ -139,17 +139,29 @@ const styles = StyleSheet.create({
     gap: 4,
     width: '100%',
   },
+  buttonSeparator: {
+    marginVertical: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4
+  },
   buttonText: {
     fontSize: 20,
     letterSpacing: 1,
     textTransform: 'capitalize',
-    flexGrow: 1,
   },
   container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 12
+  },
+  headerText: {
+    fontSize: 40,
+  },
+  line: {
+    flexGrow: 1,
+    height: 2
   },
   lottieView: {
     height: 400,

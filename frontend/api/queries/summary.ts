@@ -3,17 +3,17 @@ import { useAuth } from '@clerk/clerk-expo'
 import createAxiosInstance from '../'
 import { Summary } from '@/types/data'
 import { InfiniteQueryPage } from '@/utils/query'
+import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
 
 export const useGetSummaries = () => {
 
-  const { getToken } = useAuth()
+  const { getApi } = useAuthenticatedRequest()
 
   return useInfiniteQuery<InfiniteQueryPage<Summary>>({
     queryKey: ['summaries'],
     queryFn: async ({ pageParam }) => {
-      const token = await getToken()
-      if (token) {
-        const api = createAxiosInstance(token)
+      const api = await getApi()
+      if (api) {
         const res = await api.get(`summary/?page=${pageParam}`)
         return res.data
       }
@@ -31,14 +31,13 @@ export const useGetSummaries = () => {
 
 export const useGetSummary = (id: string) => {
 
-  const { getToken } = useAuth()
+  const { getApi } = useAuthenticatedRequest()
 
   return useQuery<Summary>({
     queryKey: ['summary', id],
     queryFn: async () => {
-      const token = await getToken()
-      if (token) {
-        const api = createAxiosInstance(token)
+      const api = await getApi()
+      if (api) {
         const res = await api.get(`summary/${id}`)
         return res.data
       }
@@ -51,14 +50,13 @@ export const useGetSummary = (id: string) => {
 
 export const useGetFavoriteSummaries = () => {
 
-  const { getToken } = useAuth()
+  const { getApi } = useAuthenticatedRequest()
 
   return useInfiniteQuery<InfiniteQueryPage<Summary>>({
     queryKey: ['summary', 'favorites'],
     queryFn: async ({ pageParam }) => {
-      const token = await getToken()
-      if (token) {
-        const api = createAxiosInstance(token)
+      const api = await getApi()
+      if (api) {
         const res = await api.get(`summary/favorites?page=${pageParam}`)
         return res.data
       } else throw new Error("authentication failed")

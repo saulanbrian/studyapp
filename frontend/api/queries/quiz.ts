@@ -3,17 +3,17 @@ import { useAuth } from "@clerk/clerk-expo";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import createAxiosInstance from "..";
 import { InfiniteQueryPage } from "@/utils/query";
+import useAuthenticatedRequest from "@/hooks/useAuthenticatedRequest";
 
 export function useGetQuiz(id: string) {
 
-  const { getToken } = useAuth()
+  const { getApi } = useAuthenticatedRequest()
 
   return useQuery<Quiz>({
     queryKey: ['quiz', id],
     queryFn: async () => {
-      const token = await getToken()
-      if (token) {
-        const api = createAxiosInstance(token)
+      const api = await getApi()
+      if (api) {
         const res = await api.get(`quiz/${id}`)
         return res.data
       }
@@ -24,14 +24,13 @@ export function useGetQuiz(id: string) {
 
 export function useGetQuizzes() {
 
-  const { getToken } = useAuth()
+  const { getApi } = useAuthenticatedRequest()
 
   return useInfiniteQuery<InfiniteQueryPage<Quiz>>({
     queryKey: ['quizzes'],
     queryFn: async ({ pageParam }) => {
-      const token = await getToken()
-      if (token) {
-        const api = createAxiosInstance(token)
+      const api = await getApi()
+      if (api) {
         const res = await api.get(`quiz/all?page=${pageParam}`)
         return res.data
       } else throw new Error('authentication failed')
