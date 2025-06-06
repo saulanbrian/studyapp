@@ -8,7 +8,8 @@ type OnboardingFormProps = {
 
 export type OnboardingFormRef = {
   next: () => void;
-  back: () => void
+  back: () => void;
+  currentPage: number;
 }
 
 const DIMENSION_WIDTH = Dimensions.get('window').width
@@ -28,7 +29,8 @@ const OnboardingForm = forwardRef<OnboardingFormRef, OnboardingFormProps>(
       back: () => {
         scrollRef.current?.scrollTo({ x: -DIMENSION_WIDTH })
         setCurrentPage(page => page - 1)
-      }
+      },
+      currentPage
     }), [currentPage])
 
     return (

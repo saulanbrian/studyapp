@@ -20,8 +20,10 @@ export default function AuthLayout() {
       initialRouteName='sso'
       screenOptions={{
         headerTintColor: theme.textPrimary,
-        headerStyle: { backgroundColor: theme.surface }
-      }}>
+        headerStyle: { backgroundColor: theme.surface },
+        contentStyle: { backgroundColor: theme.background }
+      }}
+    >
       <Stack.Screen name='sso' />
       <Stack.Screen name='signin' />
       <Stack.Screen name='signup' />
