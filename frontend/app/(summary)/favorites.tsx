@@ -5,7 +5,7 @@ import { ListEmptyComponent, ThemedText, ThemedView } from "@/components/ui"
 import { summarizeInfiniteQueryResult } from "@/utils/query"
 import { FlashList } from "@shopify/flash-list"
 import { StyleSheet, View } from "react-native"
-import { useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { BottomSheetModal } from "@gorhom/bottom-sheet"
 import { Summary } from "@/types/data"
 import { SummaryBottomSheet } from "@/components"
@@ -23,14 +23,19 @@ export default function FavoriteSummaries() {
   const [selectedSummary, setSelectedSumarry] = useState<Summary | null>(null)
 
 
-  const handleLongPress = (summary: Summary) => {
+  const handleLongPress = useCallback((summary: Summary) => {
     setSelectedSumarry(summary)
-    bottomSheetRef.current?.present()
-  }
+  }, [selectedSummary])
 
   const summaries = useMemo(() => {
     return data && summarizeInfiniteQueryResult(data)
   }, [data])
+
+  useEffect(() => {
+    if (selectedSummary) {
+      bottomSheetRef.current?.present()
+    }
+  }, [selectedSummary])
 
 
   return (
@@ -55,6 +60,7 @@ export default function FavoriteSummaries() {
               styles.summary
             ]}
             onLongPress={() => handleLongPress(summary)}
+            delayLongPress={300}
             {...summary}
           />
         )}
@@ -66,6 +72,7 @@ export default function FavoriteSummaries() {
         ListEmptyComponent={<ListEmptyComponent />}
       />
       <SummaryBottomSheet
+        onDismiss={() => setSelectedSumarry(null)}
         ref={bottomSheetRef}
         selectedSummary={selectedSummary}
       />

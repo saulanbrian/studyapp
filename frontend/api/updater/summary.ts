@@ -1,5 +1,5 @@
 import { Summary, UpdatableDataFields } from "@/types/data"
-import { InfiniteQueryPage, removeItemFromInfiniteQueryById, updateInifiniteQueryResultById } from "@/utils/query"
+import { InfiniteQueryPage, prependDataToInfiniteQuery, removeItemFromInfiniteQueryById, updateInifiniteQueryResultById } from "@/utils/query"
 import { InfiniteData, useQueryClient } from "@tanstack/react-query"
 
 
@@ -25,22 +25,6 @@ export default function useSummaryUpdater() {
       }
     })
 
-    queryClient.setQueryData<InfiniteData<InfiniteQueryPage<Summary>>>(['summary', 'favorites'], prevData => {
-      if (prevData && updateField.favorite !== undefined) {
-        if (updateField.favorite) {
-          const updatedData = updateInifiniteQueryResultById({
-            data: prevData,
-            id,
-            updateField
-          })
-          return updatedData
-        } else {
-          const updatedData = removeItemFromInfiniteQueryById({ data: prevData, id })
-          return updatedData
-        }
-      }
-    })
-
     queryClient.setQueryData<Summary>(['summary', id], prevData => {
       if (prevData) {
         return {
@@ -52,6 +36,28 @@ export default function useSummaryUpdater() {
 
   }
 
+  const addOrRemoveFromFavorites = (summary: Summary, method: 'add' | 'remove') => {
+    queryClient.setQueryData<InfiniteData<InfiniteQueryPage<Summary>>>(
+      ['summary', 'favorites'],
+      prevData => {
+        if (prevData) {
 
-  return { updateSummary }
+          if (method === 'add') {
+            const updatedData = prependDataToInfiniteQuery(prevData, summary)
+            return updatedData
+          } else {
+            const updatedData = removeItemFromInfiniteQueryById({
+              data: prevData,
+              id: summary.id
+            })
+            return updatedData
+          }
+
+        }
+      }
+    )
+  }
+
+
+  return { updateSummary, addOrRemoveFromFavorites }
 }

@@ -5,7 +5,9 @@ import { StyleSheet, TouchableOpacity } from 'react-native'
 import { MaterialIcons } from '@expo/vector-icons'
 import { Summary } from '@/types/data'
 import { forwardRef, useCallback } from 'react'
-import { useToggleFavorite } from '@/api/mutations/summary'
+import useAuthenticatedRequest from '@/hooks/useAuthenticatedRequest'
+import { useMutation } from '@tanstack/react-query'
+import useSummaryUpdater from '@/api/updater/summary'
 
 type SummaryBottomSheetProps = Omit<BottomSheetModalProps, 'children' | 'index'> & {
   selectedSummary: Summary | null;
@@ -19,6 +21,8 @@ const SummaryBottomSheet = forwardRef<BottomSheetModal, SummaryBottomSheetProps>
 }, ref) => {
 
   const { theme } = useThemeContext()
+
+  if (!selectedSummary) return null
 
   return (
     <BottomSheetModal
@@ -41,12 +45,7 @@ const SummaryBottomSheet = forwardRef<BottomSheetModal, SummaryBottomSheetProps>
         styles.container
       ]}
       >
-        {selectedSummary && (
-          <ToggleFavoriteButton
-            isFavorite={selectedSummary.favorite}
-            summaryId={selectedSummary.id}
-          />
-        )}
+        <ToggleFavoriteButton summary={selectedSummary} />
       </BottomSheetView>
     </BottomSheetModal>
   )
@@ -54,35 +53,57 @@ const SummaryBottomSheet = forwardRef<BottomSheetModal, SummaryBottomSheetProps>
 
 
 
-const ToggleFavoriteButton = ({
-  summaryId,
-  isFavorite
-}: {
-  summaryId: string;
-  isFavorite: boolean
-}) => {
+const ToggleFavoriteButton = ({ summary }: { summary: Summary }) => {
 
-  const { theme } = useThemeContext()
-  const { mutateAsync: toggle } = useToggleFavorite(summaryId)
+  const { getApi } = useAuthenticatedRequest()
+  const { updateSummary, addOrRemoveFromFavorites } = useSummaryUpdater()
   const { dismiss } = useBottomSheetModal()
+  const { theme } = useThemeContext()
 
-  const toggleFavorite = useCallback(() => {
-    toggle({ id: summaryId, favorite: !isFavorite })
-    dismiss()
-  }, [summaryId, isFavorite])
+  const { mutate: toggle } = useMutation<Summary>({
+    mutationFn: async () => {
+
+      dismiss()
+
+      const api = await getApi()
+      if (api) {
+        updateSummary({
+          id: summary.id,
+          updateField: { favorite: !summary.favorite }
+        })
+        addOrRemoveFromFavorites(
+          {
+            ...summary,
+            favorite:!summary.favorite
+          },
+          summary.favorite ? 'remove' : 'add'
+        )
+
+        const res = await api.patch(`summary/${summary.id}`, { favorite: !summary.favorite })
+        return res.data
+      }
+    },
+    onError: (e) => {
+      updateSummary({
+        id: summary.id,
+        updateField: { ...summary }
+      })
+      addOrRemoveFromFavorites(summary, summary.favorite ? 'add' : 'remove')
+    }
+  })
 
   return (
     <TouchableOpacity
       style={styles.button}
-      onPress={toggleFavorite}
+      onPress={() => toggle()}
     >
       <MaterialIcons
-        name={isFavorite ? 'favorite' : 'favorite-outline'}
+        name={summary.favorite ? 'favorite' : 'favorite-outline'}
         size={28}
         color={theme.iconAccent}
       />
       <ThemedText style={{ fontSize: 24 }}>
-        {isFavorite ? 'remove from favorite' : 'add to favorite'}
+        {summary.favorite ? 'remove from favorite' : 'add to favorite'}
       </ThemedText>
     </TouchableOpacity>
   )

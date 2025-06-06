@@ -48,10 +48,15 @@ const SummaryList = () => {
     return data && summarizeInfiniteQueryResult(data)
   }, [data])
 
-  const handleLongPress = (summary: Summary) => {
+  const handleLongPress = useCallback((summary: Summary) => {
     setSelectedSummary(summary)
-    bottomSheetRef.current?.present()
-  }
+  }, [selectedSummary])
+
+  useEffect(() => {
+    if (selectedSummary) {
+      bottomSheetRef.current?.present()
+    }
+  }, [selectedSummary])
 
   return (
     <SuspendedViewWithErrorBoundary
@@ -75,6 +80,7 @@ const SummaryList = () => {
               styles.summary
             ]}
             onLongPress={() => handleLongPress(summary)}
+            delayLongPress={300}
             {...summary}
           />
         )}
@@ -88,6 +94,7 @@ const SummaryList = () => {
       />
       <SummaryBottomSheet
         selectedSummary={selectedSummary}
+        onDismiss={() => setSelectedSummary(null)}
         ref={bottomSheetRef}
       />
     </SuspendedViewWithErrorBoundary>
