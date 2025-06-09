@@ -6,13 +6,15 @@ from django.core.asgi import get_asgi_application
 
 from user.routing import websocket_urlpatterns
 
-from user.authentication import ClerkJWTAuthenticationMiddleware
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mysite.settings")
+asgi_app = get_asgi_application()
+
+from user.authentication import ClerkJWTAuthenticationMiddleware
 
 application = ProtocolTypeRouter(
     {
-        "http": get_asgi_application(),
+        "http": asgi_app,
         "websocket":AllowedHostsOriginValidator(
           ClerkJWTAuthenticationMiddleware(
             URLRouter(

@@ -13,6 +13,10 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os 
 from pathlib import Path
 from decouple import config
+import logging 
+
+
+logger = logging.getLogger(__name__)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -145,19 +149,26 @@ CLERK_JWT_PUBLIC_KEY=config("CLERK_JWT_PUBLIC_KEY")
 
 ASGI_APPLICATION='backend.asgi.application'
 
+REDIS_URL  = config('REDIS_URL')
+
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],  
+            "hosts": [
+                (REDIS_URL)
+            ],  
         },
     },
 }
 
-CELERY_BROKER_URL = 'amqp://guest:guest@localhost:5672//'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_BROKER_URL =config('CELERY_BROKER_URL')
+
 CELERY_TIME_LIMIT=200
 
 GEMINI_API_KEY=config('GEMINI_API_KEY')
 
-BASE_URL=config('BASE_URL','http://127.0.0.1:8000')
+BASE_URL=config(
+    'BASE_URL',
+    default='http://127.0.0.1:8000'
+)
