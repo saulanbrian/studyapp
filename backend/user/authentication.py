@@ -36,16 +36,14 @@ class ClerkJWTAuthentication(authentication.BaseAuthentication):
             raise AuthenticationFailed('Invalid token')
 
         user_id = payload.get('sub')
+
         if not user_id:
             logger.warning("No 'sub' claim in JWT payload")
             return None
 
-        try:
-            user = User.objects.get(clerk_id=user_id)
-            logger.info("Authenticated user: %s", user)
-        except User.DoesNotExist:
-            logger.error("User not found for clerk_id: %s", user_id)
-            raise AuthenticationFailed('User not found')
+        user,created = User.objects.get_or_create(
+            clerk_id=user_id
+        )
 
         return (user, None)
         
@@ -60,7 +58,7 @@ class ClerkJWTAuthenticationMiddleware(BaseMiddleware):
       try:
         payload = jwt.decode(
           token,
-          settings.CLERK_JWT_PUBLIC_KEY,
+          settings.CLERK_JWT_PUBLIC_KEY, 
           algorithms=['RS256'],
           issuer=settings.CLERK_ISSUER
         )
@@ -76,8 +74,7 @@ class ClerkJWTAuthenticationMiddleware(BaseMiddleware):
   
   @database_sync_to_async
   def get_user(self,clerk_id):
-    try:
-      user = User.objects.get(clerk_id=clerk_id)
-      return user 
-    except User.DoesNotExist:
-      return None
+    user,created = User.objects.get_or_create(
+        clerk_id=clerk_id
+    )
+    return user

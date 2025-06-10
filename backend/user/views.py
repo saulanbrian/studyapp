@@ -6,24 +6,4 @@ import json
 
 from .models import ClerkUser
 
-@api_view(['POST'])
-@authentication_classes([])
-@permission_classes([])
-def webhook_listener(request):
-  payload = json.loads(request.body)
-  
-  user_data = payload.get('data')
-  event_type = payload.get('type')
-  user_id = user_data.get('id')
-  
-  if event_type == 'user.created':
-    ClerkUser.objects.create(clerk_id=user_id)
-  if event_type == 'user.deleted':
-    try:
-      user = ClerkUser.objects.get(clerk_id=user_id)
-      user.delete()
-    except ClerkUser.DoesNotExist:
-      pass
-  
-  return Response(status=status.HTTP_200_OK)
 
