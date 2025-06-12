@@ -62,7 +62,7 @@ class QuizSerializer(serializers.ModelSerializer):
 
     def get_summary_cover(self,obj):
         if obj.summary.cover:
-            return f'{settings.BASE_URL}{obj.summary.cover.url}'
+            return obj.summary.cover.path
         return None 
 
 

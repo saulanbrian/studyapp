@@ -5,6 +5,7 @@ import { Dimensions, StyleSheet, TouchableOpacity, ViewProps, ActivityIndicator,
 import { useThemeContext } from "@/context/Theme";
 import { useRouter } from "expo-router";
 import { BlurView } from "expo-blur";
+import { useCallback } from "react";
 
 
 type SummaryPreviewProps = Summary & Omit<TouchableOpacityProps, 'onPress'>
@@ -22,6 +23,15 @@ export default function SummaryPreview({
   const { theme } = useThemeContext()
   const router = useRouter()
 
+  const renderLoadingView = useCallback(() => {
+    if (status === 'processing') return <LoadingView />
+  }, [status])
+
+
+  const renderErrorView = useCallback(() => {
+    if (status === 'error') return <ErrorView />
+  }, [status])
+
   return (
     <TouchableOpacity
       style={[{ backgroundColor: theme.surface }, styles.container, style]}
@@ -35,13 +45,33 @@ export default function SummaryPreview({
         style={styles.image}
       />
       <ThemedText style={styles.title} numberOfLines={1}>{title}</ThemedText>
-      {status !== 'processed' && (
-        <BlurView style={styles.blur}>
-          <ThemedText>processing</ThemedText>
-          <ActivityIndicator />
-        </BlurView>
-      )}
+      {renderErrorView()}
+      {renderLoadingView()}
     </TouchableOpacity>
+  )
+}
+
+const LoadingView = () => {
+  return (
+    <ThemedView style={styles.blur}>
+      <ThemedText>processing...</ThemedText>
+      <ActivityIndicator />
+    </ThemedView>
+  )
+}
+
+
+const ErrorView = () => {
+
+  const { theme } = useThemeContext()
+
+  return (
+    <ThemedView style={styles.blur}>
+      <ThemedText style={{ color: theme.error }}>error</ThemedText>
+      <TouchableOpacity onPress={() => { }}>
+        <ThemedText>retry</ThemedText>
+      </TouchableOpacity>
+    </ThemedView>
   )
 }
 

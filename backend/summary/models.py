@@ -4,9 +4,19 @@ import uuid
 from user.models import ClerkUser
 
 
-def generate_path(instance,filename):
-    return '{0}/summaries/{1}'.format(instance.user.clerk_id,filename)
+def cover_path(instance,filename):
+  return '{0}/summaries/{1}/cover/{2}'.format(
+    instance.user.clerk_id,
+    instance.title,
+    filename
+  )
 
+def file_path(instance,filename):
+  return '{0}/summaries/{1}/{2}'.format(
+    instance.user.clerk_id,
+    instance.title,
+    filename
+  )
 
 class Summary(models.Model):
   
@@ -19,12 +29,13 @@ class Summary(models.Model):
   id = models.UUIDField(default=uuid.uuid4,primary_key=True,unique=True)
   user = models.ForeignKey(ClerkUser,related_name='summaries',on_delete=models.CASCADE)
   content = models.TextField(null=True)
-  title = models.CharField(max_length=200)
+  title = models.CharField(max_length=200,unique=True)
   status = models.CharField(choices=STATUS,max_length=20,default='processing')
-  cover = models.ImageField(upload_to=generate_path,null=True)  
+  cover = models.ImageField(upload_to=cover_path,null=True)  
   error_message = models.TextField(null=True)
   created_at = models.DateTimeField(auto_now_add=True)
   favorite = models.BooleanField(default=False)
+  file = models.FileField(upload_to=file_path)
 
   class Meta:
     ordering = ['-created_at']

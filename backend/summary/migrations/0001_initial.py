@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
                 ('content', models.TextField(null=True)),
                 ('title', models.CharField(max_length=200)),
                 ('status', models.CharField(choices=[('processed', 'processed'), ('error', 'error'), ('processing', 'processing')], default='processing', max_length=20)),
-                ('cover', models.ImageField(null=True, upload_to=summary.models.generate_path)),
+                ('cover', models.ImageField(null=True, upload_to=summary.models.cover_path)),
                 ('error_message', models.TextField(null=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('favorite', models.BooleanField(default=False)),

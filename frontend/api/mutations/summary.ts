@@ -28,7 +28,6 @@ export const useUploadFileToSummarize = () => {
     ) => {
 
       const api = await getApi()
-
       if (api) {
         const data = new FormData()
 
@@ -38,12 +37,11 @@ export const useUploadFileToSummarize = () => {
           name: file.name
         } as any)
 
-        if (title) {
-          data.append('title', title)
-        }
+        data.append('title', title ? title : file.name)
+
 
         if (image) {
-          data.append('cover_image', {
+          data.append('cover', {
             type: image.mimeType || 'image/jpeg',
             uri: image.uri,
             name: image?.fileName || 'cover_image.jpg'
@@ -76,3 +74,26 @@ export const useUploadFileToSummarize = () => {
 }
 
 
+export const useRetrySummarization = () => {
+
+  const { getApi } = useAuthenticatedRequest()
+  const { updateSummary } = useSummaryUpdater()
+
+  return useMutation<Summary, unknown, string>({
+    mutationFn: async (id: string) => {
+      const api = await getApi()
+      if (api) {
+        const res = await api.post('summary/retry-summarize', { id })
+        return res.data
+      }
+
+      throw new Error('authentication failed')
+    },
+    onSuccess: ({ id, ...data }) => {
+      updateSummary({
+        id,
+        updateField: { ...data }
+      })
+    }
+  })
+}

@@ -13,6 +13,7 @@ import { useQueryClient } from "@tanstack/react-query"
 import MaterialAttachmentInputButton from "@/components/ui/MaterialAttachmentInputButton"
 import { EventArg } from "@react-navigation/native"
 import * as ImagePicker from 'expo-image-picker'
+import { isAxiosError } from "axios"
 
 const MAX_DOCUMENT_SIZE = 5 * 1024 * 1024
 
@@ -28,8 +29,24 @@ export default function InitialPage() {
 function SummaryCreationPage() {
 
   const { theme } = useThemeContext()
-  const { document, formStatus, setDocument } = useSummaryCreationPage()
+  const { document, formStatus, setDocument, error } = useSummaryCreationPage()
   const navigation = useNavigation()
+
+  const renderError = useCallback(() => {
+    if (!error) return
+    return (
+      <ThemedText
+        style={{
+          color: theme.error,
+          fontSize: 12,
+          margin: 2
+        }}
+        numberOfLines={1}
+      >
+        {error}
+      </ThemedText>
+    )
+  }, [error, theme])
 
   useEffect(() => {
 
@@ -75,6 +92,7 @@ function SummaryCreationPage() {
         attachmentName={document && document.name}
         iconProps={{ size: 16 }}
       />
+      {renderError()}
       <OptionalFields />
       <SubmitButtonContainer />
     </ThemedView>
@@ -119,16 +137,31 @@ const SubmitButtonContainer = () => {
 
   const keyboard = useAnimatedKeyboard({ isStatusBarTranslucentAndroid: true })
   const { width } = useWindowDimensions()
+  const { setError } = useSummaryCreationPage()
   const { document, title, setFormStatus, image } = useSummaryCreationPage()
-  const { mutate, status, data } = useUploadFileToSummarize()
+  const { mutate, status, data, error, failureReason } = useUploadFileToSummarize()
   const router = useRouter()
 
   useEffect(() => {
     setFormStatus(status)
-    if (status === 'success') {
-      setTimeout(() => {
-        router.back()
-      }, 500)
+    switch (status) {
+      case 'success': {
+        setTimeout(() => {
+          router.back()
+        }, 500)
+      }
+      case "error": {
+        if (isAxiosError(error)) {
+          const errorData = error.response?.data
+          if (errorData) {
+            //other summary field errors are handled carefully and are 
+            //unlikely to occur
+            const { title: titleError } = errorData
+            if (titleError) setError(titleError[0])
+            else setError(error.message)
+          }
+        }
+      }
     }
   }, [status])
 

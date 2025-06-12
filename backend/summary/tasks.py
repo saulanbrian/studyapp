@@ -70,25 +70,28 @@ def notify_user(summary):
 
 
 @shared_task()
-def summarize_file(summary_id,file):
-  
-  try:
-    summary = Summary.objects.get(pk=summary_id)
-  except Summary.DoesNotExist:
-    return
-  else:
+def summarize_file(summary_id,):
 
-    file_bytes = base64.b64decode(file)
-    pdf_reader = PdfReader(BytesIO(file_bytes))
+  summary = Summary.objects.filter(pk=summary_id).first()
+
+  if not summary:
+    return
+
+  content_summary = ''
+
+  with summary.file.open('rb') as f:
     
-    content = ""
+    pdf_reader = PdfReader(f)
+
     for page_num in range(len(pdf_reader.pages)):
+
       page_text = pdf_reader.pages[page_num].extract_text()
+
       if page_text:
-        content += "\n".join(page_text)
-        
-    if content:
-      content_summary, error = get_summary(content)
+        content_summary += "\n".join(page_text)
+            
+    if content_summary:
+      content_summary, error = get_summary(content_summary)
 
       if error:
         summary.status = 'error'
@@ -99,9 +102,10 @@ def summarize_file(summary_id,file):
 
     else:
       summary.status = 'error'
-      summary.error_message = 'no content available'
-    
+      summary.error_message = 'no content available' 
+      
     summary.save()
+
     notify_user(summary)
 
     return summary.status

@@ -14,6 +14,8 @@ type SummaryCreationPageContextType = {
   setFormStatus: React.Dispatch<React.SetStateAction<MutationStatus>>;
   image: ImagePickerAsset | null,
   setImage: React.Dispatch<React.SetStateAction<ImagePickerAsset | null>>;
+  error: string | null;
+  setError: React.Dispatch<React.SetStateAction<string | null>>
 }
 
 
@@ -36,6 +38,7 @@ export default function SummaryCreationPageProvider({
   const [title, setTitle] = useState<string | null>(null)
   const [formStatus, setFormStatus] = useState<MutationStatus>('idle')
   const [image, setImage] = useState<ImagePickerAsset | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   return (
     <SummaryCreationPage.Provider value={{
@@ -46,6 +49,8 @@ export default function SummaryCreationPageProvider({
       formStatus,
       setFormStatus,
       image,
+      error,
+      setError,
       setImage
     }}>
       {children}

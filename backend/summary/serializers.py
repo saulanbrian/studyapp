@@ -10,14 +10,14 @@ class SummarySerializer(serializers.ModelSerializer):
     model = Summary
     fields = (
       'id',
-      'user',
       'content',
       'title',
       'status',
       'cover',
       'error_message',
       'quiz_id',
-      'favorite'
+      'favorite',
+      'file'
     )
 
 

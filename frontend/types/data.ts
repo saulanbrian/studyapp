@@ -5,6 +5,7 @@ export type Summary = {
   cover: string | null;
   quiz_id: string | null;
   favorite: boolean;
+  file: string;
 } & (
     | { status: 'processed' | 'processing' }
     | { status: 'error'; error_message: string }
