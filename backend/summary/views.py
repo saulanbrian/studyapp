@@ -62,8 +62,8 @@ class FavoriteSummaryListAPIView(ListAPIView):
     )
 
 
+@permission_classes([IsAuthenticated])
 @api_view(['POST'])
-@permission_classes([AllowAny])
 def retry_summary(request):
   summary_id = request.data.get('id',None)
 
@@ -79,4 +79,5 @@ def retry_summary(request):
   summary.save()
 
   summarize_file.delay_on_commit(summary.id)
-  return Response(status=status.HTTP_200_OK)
+  serializer = SummarySerializer(summary)
+  return Response(serializer.data,status=status.HTTP_200_OK)

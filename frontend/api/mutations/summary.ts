@@ -83,7 +83,7 @@ export const useRetrySummarization = () => {
     mutationFn: async (id: string) => {
       const api = await getApi()
       if (api) {
-        const res = await api.post('summary/retry-summarize', { id })
+        const res = await api.post('summary/retry-summary', { id })
         return res.data
       }
 

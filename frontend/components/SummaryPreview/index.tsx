@@ -6,6 +6,7 @@ import { useThemeContext } from "@/context/Theme";
 import { useRouter } from "expo-router";
 import { BlurView } from "expo-blur";
 import { useCallback } from "react";
+import { useRetrySummarization } from "@/api/mutations/summary";
 
 
 type SummaryPreviewProps = Summary & Omit<TouchableOpacityProps, 'onPress'>
@@ -29,7 +30,7 @@ export default function SummaryPreview({
 
 
   const renderErrorView = useCallback(() => {
-    if (status === 'error') return <ErrorView />
+    if (status === 'error') return <ErrorView id={id} />
   }, [status])
 
   return (
@@ -53,7 +54,7 @@ export default function SummaryPreview({
 
 const LoadingView = () => {
   return (
-    <ThemedView style={styles.blur}>
+    <ThemedView style={styles.blur} surface>
       <ThemedText>processing...</ThemedText>
       <ActivityIndicator />
     </ThemedView>
@@ -61,14 +62,15 @@ const LoadingView = () => {
 }
 
 
-const ErrorView = () => {
+const ErrorView = ({ id }: { id: string }) => {
 
   const { theme } = useThemeContext()
+  const { mutate: retry } = useRetrySummarization()
 
   return (
-    <ThemedView style={styles.blur}>
+    <ThemedView style={styles.blur} surface>
       <ThemedText style={{ color: theme.error }}>error</ThemedText>
-      <TouchableOpacity onPress={() => { }}>
+      <TouchableOpacity onPress={() => retry(id)}>
         <ThemedText>retry</ThemedText>
       </TouchableOpacity>
     </ThemedView>
