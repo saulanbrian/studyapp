@@ -7,6 +7,7 @@ import { useRouter } from "expo-router";
 import { BlurView } from "expo-blur";
 import { useCallback } from "react";
 import { useRetrySummarization } from "@/api/mutations/summary";
+import { MaterialIcons } from "@expo/vector-icons";
 
 
 type SummaryPreviewProps = Summary & Omit<TouchableOpacityProps, 'onPress'>
@@ -37,7 +38,7 @@ export default function SummaryPreview({
     if (status === 'processed') return (
       <Image
         source={cover}
-        placeholder={require('@/assets/images/pdf.png')}
+        placeholder={require('@/assets/images/placeholder-image.png')}
         style={styles.image}
       />
     )
@@ -45,16 +46,25 @@ export default function SummaryPreview({
 
   return (
     <TouchableOpacity
-      style={[{ backgroundColor: theme.surface }, styles.container, style]}
+      style={[
+        {
+          backgroundColor: theme.surface,
+          borderColor: theme.textSecondary
+        },
+        styles.container, style
+      ]}
       disabled={status !== 'processed'}
       onPress={() => router.push({ pathname: '/(summary)/[id]', params: { id: id } })}
       {...props}
     >
-      <View style={{ height: 240 }}>
+      <ThemedView style={[
+        { borderColor: theme.textSecondary },
+        styles.statusContainer]}
+      >
         {renderImage()}
         {renderLoadingView()}
         {renderErrorView()}
-      </View>
+      </ThemedView>
       <ThemedText style={styles.title} numberOfLines={1}>{title}</ThemedText>
     </TouchableOpacity>
   )
@@ -62,8 +72,8 @@ export default function SummaryPreview({
 
 const LoadingView = () => {
   return (
-    <ThemedView style={styles.blur} surface>
-      <ThemedText>processing...</ThemedText>
+    <ThemedView style={styles.autoCenter} surface>
+      <ThemedText secondary>processing...</ThemedText>
       <ActivityIndicator />
     </ThemedView>
   )
@@ -76,12 +86,18 @@ const ErrorView = ({ id }: { id: string }) => {
   const { mutate: retry, isPending } = useRetrySummarization()
 
   return (
-    <ThemedView style={styles.blur} surface>
-      <ThemedText style={{ color: theme.error }}>error</ThemedText>
-      <TouchableOpacity onPress={() => retry(id)}>
+    <ThemedView style={styles.autoCenter} surface>
+      <ThemedText style={[{ color: theme.error }, styles.errorText]}>
+        ⚠️an error has occured. please try again
+      </ThemedText>
+      <TouchableOpacity onPress={() => retry(id)} style={styles.retryButton}>
         {isPending
           ? <ActivityIndicator />
-          : <ThemedText>retry</ThemedText>
+          : <MaterialIcons
+            name='refresh'
+            color={theme.textPrimary}
+            size={20}
+          />
         }
       </TouchableOpacity>
     </ThemedView>
@@ -90,9 +106,9 @@ const ErrorView = ({ id }: { id: string }) => {
 
 
 const styles = StyleSheet.create({
-  blur: {
-    ...StyleSheet.absoluteFillObject,
+  autoCenter: {
     borderRadius: 8,
+    flex: 1,
     overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center'
@@ -101,14 +117,31 @@ const styles = StyleSheet.create({
     padding: 8,
     gap: 4,
     borderRadius: 8,
+    borderWidth: 1
+  },
+  errorText: {
+    fontWeight: 'regular',
+    textAlign: 'center',
+    fontSize: 12,
   },
   image: {
     borderRadius: 8,
     width: "auto",
-    flex: 1
+    flex: 1,
+    objectFit: 'fill'
+  },
+  retryButton: {
+    position: 'absolute',
+    right: 4,
+    top: 2
+  },
+  statusContainer: {
+    height: 200,
+    borderRadius: 8,
+    borderWidth: 1
   },
   title: {
-    fontSize: 12,
-    fontWeight: 'semibold'
+    fontWeight: 'semibold',
+    paddingHorizontal: 2
   }
 })

@@ -210,9 +210,8 @@ const ErrorScreen = ({ quizId }: { quizId: string }) => {
   return (
     <ThemedView style={{ flex: 1 }}>
       <ThemedView style={styles.autoCenterContainer}>
-        <ThemedText style={{ textAlign: 'center' }}>
-          Error generating quiz for the given document.
-          please try again
+        <ThemedText style={styles.errorText}>
+          ⚠️An error has occured during quiz generation. please try again later
         </ThemedText>
       </ThemedView>
       <ThemedView style={styles.buttonContainer}>
@@ -250,6 +249,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 40,
     alignSelf: 'center'
+  },
+  errorText: {
+    fontSize: 28,
+    textAlign: 'center',
+    marginHorizontal: 8
   },
   mainScreenContainer: {
     flex: 1,
