@@ -79,34 +79,39 @@ def summarize_file(summary_id,):
 
   content_summary = ''
 
-  with summary.file.open('rb') as f:
-    
-    pdf_reader = PdfReader(f)
-
-    for page_num in range(len(pdf_reader.pages)):
-
-      page_text = pdf_reader.pages[page_num].extract_text()
-
-      if page_text:
-        content_summary += "\n".join(page_text)
-            
-    if content_summary:
-      content_summary, error = get_summary(content_summary)
-
-      if error:
-        summary.status = 'error'
-        summary.error_message = error
-      else:
-        summary.content = content_summary
-        summary.status = 'processed'
-
-    else:
-      summary.status = 'error'
-      summary.error_message = 'no content available' 
+  try:
+    with summary.file.open('rb') as f:
       
+      pdf_reader = PdfReader(f)
+
+      for page_num in range(len(pdf_reader.pages)):
+
+        page_text = pdf_reader.pages[page_num].extract_text()
+
+        if page_text:
+          content_summary += "\n".join(page_text)
+              
+      if content_summary:
+        content_summary, error = get_summary(content_summary)
+
+        if error:
+          summary.status = 'error'
+          summary.error_message = error
+        else:
+          summary.content = content_summary
+          summary.status = 'processed'
+
+      else:
+        summary.status = 'error'
+        summary.error_message = 'no content available' 
+        
+      summary.save()
+
+      notify_user(summary)
+
+      return summary.status
+  except Exception as e:
+    summary.status = 'error'
     summary.save()
-
     notify_user(summary)
-
     return summary.status
-

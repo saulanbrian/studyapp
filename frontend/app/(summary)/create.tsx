@@ -32,22 +32,6 @@ function SummaryCreationPage() {
   const { document, formStatus, setDocument, error } = useSummaryCreationPage()
   const navigation = useNavigation()
 
-  const renderError = useCallback(() => {
-    if (!error) return
-    return (
-      <ThemedText
-        style={{
-          color: theme.error,
-          fontSize: 12,
-          margin: 2
-        }}
-        numberOfLines={1}
-      >
-        {error}
-      </ThemedText>
-    )
-  }, [error, theme])
-
   useEffect(() => {
 
     const beforeRemoveListener = navigation.addListener('beforeRemove', e => {
@@ -92,7 +76,6 @@ function SummaryCreationPage() {
         attachmentName={document && document.name}
         iconProps={{ size: 16 }}
       />
-      {renderError()}
       <OptionalFields />
       <SubmitButtonContainer />
     </ThemedView>
@@ -144,24 +127,10 @@ const SubmitButtonContainer = () => {
 
   useEffect(() => {
     setFormStatus(status)
-    switch (status) {
-      case 'success': {
-        setTimeout(() => {
-          router.back()
-        }, 500)
-      }
-      case "error": {
-        if (isAxiosError(error)) {
-          const errorData = error.response?.data
-          if (errorData) {
-            //other summary field errors are handled carefully and are 
-            //unlikely to occur
-            const { title: titleError } = errorData
-            if (titleError) setError(titleError[0])
-            else setError(error.message)
-          }
-        }
-      }
+    if(status === 'success'){
+      setTimeout(() => {
+        router.back()
+      },500)
     }
   }, [status])
 
