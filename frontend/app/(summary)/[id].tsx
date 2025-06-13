@@ -83,7 +83,7 @@ const QuizButton = ({ quizId, summaryId }: QuizButtonProps) => {
 
   const { theme } = useThemeContext()
   const router = useRouter()
-  const { mutate: generateQuiz, status, data: generatedQuiz } = useGenerateQuiz()
+  const { mutate: generateQuiz, status, data: updatedSummary } = useGenerateQuiz()
   const { updateSummary } = useSummaryUpdater()
 
   const handlePress = useCallback(() => {
@@ -94,24 +94,19 @@ const QuizButton = ({ quizId, summaryId }: QuizButtonProps) => {
         params: { id: quizId }
       })
     } else {
-      generateQuiz({ summaryId })
+      generateQuiz(summaryId)
     }
 
   }, [quizId, summaryId])
 
 
   useEffect(() => {
-    if (status === 'success' && generatedQuiz.id) {
-      updateSummary({
-        id: summaryId,
-        updateField: { quiz_id: generatedQuiz.id }
-      })
+    if(updatedSummary)
       router.navigate({
         pathname: '/(quiz)/[id]',
-        params: { id: generatedQuiz.id }
+        params: { id: updatedSummary.quiz_id! }
       })
-    }
-  }, [status, generatedQuiz])
+  }, [updatedSummary])
 
 
   return (

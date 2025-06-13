@@ -14,6 +14,7 @@ import { FadeIn, useSharedValue, ZoomIn } from "react-native-reanimated";
 import useQuizUpdater from "@/api/updater/quiz";
 import { AnimatedThemedText } from "@/components/ui/ThemedText";
 import { MutationStatus } from "@tanstack/react-query";
+import { useRetryQuizGeneration } from "@/api/mutations/quiz";
 
 export default function QuizPage() {
 
@@ -26,9 +27,12 @@ export default function QuizPage() {
       status={status}
       retryCallback={refetch}
     >
-      {data && (data.status === 'processing'
-        ? <ProcessingScreen />
-        : <MainScreen quiz={data} />
+      {data && (
+        data.status === 'processing'
+          ? <ProcessingScreen />
+          : data.status === 'error'
+            ? <ErrorScreen quizId={id as string} />
+            : <MainScreen quiz={data} />
       )}
     </SuspendedViewWithErrorBoundary>
   )
@@ -192,6 +196,37 @@ const QuestionCounter = ({
     </ThemedView>
   )
 
+}
+
+
+const ErrorScreen = ({ quizId }: { quizId: string }) => {
+
+  const { mutate, isPending } = useRetryQuizGeneration()
+
+  const handleRetry = useCallback(() => {
+    mutate(quizId)
+  }, [quizId])
+
+  return (
+    <ThemedView style={{ flex: 1 }}>
+      <ThemedView style={styles.autoCenterContainer}>
+        <ThemedText style={{ textAlign: 'center' }}>
+          Error generating quiz for the given document.
+          please try again
+        </ThemedText>
+      </ThemedView>
+      <ThemedView style={styles.buttonContainer}>
+        {isPending ? (
+          <ActivityIndicator />
+        ) : (
+          <StandardCTAButton
+            label='retry'
+            onPress={handleRetry}
+          />
+        )}
+      </ThemedView>
+    </ThemedView>
+  )
 }
 
 

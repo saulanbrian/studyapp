@@ -10,6 +10,7 @@ from rest_framework import status
 from .models import Quiz
 from .serializers import QuizSerializer
 from summary.models import Summary
+from summary.serializers import SummarySerializer
 from .tasks import generate_quiz 
 
 
@@ -43,11 +44,38 @@ def generate_quiz_view(request):
     summary = get_object_or_404(Summary,pk=summary_id)
     if not hasattr(summary,'quiz'):
         quiz = Quiz.objects.create(summary=summary)
-        generate_quiz.delay_on_commit(summary_id,quiz.id)
-        serializer = QuizSerializer(quiz)
+        generate_quiz.delay_on_commit(quiz.id)
+        serializer = SummarySerializer(summary)
         return Response(serializer.data,status=status.HTTP_201_CREATED)    
     return Response(
         { 'data':'a summary can only have one quiz'},
         status=status.HTTP_409_CONFLICT 
     )
 
+
+@permission_classes([IsAuthenticated])
+@api_view(['POST'])
+def retry_quiz_generation(request):
+    quiz_id = request.data.get('id')
+    if not quiz_id:
+        return Response(
+            data={
+                'error':'argument id is required'
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    quiz = get_object_or_404(Quiz,pk=quiz_id)
+
+    if quiz.status != 'error':
+        return Response(
+            data={
+                'error':'quiz cannot be regenerated unless status is error'
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    quiz.status = 'processing'
+    quiz.save()
+    serialzer = QuizSerializer(quiz)
+    generate_quiz.delay_on_commit(quiz.id)
+    return Response(serialzer.data,status=status.HTTP_200_OK)
