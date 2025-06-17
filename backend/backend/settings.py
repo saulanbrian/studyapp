@@ -92,6 +92,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 tmpPostgres = urlparse(config('DATABASE_URL'))
+endpoint_id = config('ENDPOINT_ID')
 
 DATABASES = {
     'default': {
@@ -101,7 +102,10 @@ DATABASES = {
         'PASSWORD': tmpPostgres.password,
         'HOST': tmpPostgres.hostname,
         'PORT': 5432,
-        'OPTIONS': {'sslmode':'require'}
+        'OPTIONS': {
+            'sslmode':'require',
+            'options': f'endpoint={endpoint_id}'
+        }
     }
 }
 
