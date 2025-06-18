@@ -17,14 +17,13 @@ class SummaryPaginator(PageNumberPagination):
 
 class SummaryAPIView(GenericAPIView):
   serializer_class = SummarySerializer
-  queryset = Summary.objects.all()
   permission_classes = [IsAuthenticated]
   pagination_class = SummaryPaginator
   parser_classes = [JSONParser,MultiPartParser]
   
   def get(self,request,*args,**kwargs):
     user_id = request.user.clerk_id
-    summaries = Summary.objects.filter(user__clerk_id=user_id)
+    summaries = Summary.objects.select_related('user').filter(user__clerk_id=user_id)
     paginator = self.pagination_class()
     paginated_summaries = paginator.paginate_queryset(summaries,request=request)
     
@@ -46,7 +45,9 @@ class SummaryRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
   permission_classes = [IsAuthenticated]
 
   def get_queryset(self):
-    return Summary.objects.filter(user__clerk_id=self.request.user.clerk_id)
+    return Summary.objects.select_related('user').filter(
+        user__clerk_id=self.request.user.clerk_id
+    )
 
 
 class FavoriteSummaryListAPIView(ListAPIView):
@@ -56,7 +57,7 @@ class FavoriteSummaryListAPIView(ListAPIView):
 
   def get_queryset(self):
     user_id = self.request.user.clerk_id
-    return Summary.objects.filter(
+    return Summary.objects.select_related('user').filter(
       user__clerk_id=user_id,
       favorite=True
     )

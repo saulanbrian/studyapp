@@ -24,7 +24,9 @@ class QuizRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         id = self.request.user.clerk_id
-        return Quiz.objects.filter(summary__user__clerk_id=id)
+        return Quiz.objects.selec_related('summary').filter(
+            summary__user__clerk_id=id
+        )
 
 
 class QuizListAPIView(ListAPIView):
@@ -34,7 +36,9 @@ class QuizListAPIView(ListAPIView):
 
     def get_queryset(self):
         id = self.request.user.clerk_id
-        return Quiz.objects.filter(summary__user__clerk_id=id)
+        return Quiz.objects.selec_related('summary').filter(
+            summary__user__clerk_id=id
+        )
 
 
 @permission_classes([IsAuthenticated]) 
