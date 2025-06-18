@@ -72,19 +72,23 @@ const EmailInputView = ({
 
   const headerText = useMemo(() => {
     return method === 'signin'
-      ? 'Welcome back! User,'
+      ? 'Welcome back, learner!'
       : 'Signup Now!'
   }, [method])
 
   const subHeaderText = useMemo(() => {
     return method === 'signin'
-      ? 'you missed us, did\'nt you?'
-      : 'and join us in an exciting and efficient learing'
+      ? 'missed simplified learning?'
+      : 'and join us in an exciting and efficient way of learning'
   }, [method])
 
   return (
     <ThemedView style={styles.page}>
-      <ThemedText style={styles.header}>
+      <ThemedText
+        style={styles.header}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+      >
         {headerText}
       </ThemedText>
       <ThemedText

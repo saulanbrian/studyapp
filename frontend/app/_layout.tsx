@@ -1,7 +1,7 @@
 import { Slot, Stack, useRouter } from 'expo-router'
 import { ClerkProvider, ClerkLoaded, useAuth } from '@clerk/clerk-expo'
 import { tokenCache } from '@/cache'
-import { useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useWarmUpBrowser } from '@/hooks/useWarmUpBrowser'
 import { QueryClient, QueryClientProvider, useQueryErrorResetBoundary } from '@tanstack/react-query'
 import ThemeContextProvider, { useThemeContext } from '@/context/Theme'
@@ -13,16 +13,50 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import ErrorBoundary, { ErrorBoundaryProps } from 'react-native-error-boundary'
 import { isAxiosError } from 'axios'
+import {
+  Entypo,
+  Feather,
+  Ionicons,
+  MaterialCommunityIcons,
+  MaterialIcons,
+  EvilIcons,
+  AntDesign,
+  SimpleLineIcons,
+  Fontisto,
+} from '@expo/vector-icons'
+import * as SplashScreen from 'expo-splash-screen'
+import * as Font from 'expo-font'
 
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY
 
 const queryClient = new QueryClient()
 
+
+SplashScreen.preventAutoHideAsync()
+
 export default function RootLayout() {
 
   const { reset } = useQueryErrorResetBoundary()
+  const [fontsLoaded, setFontsLoaded] = useState(false)
+
+  useEffect(() => {
+    (async () => {
+      await Font.loadAsync({
+        ...Ionicons.font,
+        ...MaterialIcons.font,
+        ...MaterialCommunityIcons.font,
+        ...Feather.font,
+        ...SimpleLineIcons.font,
+        ...AntDesign.font,
+        ...Fontisto.font
+      })
+      setFontsLoaded(true)
+    })()
+  }, [])
 
   useWarmUpBrowser()
+
+  if (!fontsLoaded) return null
 
   return (
     <ThemeContextProvider>
@@ -58,8 +92,15 @@ const InitialLayout = () => {
     return isSignedIn ? isSignedIn : false
   }, [isSignedIn])
 
+  const handleLayout = useCallback(async () => {
+    await SplashScreen.hideAsync()
+  }, [])
+
   return (
-    <ThemedView style={{ flex: 1 }}>
+    <ThemedView
+      onLayout={handleLayout}
+      style={{ flex: 1 }}
+    >
       <StatusBar
         translucent
         networkActivityIndicatorVisible

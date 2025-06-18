@@ -1,7 +1,7 @@
 import { useGetQuizzes } from "@/api/queries/quiz";
 import { QuizPreview } from "@/components";
 import SuspendedViewWithErrorBoundary from "@/components/SuspendedViewWithErrorBoundary";
-import { ThemedText, ThemedView } from "@/components/ui";
+import { ListEmptyComponent, ThemedText, ThemedView } from "@/components/ui";
 import { summarizeInfiniteQueryResult } from "@/utils/query";
 import { FlashList } from "@shopify/flash-list";
 import { useRouter } from "expo-router";
@@ -10,7 +10,12 @@ import { StyleSheet } from "react-native";
 
 export default function UserQuizzes() {
 
-  const { data, status, refetch } = useGetQuizzes()
+  const {
+    data,
+    status,
+    refetch,
+    isFetchingNextPage
+  } = useGetQuizzes()
   const router = useRouter()
 
   const handlePress = useCallback((id: string) => {
@@ -41,6 +46,9 @@ export default function UserQuizzes() {
           />
         )}
         contentContainerStyle={{ padding: 4 }}
+        ListEmptyComponent={<ListEmptyComponent />}
+        onRefresh={refetch}
+        refreshing={isFetchingNextPage}
       />
     </SuspendedViewWithErrorBoundary>
   )

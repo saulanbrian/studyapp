@@ -13,6 +13,8 @@ import { SummaryBottomSheet } from '@/components'
 import { useRouter } from "expo-router";
 import { Summary } from "@/types/data";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
+import { AnimatedThemedView } from "@/components/ui/ThemedView";
+import { FadeIn } from "react-native-reanimated";
 
 const Index = () => {
 
@@ -24,7 +26,10 @@ const Index = () => {
   }
 
   return (
-    <ThemedView style={styles.container}>
+    <AnimatedThemedView
+      entering={FadeIn.duration(1000)}
+      style={styles.container}
+    >
       <SummaryList />
       <FeatherFab
         onPress={handlePress}
@@ -32,7 +37,7 @@ const Index = () => {
         size={20}
         label="create"
       />
-    </ThemedView>
+    </AnimatedThemedView>
   );
 };
 

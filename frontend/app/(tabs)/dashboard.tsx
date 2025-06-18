@@ -4,15 +4,22 @@ import { useAuth, useUser } from "@clerk/clerk-expo"
 import { Feather, MaterialIcons, SimpleLineIcons } from "@expo/vector-icons"
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet"
 import { useNavigation } from "@react-navigation/native"
+import { useQueryClient } from "@tanstack/react-query"
 import { useRouter } from "expo-router"
 import { useCallback, useRef } from "react"
 import { Dimensions, StyleSheet, TouchableOpacity } from "react-native"
 
 export default function DashBoard() {
 
+  const queryClient = useQueryClient()
   const sheetRef = useRef<BottomSheetModal>(null)
   const { signOut } = useAuth()
   const { theme } = useThemeContext()
+
+  const handleSignout = useCallback(() => {
+    queryClient.clear()
+    signOut()
+  }, [])
 
   return (
     <ThemedView style={styles.container}>
@@ -37,7 +44,7 @@ export default function DashBoard() {
         <BottomSheetView>
           <TouchableOpacity
             style={styles.signOutButton}
-            onPress={() => signOut()}
+            onPress={handleSignout}
           >
             <Feather
               name='log-out'

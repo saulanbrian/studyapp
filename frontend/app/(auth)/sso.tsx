@@ -14,12 +14,13 @@ import { useThemeContext } from "@/context/Theme";
 import welcomeAnimation from '@/assets/animation/welcome.json'
 import { TextInput } from "react-native-gesture-handler";
 import { useRouter } from "expo-router";
+import { AnimatedThemedView } from "@/components/ui/ThemedView";
+import { FadeIn } from "react-native-reanimated";
 
 
 WebBrowser.maybeCompleteAuthSession()
 
 enum SocialAuthProvider {
-  Facebook = 'facebook',
   Google = 'google'
 }
 
@@ -31,7 +32,10 @@ const SSOPage = () => {
   useWarmUpBrowser()
 
   return (
-    <ThemedView style={styles.container}>
+    <AnimatedThemedView
+      style={styles.container}
+      entering={FadeIn.duration(1000)}
+    >
       <ThemedText style={styles.headerText}>Ready to learn in an efficient way?</ThemedText>
       <ThemedView style={styles.lottieViewContainer}>
         <LottieView
@@ -71,7 +75,7 @@ const SSOPage = () => {
           </ThemedText>
         </TouchableOpacity>
       </ThemedView>
-    </ThemedView>
+    </AnimatedThemedView>
   );
 };
 
@@ -105,21 +109,7 @@ const SocialButtons = () => {
           size={20}
           color={theme.iconPrimary}
         />
-        <ThemedText style={styles.buttonText}>Google</ThemedText>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[
-          { backgroundColor: theme.surface },
-          styles.button
-        ]}
-        onPress={() => handleAuth(SocialAuthProvider.Facebook)}
-      >
-        <FontAwesome5
-          name='facebook'
-          size={20}
-          color={theme.iconPrimary}
-        />
-        <ThemedText style={styles.buttonText}>Facebook</ThemedText>
+        <ThemedText style={styles.buttonText}>Sign in with Google</ThemedText>
       </TouchableOpacity>
     </ThemedView>
   )
@@ -161,7 +151,7 @@ const styles = StyleSheet.create({
   },
   line: {
     flexGrow: 1,
-    height: 2
+    height: 3
   },
   lottieView: {
     height: 400,
