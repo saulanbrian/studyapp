@@ -1,38 +1,59 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+# Learn more: https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
-# dependencies
+# --- Dependencies
 node_modules/
+yarn.lock
 
-# Expo
+# --- Expo & React Native build outputs
 .expo/
+.expo-shared/
 dist/
 web-build/
+android/
+ios/
+.android/
+.gradle/
+.ios/
+.cache/
+.metro-health-check*
+
+# --- Environment
+.env
+.env.local
+.env.*.lofcal
 expo-env.d.ts
 
-# Native
-*.orig.*
+# --- TypeScript
+*.tsbuildinfo
+
+# --- Editor & swap files
+*.swp
+*.swo
+*.swn
+*.bak
+*.tmp
+*.temp
+
+# --- IDEs & project settings
+.vscode/
+.idea/
+
+# --- OS junk
+.DS_Store
+
+# --- Logs & crash reports
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- Native creds & provisioning
 *.jks
 *.p8
 *.p12
 *.key
-*.mobileprovision
-
-# Metro
-.metro-health-check*
-
-# debug
-npm-debug.*
-yarn-debug.*
-yarn-error.*
-
-# macOS
-.DS_Store
 *.pem
+*.mobileprovision
+*.orig.*
 
-# local env files
-.env*.local
-
-# typescript
-*.tsbuildinfo
-
-app-example
+# --- Extras
+app-example/
