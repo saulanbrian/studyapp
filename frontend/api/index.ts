@@ -1,17 +1,17 @@
 import axios from 'axios'
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL
+import { ENV } from '@/constants/Env'
 
-const createAxiosInstance = (token?:string) => {
+const createAxiosInstance = (token?: string) => {
   const axiosInstance = axios.create({
-    baseURL:API_URL!,
+    baseURL: ENV.API_URL,
     headers: {
       "Content-Type": "application/json",
-      ...( token && {"Authorization":`Bearer ${token}`})
+      ...(token && { "Authorization": `Bearer ${token}` })
     }
   })
   return axiosInstance
-} 
+}
 
 
 export default createAxiosInstance

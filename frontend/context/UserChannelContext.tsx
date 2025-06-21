@@ -1,14 +1,12 @@
 import useQuizUpdater from "@/api/updater/quiz"
 import useSummaryUpdater from "@/api/updater/summary"
-import useAuthenticatedWebSocket, { useAuthenticatedSocket } from "@/hooks/useAuthenticatedWebSocket"
 import { Quiz, Summary } from "@/types/data"
 import { useAuth } from "@clerk/clerk-expo"
 import { createContext, PropsWithChildren, useContext, useEffect, useRef } from "react"
 import ReconnectingWebSocket from "reconnecting-websocket"
 
-const WS_URL = process.env.EXPO_PUBLIC_WS_URL!
+import { ENV } from "@/constants/Env"
 
-const SocketUrl = `${WS_URL}/ws/user_channels`
 
 type UserChannelContextType = {
 
@@ -35,7 +33,7 @@ export default function UserChannelContextProvider({ children }: PropsWithChildr
 
       const urlProvider = async () => {
         const token = await getToken()
-        return `${WS_URL}/ws/user_channels?token=${token}`
+        return `${ENV.WS_URL}/ws/user_channels?token=${token}`
       }
 
       const socket = new ReconnectingWebSocket(urlProvider)

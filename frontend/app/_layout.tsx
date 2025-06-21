@@ -5,7 +5,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useWarmUpBrowser } from '@/hooks/useWarmUpBrowser'
 import { QueryClient, QueryClientProvider, useQueryErrorResetBoundary } from '@tanstack/react-query'
 import ThemeContextProvider, { useThemeContext } from '@/context/Theme'
-import * as NavigationBar from 'expo-navigation-bar'
 import { ErrorView, ThemedText, ThemedView, ThemedButton, StandardCTAButton } from '@/components/ui'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { Button, StatusBar, StyleSheet, Text, View } from 'react-native'
@@ -27,7 +26,7 @@ import {
 import * as SplashScreen from 'expo-splash-screen'
 import * as Font from 'expo-font'
 
-const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY
+import { ENV } from '@/constants/Env'
 
 const queryClient = new QueryClient()
 
@@ -69,7 +68,10 @@ export default function RootLayout() {
           />
         )}
       >
-        <ClerkProvider publishableKey={publishableKey!} tokenCache={tokenCache}>
+        <ClerkProvider
+          publishableKey={ENV.CLERK_PUBLISHABLE_KEY}
+          tokenCache={tokenCache}
+        >
           <QueryClientProvider client={queryClient}>
             <GestureHandlerRootView>
               <BottomSheetModalProvider>
@@ -101,10 +103,6 @@ const InitialLayout = () => {
       onLayout={handleLayout}
       style={{ flex: 1 }}
     >
-      <StatusBar
-        translucent
-        networkActivityIndicatorVisible
-      />
       <Stack
         screenOptions={{
           headerShadowVisible: true,
