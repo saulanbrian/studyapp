@@ -189,7 +189,7 @@ const QuestionCounter = ({
 }: QuestionCounterProps) => {
 
   return (
-    <ThemedView>
+    <ThemedView surface>
       <ThemedText adjustsFontSizeToFit>
         {currentQuestionNumber} / {numberOfQuestions}
       </ThemedText>

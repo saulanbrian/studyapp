@@ -54,7 +54,10 @@ export default function SummaryPreview({
         styles.container, style
       ]}
       disabled={status !== 'processed'}
-      onPress={() => router.push({ pathname: '/(summary)/[id]', params: { id: id } })}
+      onPress={() => router.push({
+        pathname: '/(summary)/[id]',
+        params: { id, title }
+      })}
       {...props}
     >
       <ThemedView style={[

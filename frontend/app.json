@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "frontend",
-    "slug": "frontend",
+    "name": "studyapp",
+    "slug": "brian-studyapp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -12,11 +12,12 @@
       "supportsTablet": true
     },
     "android": {
-      "edgeToEdgeEnabled":true,
+      "edgeToEdgeEnabled": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package":"com.briansaulan.studyapp"
     },
     "web": {
       "bundler": "metro",
@@ -40,6 +41,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "b583b81b-c208-49f2-85ab-c9220d78cd1a"
+      }
+    },
+    "owner": "briansaulan"
   }
 }

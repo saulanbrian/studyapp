@@ -21,7 +21,9 @@ export default function AuthLayout() {
       screenOptions={{
         headerTintColor: theme.textPrimary,
         headerStyle: { backgroundColor: theme.surface },
-        contentStyle: { backgroundColor: theme.background }
+        contentStyle: { backgroundColor: theme.background },
+        animation: 'slide_from_right',
+        animationDuration: 100
       }}
     >
       <Stack.Screen name='sso' />

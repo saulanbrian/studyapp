@@ -7,20 +7,24 @@ import { useThemeContext } from "@/context/Theme";
 import { Summary } from "@/types/data";
 import { Feather } from "@expo/vector-icons";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useLayoutEffect } from "react";
 import { ActivityIndicator, Alert, ScrollView, StyleSheet } from 'react-native'
 
 export default function DetailedSummary() {
 
   const navigation = useNavigation()
-  const { id } = useLocalSearchParams()
+  const { id, title } = useLocalSearchParams()
   const { status, data, refetch } = useGetSummary(id as string)
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerTitle: title
+    })
+  }, [])
 
   useEffect(() => {
     if (data) {
-      console.log(data)
       navigation.setOptions({
-        headerTitle: data.title,
         headerRight: () => (
           <QuizButton
             summaryId={data.id}
@@ -101,7 +105,7 @@ const QuizButton = ({ quizId, summaryId }: QuizButtonProps) => {
 
 
   useEffect(() => {
-    if(updatedSummary)
+    if (updatedSummary)
       router.navigate({
         pathname: '/(quiz)/[id]',
         params: { id: updatedSummary.quiz_id! }

@@ -107,7 +107,9 @@ const InitialLayout = () => {
         screenOptions={{
           headerShadowVisible: true,
           headerShown: false,
-          navigationBarHidden: true
+          navigationBarHidden: true,
+          animation: 'slide_from_right',
+          animationDuration: 100
         }}
       >
         <Stack.Protected guard={signedIn}>

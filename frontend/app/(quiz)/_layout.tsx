@@ -10,7 +10,7 @@ export default function QuizLayout() {
       headerTintColor: theme.textPrimary,
       headerShadowVisible: false,
       headerStyle: {
-        backgroundColor: theme.background
+        backgroundColor: theme.surface
       },
     }}
     >

@@ -17,12 +17,12 @@ export default function TabLayout() {
               backgroundColor: theme.background
             },
             headerStyle: {
-              backgroundColor: theme.background,
+              backgroundColor: theme.surface,
               shadowColor: theme.surface,
             },
             headerTintColor: theme.textPrimary,
             tabBarStyle: {
-              backgroundColor: theme.background,
+              backgroundColor: theme.surface,
               paddingTop: 4,
             },
             animation: 'shift',

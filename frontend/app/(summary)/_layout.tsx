@@ -10,9 +10,17 @@ export default function SummaryLayout() {
     <Stack screenOptions={{
       headerShadowVisible: false,
       headerStyle: {
-        backgroundColor: theme.background,
+        backgroundColor: theme.surface,
       },
       headerTintColor: theme.textPrimary,
-    }} />
+      animation: 'slide_from_right',
+      animationDuration: 100
+    }}>
+      <Stack.Screen name='[id]' options={{
+        headerTitle: ''
+      }} />
+      <Stack.Screen name='create' />
+      <Stack.Screen name='favorites' />
+    </Stack>
   )
 }
