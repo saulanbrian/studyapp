@@ -85,8 +85,13 @@ const SocialButtons = () => {
   const { theme } = useThemeContext()
   const { startSSOFlow } = useSSO()
 
+  const redirectUrl = useMemo(() => {
+    return Linking.createURL('sso', { scheme: 'studyapp' })
+  }, [])
+
   const handleAuth = useCallback(async (provider: SocialAuthProvider) => {
     const { createdSessionId, setActive } = await startSSOFlow({
+      redirectUrl,
       strategy: `oauth_${provider}`,
     })
     if (createdSessionId) {

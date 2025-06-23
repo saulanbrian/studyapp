@@ -54,7 +54,7 @@ const MaterialAttachmentInputButton = ({
       </Card>
 
       {!attachmentName && placeholder && (
-        <ThemedText secondary>{placeholder}</ThemedText>
+        <ThemedText secondary style={{ fontWeight: 'regular' }}>{placeholder}</ThemedText>
       )}
 
     </ThemedView>

@@ -9,15 +9,11 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
     },
     "android": {
       "edgeToEdgeEnabled": true,
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "package":"com.briansaulan.studyapp"
+      "package": "com.briansaulan.studyapp"
     },
     "web": {
       "bundler": "metro",
@@ -29,10 +25,14 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/icon-light.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#ffffff",
+          "dark":{
+            "image":"./assets/images/icon-dark.png",
+            "backgroundColor":"#1C1C1E"
+          }
         }
       ],
       "expo-font",
@@ -48,6 +48,12 @@
         "projectId": "b583b81b-c208-49f2-85ab-c9220d78cd1a"
       }
     },
-    "owner": "briansaulan"
+    "owner": "briansaulan",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/b583b81b-c208-49f2-85ab-c9220d78cd1a"
+    }
   }
 }

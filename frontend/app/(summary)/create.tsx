@@ -45,23 +45,18 @@ function SummaryCreationPage() {
   }, [document, formStatus])
 
   const handlePress = useCallback(async () => {
-
     const { assets, canceled } = await getDocumentAsync()
-
     if (!canceled) {
       let { size, uri } = assets[0]
-
       if (!size) {
         const fileInfo = await FileSystem.getInfoAsync(uri)
         if (fileInfo.exists) {
           size = fileInfo.size
         }
       }
-
       if (size && size <= MAX_DOCUMENT_SIZE) {
         setDocument(assets[0])
       }
-
     }
   }, [])
 
@@ -77,6 +72,7 @@ function SummaryCreationPage() {
         iconProps={{ size: 16 }}
       />
       <OptionalFields />
+      <DocumentPickingTips />
       <SubmitButtonContainer />
     </ThemedView>
   )
@@ -127,10 +123,10 @@ const SubmitButtonContainer = () => {
 
   useEffect(() => {
     setFormStatus(status)
-    if(status === 'success'){
+    if (status === 'success') {
       setTimeout(() => {
         router.back()
-      },500)
+      }, 500)
     }
   }, [status])
 
@@ -173,6 +169,40 @@ const SubmitButtonContainer = () => {
 }
 
 
+const DocumentPickingTips = () => {
+  return (
+    <ThemedView style={styles.documentPickingTipsContainter}>
+      <ThemedText
+        style={styles.documentPickingTipsHeader}
+        secondary
+      >
+        💡Tips on Picking your Document:
+      </ThemedText>
+      <ThemedText secondary style={styles.tipMessage}>
+        • make sure it's in pdf format
+      </ThemedText>
+      <ThemedText secondary style={styles.tipMessage}>
+        • make sure its text-based ( no image support for now)
+      </ThemedText>
+      <ThemedText secondary style={styles.tipMessage}>
+        • choose a file that actually contains informations
+      </ThemedText>
+      <ThemedText secondary style={styles.tipMessage}>
+        • do not upload a file that has a very long content
+      </ThemedText>
+      <ThemedText
+        secondary
+        style={{ marginTop: 8 }}
+      >
+        set a cover image and a custom title
+        specially when you have a large amount of documents
+        to better recognize 'em
+      </ThemedText>
+    </ThemedView>
+  )
+}
+
+
 const styles = StyleSheet.create({
   attachmentButton: {
     alignSelf: 'flex-start',
@@ -187,6 +217,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 8
+  },
+  documentPickingTipsContainter: {
+    padding: 4,
+    paddingLeft: 6
+  },
+  documentPickingTipsHeader: {
+    marginLeft: -6,
+    marginVertical: 8,
+    fontSize: 20
   },
   fileUploadContainer: {
     flexDirection: 'row',
@@ -204,7 +243,6 @@ const styles = StyleSheet.create({
     borderRadius: 36
   },
   optionalFieldsContainer: {
-    flex: 1,
     paddingTop: 16,
     gap: 8
   },
@@ -217,5 +255,10 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     letterSpacing: 2
+  },
+  tipMessage: {
+    marginLeft: 2,
+    fontSize: 12,
+    fontWeight: 'regular'
   }
 })

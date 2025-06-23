@@ -3,6 +3,10 @@ import UserChannelContextProvider from '@/context/UserChannelContext'
 import { SignedIn, useAuth } from '@clerk/clerk-expo'
 import { Tabs } from 'expo-router'
 import { Feather } from '@expo/vector-icons'
+import { ThemedText, ThemedView } from '@/components/ui'
+import { Image } from 'expo-image'
+import { StyleSheet, useColorScheme, View } from 'react-native'
+import { useMemo } from 'react'
 
 export default function TabLayout() {
 
@@ -20,6 +24,7 @@ export default function TabLayout() {
               backgroundColor: theme.surface,
               shadowColor: theme.surface,
             },
+            headerTitle: () => <HeaderTitle />,
             headerTintColor: theme.textPrimary,
             tabBarStyle: {
               backgroundColor: theme.surface,
@@ -48,7 +53,7 @@ export default function TabLayout() {
             }
           })}
         >
-          <Tabs.Screen name='index' options={{ headerTitle: 'home' }} />
+          <Tabs.Screen name='index' />
           <Tabs.Screen name='dashboard' />
         </Tabs>
       </UserChannelContextProvider>
@@ -56,3 +61,43 @@ export default function TabLayout() {
   )
 }
 
+
+const Icons = {
+  light: require('@/assets/images/icon-light.png'),
+  dark: require('@/assets/images/icon-dark.png')
+}
+
+
+const HeaderTitle = () => {
+
+  const colorScheme = useColorScheme()
+
+  return (
+    <View style={styles.headerTitleContainer}>
+      <Image
+        source={Icons[colorScheme || 'light']}
+        style={styles.headerTitleImage}
+        contentFit='contain'
+      />
+      <ThemedText style={styles.headerTitleText}>
+        Cut D' Crop!
+      </ThemedText>
+    </View>
+  )
+}
+
+const styles = StyleSheet.create({
+  headerTitleContainer: {
+    flexDirection: 'row',
+    gap: 4,
+    alignItems: 'center'
+  },
+  headerTitleImage: {
+    aspectRatio: 1,
+    height: 50
+  },
+  headerTitleText: {
+    fontSize: 20,
+    fontWeight: 'condensedBold'
+  }
+})

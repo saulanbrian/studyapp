@@ -158,6 +158,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 4,
+    paddingTop: 6,
     gap: 2
   },
   signOutButton: {
