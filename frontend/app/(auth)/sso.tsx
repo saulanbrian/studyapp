@@ -86,7 +86,7 @@ const SocialButtons = () => {
   const { startSSOFlow } = useSSO()
 
   const redirectUrl = useMemo(() => {
-    return Linking.createURL('sso', { scheme: 'studyapp' })
+    return Linking.createURL('sso', { scheme: 'cutdcrop' })
   }, [])
 
   const handleAuth = useCallback(async (provider: SocialAuthProvider) => {

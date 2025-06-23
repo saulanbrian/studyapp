@@ -1,19 +1,19 @@
 {
   "expo": {
-    "name": "studyapp",
-    "slug": "brian-studyapp",
+    "name": "Cut D' Crop",
+    "slug": "cut-d-crop",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "studyapp",
+    "scheme": "cutdcrop",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": true
     },
     "android": {
       "edgeToEdgeEnabled": true,
-      "package": "com.briansaulan.studyapp"
+      "package":"com.saulanbrian.cutdcrop"
     },
     "web": {
       "bundler": "metro",
@@ -29,9 +29,9 @@
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
-          "dark":{
-            "image":"./assets/images/icon-dark.png",
-            "backgroundColor":"#1C1C1E"
+          "dark": {
+            "image": "./assets/images/icon-dark.png",
+            "backgroundColor": "#1C1C1E"
           }
         }
       ],
@@ -45,15 +45,12 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "b583b81b-c208-49f2-85ab-c9220d78cd1a"
+        "projectId": "c191b49a-ad72-41f1-980d-98aedc4cc36b"
       }
     },
-    "owner": "briansaulan",
     "runtimeVersion": {
       "policy": "appVersion"
     },
-    "updates": {
-      "url": "https://u.expo.dev/b583b81b-c208-49f2-85ab-c9220d78cd1a"
-    }
+    "owner": "saulanbrian"
   }
 }
