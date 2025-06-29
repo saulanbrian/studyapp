@@ -2,12 +2,13 @@
   "expo": {
     "name": "Cut D' Crop",
     "slug": "cut-d-crop",
-    "version": "1.0.1",
+    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "cutdcrop",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "jsEngine": "jsc",
     "ios": {
       "supportsTablet": true
     },
@@ -45,15 +46,12 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "c191b49a-ad72-41f1-980d-98aedc4cc36b"
+        "projectId": "94d7ef6c-3192-44a9-9907-a7460de74b0a"
       }
     },
     "runtimeVersion": {
       "policy": "appVersion"
     },
-    "owner": "saulanbrian",
-    "updates": {
-      "url": "https://u.expo.dev/c191b49a-ad72-41f1-980d-98aedc4cc36b"
-    }
+    "owner": "saulanbrian"
   }
 }

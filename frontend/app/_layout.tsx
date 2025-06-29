@@ -27,6 +27,7 @@ import * as SplashScreen from 'expo-splash-screen'
 import * as Font from 'expo-font'
 
 import { ENV } from '@/constants/Env'
+import { TabHeaderTitleComponent } from '@/components'
 
 const queryClient = new QueryClient()
 
@@ -89,6 +90,8 @@ export default function RootLayout() {
 const InitialLayout = () => {
 
   const { isSignedIn } = useAuth()
+  const { theme } = useThemeContext()
+  const router = useRouter()
 
   const signedIn = useMemo(() => {
     return isSignedIn ? isSignedIn : false
@@ -111,9 +114,20 @@ const InitialLayout = () => {
           animation: 'slide_from_right',
           animationDuration: 100
         }}
+        initialRouteName={'(auth)'}
       >
         <Stack.Protected guard={signedIn}>
-          <Stack.Screen name='(tabs)' />
+          <Stack.Screen
+            name='(tabs)'
+            options={{
+              headerShown: true,
+              headerTitle: () => <TabHeaderTitleComponent />,
+              headerStyle: {
+                backgroundColor: theme.surface,
+              },
+              headerShadowVisible: false
+            }}
+          />
           <Stack.Screen name='(quiz)' />
           <Stack.Screen name='(summary)' />
         </Stack.Protected>
