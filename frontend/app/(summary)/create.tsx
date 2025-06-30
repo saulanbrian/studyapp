@@ -7,13 +7,14 @@ import { getDocumentAsync } from "expo-document-picker"
 import { useNavigation, useRouter } from "expo-router"
 import { useCallback, useEffect } from "react"
 import { Pressable, TouchableOpacity, View, StyleSheet, Text, Alert, TextInput, useWindowDimensions, ActivityIndicator } from "react-native"
-import Animated, { useAnimatedKeyboard, useAnimatedStyle, withDelay, withSpring, withTiming } from "react-native-reanimated"
+import Animated, { useAnimatedKeyboard, useAnimatedStyle, useSharedValue, withDelay, withSpring, withTiming } from "react-native-reanimated"
 import * as FileSystem from 'expo-file-system'
 import { useQueryClient } from "@tanstack/react-query"
 import MaterialAttachmentInputButton from "@/components/ui/MaterialAttachmentInputButton"
 import { EventArg } from "@react-navigation/native"
 import * as ImagePicker from 'expo-image-picker'
 import { isAxiosError } from "axios"
+import { Keyboard } from "react-native"
 
 const MAX_DOCUMENT_SIZE = 5 * 1024 * 1024
 
@@ -56,6 +57,11 @@ function SummaryCreationPage() {
       }
       if (size && size <= MAX_DOCUMENT_SIZE) {
         setDocument(assets[0])
+      } else {
+        Alert.alert(
+          'document error',
+          'the file you\'re trying to upload is above the 5mb limit'
+        )
       }
     }
   }, [])
@@ -114,21 +120,45 @@ const OptionalFields = () => {
 
 const SubmitButtonContainer = () => {
 
-  const keyboard = useAnimatedKeyboard({ isStatusBarTranslucentAndroid: true })
+  const keyboardOffset = useSharedValue(0)
   const { width } = useWindowDimensions()
   const { setError } = useSummaryCreationPage()
   const { document, title, setFormStatus, image } = useSummaryCreationPage()
   const { mutate, status, data, error, failureReason } = useUploadFileToSummarize()
-  const router = useRouter()
+  const navigation = useNavigation()
 
   useEffect(() => {
     setFormStatus(status)
     if (status === 'success') {
       setTimeout(() => {
-        router.back()
+        navigation.goBack()
       }, 500)
     }
   }, [status])
+
+
+  useEffect(() => {
+
+    const showListener = Keyboard.addListener(
+      'keyboardDidShow',
+      e => {
+        keyboardOffset.value = e.endCoordinates.height
+      }
+    )
+
+    const hideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      e => {
+        keyboardOffset.value = e.endCoordinates.height
+      }
+    )
+
+    return () => {
+      showListener.remove()
+      hideListener.remove()
+    }
+
+  }, [])
 
   const rStyles = useAnimatedStyle(() => ({
     position: 'absolute',
@@ -138,7 +168,7 @@ const SubmitButtonContainer = () => {
     transform: [
       {
         translateY: withSpring(
-          -keyboard.height.value,
+          -keyboardOffset.value,
           {
             damping: 30,
             stiffness: 200

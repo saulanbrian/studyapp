@@ -8,7 +8,7 @@ import { Summary } from "@/types/data";
 import { Feather } from "@expo/vector-icons";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useLayoutEffect } from "react";
-import { ActivityIndicator, Alert, ScrollView, StyleSheet } from 'react-native'
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, View } from 'react-native'
 
 export default function DetailedSummary() {
 
@@ -35,6 +35,7 @@ export default function DetailedSummary() {
     }
   }, [data])
 
+
   return (
     <SuspendedViewWithErrorBoundary
       status={status}
@@ -42,34 +43,19 @@ export default function DetailedSummary() {
       style={{ flex: 1 }}
     >
       <ScrollView style={{ padding: 8 }}>
-        {data?.content.split('\n').map((line, i) => {
-
-          const isSubHeading = line.startsWith('###')
-          const isHeading = line.startsWith('##')
-
-          if (isHeading) {
-            return (
-              <ThemedText style={styles.heading} key={i.toString()}>
-                {line.replaceAll('#', '').trim()}
-              </ThemedText>
-            )
-          }
-
-          if (isSubHeading) {
-            return (
-              <ThemedText style={styles.subHeading} key={i.toString()}>
-                {line.replaceAll('#', '').trim()}
-              </ThemedText>
-            )
-          }
-
-          return (
-            <ThemedText style={styles.text} key={i.toString()}>
-              {line.replaceAll('*', '').trim()}
+        <ThemedText style={styles.title} id={data?.id}>
+          {data?.content?.title}
+        </ThemedText>
+        {data && data.content?.sections.map(({ heading, text }, i) => (
+          <View key={i.toString()}>
+            <ThemedText style={styles.heading}>
+              {heading}
             </ThemedText>
-          )
-
-        })}
+            <ThemedText style={styles.text}>
+              {text}
+            </ThemedText>
+          </View>
+        ))}
       </ScrollView>
     </SuspendedViewWithErrorBoundary>
   )
@@ -138,11 +124,11 @@ const QuizButton = ({ quizId, summaryId }: QuizButtonProps) => {
 
 
 const styles = StyleSheet.create({
-  heading: {
+  title: {
     fontSize: 24,
     marginBottom: 20
   },
-  subHeading: {
+  heading: {
     fontSize: 18,
     marginBottom: 12
   },

@@ -28,7 +28,7 @@ class Summary(models.Model):
   
   id = models.UUIDField(default=uuid.uuid4,primary_key=True,unique=True)
   user = models.ForeignKey(ClerkUser,related_name='summaries',on_delete=models.CASCADE)
-  content = models.TextField(null=True)
+  content = models.JSONField(null=True)
   title = models.CharField(max_length=200)
   status = models.CharField(choices=STATUS,max_length=20,default='processing')
   cover = models.ImageField(upload_to=cover_path,null=True)  

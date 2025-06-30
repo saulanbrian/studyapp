@@ -1,8 +1,18 @@
 export type Summary = {
   id: string;
-  content: string;
+  cover: string;
   title: string;
-  cover: string | null;
+  content:
+  |
+  {
+    sections: {
+      heading: string;
+      text: string;
+    }[],
+    title: string;
+  }
+  |
+  null;
   quiz_id: string | null;
   favorite: boolean;
   file: string;
@@ -10,8 +20,6 @@ export type Summary = {
     | { status: 'processed' | 'processing' }
     | { status: 'error'; error_message: string }
   )
-
-
 
 export type Quiz = {
   id: string;

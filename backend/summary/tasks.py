@@ -16,42 +16,53 @@ import logging
 from common.genai_client import client
 from google.genai import types
 
+from pydantic import BaseModel
+import json
+
 logger = logging.getLogger(__name__)
 
+class SummaryContentSection(BaseModel):
+  heading:str;
+  text:str
+
+class SummaryContentModel(BaseModel):
+  title:str
+  sections:list[SummaryContentSection]
+  
 
 def get_summary(text):
   try:
     response = client.models.generate_content(
     model="gemini-2.0-flash",
-    config=types.GenerateContentConfig(
-      system_instruction="""
-      You are to provide a document for students to study.
+    config={
+        "response_mime_type":"application/json",
+        "response_schema":SummaryContentModel 
+    },
+    contents=(f"""""
+      You are a helpful assistant. Given the following document,
+      your task is to condense it only by removing genuinely unnecessary information,
+      such as redundancies, excessive examples, filler phrases, 
+      or overly detailed tangents that do not contribute meaningfully to the main ideas.
+      ⚠️ Do not shorten based on a percentage or arbitrary length.
+      ✅ Focus instead on preserving all important facts, concepts, arguments, and discussions.
+      🎯 The goal is for a reader (such as a student or an interested person) 
+      to understand the full essence of the document—as if they read the original, 
+      but faster and with less mental clutter.
+      Return the cleaned-up version of the document, 
+      keeping the structure and flow as natural as possible.
+      avoid deep nesting. use emojis for headings and title
 
-      🔍 Your task:
-      You receive a raw document from your superior. Students struggle reading full-length materials, so your job is to trim the document – **keeping all important content** – to make it effective for learning.
-
-      ✅ Guidelines:
-      1. **No unnecessary details** like course descriptions or author notes.
-      2. Use only **headings, subheadings, and concise descriptions** – avoid deep nesting.
-      3. Add **emojis** to headings/subheadings for visual clarity.
-      4. VERY IMPORTANT: **Do NOT include introductions** like “Here’s the summary…” or “Okay…” – go straight into the content.
-      5. Include **key takeaways** for the whole document as the last part.
-      6. Make explanations shorter but **don’t remove key information**.
-
-      ❗️Important:
-      - Your output will be sent directly to students.
-      - **Make it look original** – not like it was processed by an AI.
-      - Do NOT include comments, disclaimers, or acknowledge the request.
+      document: {text}
       """ 
-    ),
-    contents={text}
-)
+      )
+    )
+    content = json.loads(response.text)
   except errors.ClientError as e:
     return None, str(e)
   except Exception as e:
     return None, str(e)
   else:
-    return response.text, None 
+    return content, None 
 
 
 
@@ -84,7 +95,7 @@ def summarize_file(summary_id,):
       
       pdf_reader = PdfReader(f)
 
-      for page_num in range(len(pdf_reader.pages)):
+      for page_num in range(len(pdf_reader.pages)): 
 
         page_text = pdf_reader.pages[page_num].extract_text()
 
