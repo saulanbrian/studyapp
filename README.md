@@ -36,7 +36,7 @@
 
 > You can download the latest version of StudyApp directly from the link below:
 
-👉 [**Download APK**](https://expo.dev/artifacts/eas/kb8va9UZ27LPzqL1veKhQ1.apk)
+👉 [**Download APK**](https://github.com/saulanbrian/studyapp/releases/latest)
 
 _If installation is blocked, go to `Settings > Security` and enable `Install unknown apps`._
 
