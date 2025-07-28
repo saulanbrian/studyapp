@@ -8,7 +8,7 @@
     "scheme": "cutdcrop",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "jsEngine": "jsc",
+    "jsEngine": "hermes",
     "ios": {
       "supportsTablet": true
     },
@@ -22,7 +22,7 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router",
+      "react-native-edge-to-edge",
       [
         "expo-splash-screen",
         {
