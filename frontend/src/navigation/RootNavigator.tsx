@@ -1,6 +1,6 @@
 import { useAuth } from "@clerk/clerk-expo";
-import { LoadingScreen } from "../components";
-import { createNavigationContainerRef, NavigationContainer, NavigationProp, useNavigation } from "@react-navigation/native";
+import { LoadingScreen, ThemedView } from "../components";
+import { createNavigationContainerRef, NavigationContainer, NavigationProp, useFocusEffect, useNavigation } from "@react-navigation/native";
 import { createDrawerNavigator } from "@react-navigation/drawer"
 import SummaryStackNavigator from "./Summary";
 import AuthStackNavigator from "./Auth";
@@ -10,59 +10,120 @@ import { SignedInRoute, SignedOutRoute } from "../components/Auth";
 import { navigationRef } from "./navigationRef";
 import { useUnistyles } from "react-native-unistyles";
 import { Dimensions } from "react-native";
+import { CustomDrawerContent } from "../components/Drawer";
+import { FontAwesome } from "@expo/vector-icons"
+import { useCallback, useEffect, useState } from "react";
+import { SplashScreen } from "expo-router";
+import * as Fonts from "expo-font"
+import SystemNavigationBar from "react-native-system-navigation-bar"
+import { useAppNavigation } from "../hooks/useAppNavigation";
+import ErrorBoundary from "react-native-error-boundary"
+import { QueryErrorResetBoundary } from "@tanstack/react-query"
+import { ENV } from "../constants/Env";
+import { Session } from "@supabase/supabase-js";
+import { supabase } from "../lib/supabase";
+
+
+async function loadFonts() {
+  try {
+    await Fonts.loadAsync(FontAwesome.font)
+  } catch (e) {
+    return
+  }
+}
 
 export default function RootNavigator() {
 
-  const { isLoaded } = useAuth()
+  const [session, setSession] = useState<Session | null>(null)
+  const [isLoadingSession, setIsLoadingSession] = useState(true)
 
-  if (!isLoaded) return <LoadingScreen />
+  useEffect(() => {
+    (async () => {
+
+      loadFonts()
+
+      const { data, error } = await supabase.auth.getSession()
+      if (data) {
+        setSession(data.session)
+      } else {
+        setSession(null)
+      }
+
+      setIsLoadingSession(false)
+
+      supabase.auth.onAuthStateChange((_, session) => {
+        setSession(session)
+      })
+
+
+    })()
+  }, [])
 
   return (
     <NavigationContainer
       linking={linking}
       ref={navigationRef}
     >
-      <SignedInRoute>
-        <MainDrawerNavigator />
-      </SignedInRoute>
-      <SignedOutRoute>
-        <AuthStackNavigator />
-      </SignedOutRoute>
+      <QueryErrorResetBoundary >
+        {({ reset }) =>
+          session
+            ? <MainDrawerNavigator />
+            : isLoadingSession
+              ? <LoadingScreen />
+              : <AuthStackNavigator />
+        }
+      </QueryErrorResetBoundary>
     </NavigationContainer>
   )
 }
 
-const Drawer = createDrawerNavigator()
+const Drawer = createDrawerNavigator<Omit<RootNavigatorParamList, "Auth">>()
 
 const MainDrawerNavigator = () => {
 
   const colors = useUnistyles().theme.colors
 
   return (
-    <Drawer.Navigator screenOptions={{
-      drawerType: "slide",
-      headerStyle: {
-        backgroundColor: colors.surface
-      },
-      headerTintColor: colors.textPrimary,
-      drawerStyle: {
-        backgroundColor: colors.surface
-      },
-      drawerActiveTintColor: colors.textPrimary,
-      drawerInactiveTintColor: colors.textSecondary,
-      drawerActiveBackgroundColor: colors.primary,
-      drawerInactiveBackgroundColor: colors.elevated,
-      sceneStyle: {
-        backgroundColor: colors.background
-      },
-      swipeEdgeWidth: Dimensions.get('screen').width / 2,
-      swipeMinDistance: 30,
-    }}>
+    <Drawer.Navigator
+      screenOptions={({ route }) => ({
+        drawerType: "slide",
+        headerStyle: {
+          backgroundColor: colors.surface
+        },
+        headerTintColor: colors.textPrimary,
+        drawerStyle: {
+          backgroundColor: colors.surface
+        },
+        drawerActiveTintColor: colors.buttonText,
+        drawerInactiveTintColor: colors.textSecondary,
+        drawerActiveBackgroundColor: colors.primary,
+        drawerInactiveBackgroundColor: colors.elevated,
+        drawerIcon: ({ color, focused, size }) => {
+          let icon = null
+
+          if (route.name === "Summary") {
+            icon = focused ? "folder" : "folder-o"
+          }
+
+          return <FontAwesome
+            name={icon as any}
+            size={size}
+            color={color}
+          />
+        },
+        sceneStyle: {
+          backgroundColor: colors.background
+        },
+        swipeEdgeWidth: Dimensions.get('screen').width / 2,
+        swipeMinDistance: 30,
+      })}
+      drawerContent={props => <CustomDrawerContent {...props} />}
+    >
       <Drawer.Screen
         name={"Summary"}
         component={SummaryStackNavigator}
         options={{
-          headerTitle:"Home"
+          headerTitle: "Home"
         }}
       />
     </Drawer.Navigator>

@@ -1,30 +1,41 @@
-import { useState } from "react";
-import { Pressable, PressableProps, StyleProp, View } from "react-native";
+import { ComponentType, useState } from "react";
+import { Pressable, PressableProps, StyleProp, Text, TextProps, View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 import ThemedText from "./ThemedText";
 import Animated from "react-native-reanimated";
 
-type ThemedButtonProps = PressableProps & {
+
+export type ThemedButtonProps = PressableProps & {
   title: string;
+  size?: "sm" | "md" | "lg"
   color?:
   | "primary"
   | "secondary"
-  | "error"
+  | "error";
+  textStyle?: TextProps["style"]
 }
 
 export default function ThemedButton({
   disabled,
   title,
   style,
+  size,
   color = "primary",
   onPressIn,
   onPressOut,
+  textStyle,
+  children,
   ...props
 }: ThemedButtonProps) {
 
   const [isPressed, setIsPressed] = useState(false)
 
-  styles.useVariants({ color, pressed: isPressed })
+  styles.useVariants({
+    color,
+    pressed: isPressed,
+    size,
+    disabled: disabled ?? false
+  })
 
   return (
     <Pressable
@@ -39,7 +50,14 @@ export default function ThemedButton({
       onPressOut={() => setIsPressed(false)}
       {...props}
     >
-      <ThemedText style={styles.text}>{title}</ThemedText>
+      {children ?? (
+        <ThemedText
+          style={[styles.text, textStyle]}
+          size={size && size}
+        >
+          {title}
+        </ThemedText>
+      )}
     </Pressable>
   )
 }
@@ -48,7 +66,6 @@ export const AnimatedThemedButton = Animated.createAnimatedComponent(ThemedButto
 
 const styles = StyleSheet.create(theme => ({
   button: {
-    padding: theme.spacing.md,
     borderRadius: theme.radii.sm,
     variants: {
       color: {
@@ -71,6 +88,27 @@ const styles = StyleSheet.create(theme => ({
         false: {
 
         }
+      },
+      size: {
+        sm: {
+          padding: theme.spacing.sm
+        },
+        md: {
+          padding: theme.spacing.md
+        },
+        lg: {
+          padding: theme.spacing.lg
+        },
+        default: {
+          padding: theme.spacing.md
+        }
+      },
+      disabled: {
+        true: {
+          backgroundColor: theme.colors.primaryLight,
+          opacity: 0.7
+        },
+        default: {}
       }
     },
     compoundVariants: [

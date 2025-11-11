@@ -2,7 +2,7 @@
   "expo": {
     "name": "Cut D' Crop",
     "slug": "cut-d-crop",
-    "version": "1.0.1",
+    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "cutdcrop",
@@ -46,12 +46,12 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "94d7ef6c-3192-44a9-9907-a7460de74b0a"
+        "projectId": "f43539bf-dbf1-482f-81ad-aa8bae672aa7"
       }
     },
     "runtimeVersion": {
       "policy": "appVersion"
     },
-    "owner": "saulanbrian"
+    "owner": "briansaulan05"
   }
 }

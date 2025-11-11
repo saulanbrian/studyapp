@@ -4,6 +4,7 @@ import { S } from "@/src/constants/Styles";
 import { SummaryNavigationProp, SummaryStackParamList } from "@/src/navigation/Summary/types";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { useCallback } from "react";
+import { Modal } from "react-native";
 
 
 type SummaryDetailRouteProp = RouteProp<SummaryStackParamList, "SummaryDetail">
