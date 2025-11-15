@@ -5,12 +5,14 @@ import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import ThemedText from "./ThemedText";
 
 type AttachmentInputButtonProps = TouchableOpacityProps & {
-  selectedFileName?: string
+  selectedFileName?: string;
+  placeholder?:string
 }
 
 export default function AttachmentInputButton({
   selectedFileName,
   style,
+  placeholder,
   ...props
 }: AttachmentInputButtonProps) {
 
@@ -27,7 +29,10 @@ export default function AttachmentInputButton({
         size={selectedFileName ? "xs" : "sm"}
         numberOfLines={1}
       >
-        {selectedFileName ?? "No file selected"}
+        {selectedFileName 
+          ? selectedFileName
+          : placeholder ?? "No file selected"
+        }
       </ThemedText>
     </TouchableOpacity>
   )

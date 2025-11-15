@@ -87,6 +87,7 @@ const MainDrawerNavigator = () => {
     <Drawer.Navigator
       screenOptions={({ route }) => ({
         drawerType: "slide",
+        headerShadowVisible:false,
         headerStyle: {
           backgroundColor: colors.surface
         },
@@ -115,7 +116,7 @@ const MainDrawerNavigator = () => {
           backgroundColor: colors.background
         },
         swipeEdgeWidth: Dimensions.get('screen').width / 2,
-        swipeMinDistance: 30,
+        swipeMinDistance: 20,
       })}
       drawerContent={props => <CustomDrawerContent {...props} />}
     >

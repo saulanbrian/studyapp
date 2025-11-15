@@ -1,6 +1,7 @@
 import React, { createContext, PropsWithChildren, useCallback, useContext, useState } from "react"
 import * as DocumentPicker from "expo-document-picker"
 import * as FileSystem from "expo-file-system"
+import { decode } from "base64-arraybuffer"
 
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024
@@ -30,7 +31,9 @@ const isPDF = (fileName: string) => {
 type SummaryCreationPageContextType = {
   title?: string;
   setTitle: React.Dispatch<React.SetStateAction<string | undefined>>;
-  pdf?: DocumentPicker.DocumentPickerAsset;
+  pdf?: ArrayBuffer;
+  description: string | null;
+  pdfFileName?: string;
   pickPdf: () => void;
   assetError?: string;
   removePdf: () => void;
@@ -50,25 +53,38 @@ export const useSummaryCreationPageContext = () => {
 const SummaryCreationPageContextProvider = ({ children }: PropsWithChildren) => {
 
   const [title, setTitle] = useState<string>()
-  const [pdf, setPdf] = useState<DocumentPicker.DocumentPickerAsset>()
+  const [pdf, setPdf] = useState<ArrayBuffer>()
+  const [pdfFileName, setPdfFileName] = useState<string>()
   const [assetError, setAssetError] = useState<string>()
+  const [description, setDescription] = useState<string | null>(null)
 
   const pickPdf = useCallback(async () => {
 
-    const { assets, canceled } = await DocumentPicker.getDocumentAsync()
+    const { assets, canceled } = await DocumentPicker.getDocumentAsync({
+      base64: false,
+      multiple: false
+    })
 
-    if (!canceled) {
-      const chosenDocument = assets[0]
-      if (!await fileWithinLimit(chosenDocument)) {
-        setAssetError(possibleAssetError.exceedingSize)
-        return
-      }
-      if (!isPDF(chosenDocument.name)) {
-        setAssetError(possibleAssetError.formatError)
-        return
-      }
-      setPdf(chosenDocument)
+    if (canceled) return
+
+    const chosenDocument = assets[0]
+    if (!await fileWithinLimit(chosenDocument)) {
+      setAssetError(possibleAssetError.exceedingSize)
+      return
     }
+
+    if (!isPDF(chosenDocument.name)) {
+      setAssetError(possibleAssetError.formatError)
+      return
+    }
+
+    const b64 = await FileSystem.readAsStringAsync(
+      chosenDocument.uri,
+      { encoding: FileSystem.EncodingType.UTF8 }
+    )
+    const arrayBuffer = decode(b64)
+    setPdf(arrayBuffer)
+    setPdfFileName(chosenDocument.name)
 
   }, [])
 
@@ -89,6 +105,8 @@ const SummaryCreationPageContextProvider = ({ children }: PropsWithChildren) => 
       assetError,
       clearError,
       removePdf,
+      pdfFileName,
+      description
     }}>
       {children}
     </SummaryCreationPageContext.Provider>

@@ -1,215 +1,311 @@
-import createAxiosInstance from "@/src/api";
-import { AttachmentInputButton, ThemedAlert, ThemedScreen, ThemedText, ThemedTextInput, ThemedView } from "@/src/components";
-import ThemedButton from "@/src/components/ThemedButton";
-import { AnimatedThemedView } from "@/src/components/ThemedView";
-import { S } from "@/src/constants/Styles";
-import { useAuth } from "@clerk/clerk-expo";
-import { useMutation } from "@tanstack/react-query";
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
-import { TextInput, View, Keyboard } from "react-native";
-import { KeyboardState, useAnimatedKeyboard, useAnimatedStyle, withTiming } from "react-native-reanimated";
+import { AttachmentInputButton, ThemedScreen, ThemedText, ThemedTextInput } from "@/src/components";
+import React, { useCallback, useState } from "react";
+import * as DocumentPicket from "expo-document-picker"
+import * as FileSystem from "expo-file-system"
+import { decode } from "base64-arraybuffer";
+import getFileSize from "@/src/utils/FileSystem/getFileSize";
+import useEffectAfterMount from "@/src/hooks/useEffectAfterMount";
+import { Alert, Keyboard } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
-import SummaryCreationPageContextProvider, { useSummaryCreationPageContext } from "@/src/context/Summary/SummaryCreationPageContext";
-import { useNavigation } from "expo-router";
-import { SummaryNavigationProp } from "@/src/navigation/Summary/types";
-import useSummaryUpdater from "@/src/api/updaters/summary";
-import ActionButton from "@/src/components/ActionButton";
+import * as ImagePicker from "expo-image-picker"
+import ActionButton, { AnimatedActionButton } from "@/src/components/ActionButton";
+import { useMutation } from "@tanstack/react-query";
+import createNewSummary from "@/src/api/services/summaries/createNewSummary";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { SummaryStackParamList } from "@/src/navigation/Summary/types";
+import { useAnimatedKeyboard, useAnimatedStyle } from "react-native-reanimated";
 
-const PDFPickingTips = [
-  "1. make sure it's mainly text-based ( no image support for now)",
-  "2. make sure the content is not very large",
-  "3. maximum file size is 5mb"
-]
+
+const MaxDocumentSize = 5 * 1024 * 1024
+
+type ReactStateSetter<T> = React.Dispatch<React.SetStateAction<T>>
+
+type PageState = {
+  title: string;
+  description: string;
+  document: { file: ArrayBuffer; title: string } | null;
+  cover: { file: ArrayBuffer; fileName: string } | null;
+  mutating: boolean
+}
+
+type PageStateAndSetter = PageState & {
+  setTitle: ReactStateSetter<PageState['title']>;
+  setDocument: ReactStateSetter<PageState['document']>;
+  setDescription: ReactStateSetter<PageState['description']>;
+  setCover: ReactStateSetter<PageState['cover']>;
+  setMutating: ReactStateSetter<PageState['mutating']>
+}
 
 export default function SummaryCreationPage() {
 
-  return (
-    <SummaryCreationPageContextProvider>
-      <ThemedScreen style={styles.container}>
-        <ThemedView style={styles.form}>
-          <StatementHeader />
-          <Inputs />
-          <Tips />
-        </ThemedView>
-        <SubmitButton />
-      </ThemedScreen>
-    </SummaryCreationPageContextProvider>
-  )
-}
-
-const StatementHeader = () => {
+  const [title, setTitle] = useState<PageState['title']>('')
+  const [document, setDocument] = useState<PageState['document']>(null)
+  const [description, setDescription] = useState<PageState['description']>('')
+  const [cover, setCover] = useState<PageState['cover']>(null)
+  const [mutating, setMutating] = useState<PageState['mutating']>(false)
 
   return (
-    <View >
-      <ThemedText fw={"bold"} size={"xl"}>
-        Summarize your File
-      </ThemedText>
-      <ThemedText size={"sm"} color={"secondary"}>
-        get rid of the unnecessary details and learn in less time
-      </ThemedText>
-    </View>
-  )
-}
-
-
-const Inputs = () => {
-
-  const {
-    clearError,
-    pickPdf,
-    removePdf,
-    setTitle,
-    assetError,
-    pdf,
-    title
-  } = useSummaryCreationPageContext()
-
-  const handlePress = useCallback(() => {
-    pdf ? removePdf() : pickPdf()
-  }, [pdf])
-
-  return (
-    <View style={[styles.formSection, styles.inputContainer]}>
-      <ThemedTextInput
-        placeholder={"provide title for the summary"}
-        value={title}
-        onChangeText={setTitle}
+    <ThemedScreen style={styles.screen}>
+      <TitleInput setTitle={setTitle} title={title} />
+      <DocumentInput
+        document={document}
+        setDocument={setDocument}
       />
-      <AttachmentInputButton
-        onPress={handlePress}
-        selectedFileName={pdf?.name}
-      />
-      <ThemedAlert
-        visible={!!assetError}
-        text={assetError!}
-        primaryAction={{
-          title: "close",
-          onDispatch: clearError
-        }}
-      />
-    </View>
-  )
-}
-
-const Tips = () => {
-
-  return (
-    <View >
       <ThemedText
-        size={"sm"}
-        style={{ marginLeft: -6 }}
+        size={"xs"}
+        color={"secondary"}
+        style={{ marginTop: 8 }}
       >
-        💡Tips on picking your pdf:
+        optional fields
       </ThemedText>
-      {PDFPickingTips.map((tip, i) => (
-        <ThemedText size={"xs"} color={"secondary"} key={i.toString()}>
-          {tip}
-        </ThemedText>
-      ))}
-    </View>
+      <DescriptionInput
+        description={description}
+        setDescription={setDescription}
+      />
+      <CoverInput
+        cover={cover}
+        setCover={setCover}
+      />
+      <SubmitButton
+        setMutating={setMutating}
+        mutating={mutating}
+        cover={cover}
+        description={description}
+        document={document}
+        title={title}
+      />
+    </ThemedScreen>
   )
 }
 
+const TitleInput = React.memo(({
+  setTitle,
+  title,
+  mutating
+}: Pick<PageStateAndSetter, 'setTitle' | 'title' | 'mutating'>
+) => {
 
-const SubmitButton = () => {
+  const [focused, setFocused] = useState(false)
+  styles.useVariants({ focused })
 
-  const { getToken } = useAuth()
-  const { addToSummaries } = useSummaryUpdater()
-  const { title, pdf } = useSummaryCreationPageContext()
+  return <ThemedTextInput
+    value={title}
+    style={styles.textInputs}
+    onFocus={() => setFocused(true)}
+    onBlur={() => setFocused(false)}
+    onChangeText={setTitle}
+    placeholder={"title of the summmary"}
+    autoFocus={true}
+  />
+
+})
+
+const DocumentInput = React.memo(({
+  document,
+  setDocument
+}: Pick<PageStateAndSetter, 'document' | 'setDocument'>
+) => {
+
+  const pickDocument = useCallback(async () => {
+
+    const { assets, canceled } = await DocumentPicket.getDocumentAsync({
+      base64: false,
+      multiple: false
+    })
+
+    if (canceled || assets.length < 1) return;
+
+    const chosenDocument = assets[0]
+    let size = chosenDocument.size ?? null
+    if (size === null) {
+      size = await getFileSize({ uri: chosenDocument.uri })
+    }
+    if (!size || size > MaxDocumentSize) {
+      Alert.alert("an error has occured")
+      return
+    }
+
+    const b64 = await FileSystem.readAsStringAsync(
+      chosenDocument.uri,
+      { encoding: 'base64' }
+    )
+    const documentAsArrayBuffer = decode(b64)
+    setDocument({
+      file: documentAsArrayBuffer,
+      title: chosenDocument.name
+    })
+
+  }, [document])
+
+  return (
+    <AttachmentInputButton
+      placeholder={"Attach PDF to summarize"}
+      selectedFileName={document?.title ?? undefined}
+      onPress={() => { document ? setDocument(null) : pickDocument() }}
+    />
+  )
+})
+
+const DescriptionInput = React.memo(({
+  description,
+  setDescription
+}: Pick<PageStateAndSetter, 'description' | 'setDescription'>
+) => {
+
+  const [focused, setFocused] = useState(false)
+  styles.useVariants({ focused })
+
+  return (
+    <ThemedTextInput
+      value={description}
+      onChangeText={setDescription}
+      placeholder={"provide a description for this summary..."}
+      multiline={true}
+      numberOfLines={3}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
+      style={[styles.descriptionInput, styles.textInputs]}
+    />
+  )
+})
+
+const CoverInput = React.memo(({
+  cover,
+  setCover
+}: Pick<PageStateAndSetter, 'cover' | 'setCover'>
+) => {
+
+  const pickImage = useCallback(async () => {
+    const { assets, canceled } = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      base64: false,
+      aspect: [9, 12]
+    })
+    if (canceled || assets.length < 1) {
+      throw new Error("an error has occured")
+    }
+
+    const image = assets[0]
+
+    const b64 = await FileSystem.readAsStringAsync(
+      image.uri,
+      { encoding: 'base64' }
+    )
+
+    const coverArrayBuffer = decode(b64)
+    setCover({
+      file: coverArrayBuffer,
+      fileName: image.fileName ?? "cover_image.jpeg"
+    })
+
+  }, [cover])
+
+  return (
+    <AttachmentInputButton
+      placeholder={"Attach cover image"}
+      selectedFileName={cover?.fileName ?? undefined}
+      onPress={() => {
+        cover ? setCover(null) : pickImage()
+      }}
+    />
+  )
+})
+
+const SubmitButton = React.memo(({
+  cover,
+  description,
+  document,
+  title,
+  mutating,
+  setMutating
+}: PageState & Pick<PageStateAndSetter, 'setMutating'>) => {
+
+  const navigation = useNavigation<NavigationProp<SummaryStackParamList>>()
   const keyboard = useAnimatedKeyboard()
-  const navigation = useNavigation<SummaryNavigationProp>()
 
-  const { isPending, mutate, status } = useMutation({
-    mutationFn: async (data: FormData) => {
-      const token = await getToken()
-      const api = createAxiosInstance({ token })
-      const res = await api.post("summary/", data, {
-        headers: {
-          "Content-Type": "multipart/form-data"
-        }
+  const { status, mutate } = useMutation({
+    mutationFn: async () => {
+      const data = await createNewSummary({
+        cover: cover?.file ?? undefined,
+        coverName: cover?.fileName ?? undefined,
+        title,
+        description:
+          description.trim() === ''
+            ? null
+            : description
+        ,
+        document: document!.file,
+        documentName: document!.title
       })
-      return res.data
+      return data
     },
-    onSuccess: (data) => {
-      addToSummaries(data)
+    onMutate: () => {
+      Keyboard.dismiss()
+      setMutating(true)
+    },
+    onSuccess: () => {
       setTimeout(() => {
         navigation.canGoBack()
           ? navigation.goBack()
-          : navigation.navigate("SummaryList")
+          : navigation.navigate('SummaryList')
       }, 1000)
     },
-    onMutate: Keyboard.dismiss
+    onSettled: () => setMutating(false)
   })
 
   const handleSubmit = useCallback(() => {
-    if (isPending || !pdf || !title) return
-
-    const formData = new FormData()
-
-    formData.append('file', {
-      type: pdf.mimeType || "application/pdf",
-      uri: pdf.uri,
-      name: pdf.name
-    } as any)
-
-    formData.append('title', title)
-
-    mutate(formData)
-
-  }, [isPending, pdf, title])
-
+    if (document && title) {
+      mutate()
+    }
+  }, [cover, description, document, title])
 
   const rStyles = useAnimatedStyle(() => ({
     transform: [
-      { translateY: -keyboard.height.value }
+      { translateY: keyboard.height.value > 0 ? -keyboard.height.value : 0 }
     ]
   }))
 
   return (
-    <AnimatedThemedView style={[styles.buttonContainer, rStyles]}>
-      <ActionButton
-        disabled={!title || !pdf || isPending}
-        title={isPending ? "pending..." : "summarize"}
-        textStyle={styles.buttonText}
-        style={styles.button}
-        onPress={handleSubmit}
-        status={status}
-      />
-    </AnimatedThemedView>
+    <AnimatedActionButton
+      status={status}
+      title={"submit"}
+      onPress={handleSubmit}
+      disabled={!document || !title || mutating}
+      textStyle={styles.buttonText}
+      style={[styles.submitButton, rStyles]}
+    />
   )
-}
+})
+
 
 const styles = StyleSheet.create(theme => ({
-  button: {
-    borderRadius: theme.radii.pill,
-  },
-  buttonContainer: {
-    position: 'absolute',
-    bottom: theme.spacing.md,
-    left: theme.spacing.md,
-    right: theme.spacing.md
-  },
   buttonText: {
-    letterSpacing: 2,
-    textAlign: "center"
+    fontSize: theme.fontSize.lg
   },
-  container: {
-    paddingVertical: theme.spacing.sm,
-    flex: 1,
+  descriptionInput: {
+    padding: theme.spacing.sm,
+    textAlignVertical: 'top',
+    minHeight: (theme.fontSize.xs * 3) + 24
   },
-  form: {
-    padding: theme.spacing.xs,
-    gap: theme.spacing.sm
+  screen: {
+    gap: theme.spacing.xs,
+    paddingVertical: theme.spacing.sm
   },
-  formSection: {
-    gap: theme.spacing.xs
+  submitButton: {
+    borderRadius: theme.radii.pill,
+    position: 'absolute',
+    right: theme.spacing.sm,
+    left: theme.spacing.sm,
+    bottom: theme.spacing.sm
   },
-  inputContainer: {
-    marginLeft: -4,
-    paddingVertical: theme.spacing.xs
-  },
-  titleInput: {
-    backgroundColor: "red",
-    width: "100%"
+  textInputs: {
+    borderRadius: theme.radii.xs,
+    variants: {
+      focused: {
+        true: {
+          borderColor: theme.colors.primary
+        }
+      }
+    }
   }
 }))

@@ -3,7 +3,7 @@ import getUserIdAsync from "../auth/getUserIdAsync";
 
 export async function getProfile() {
 
-  const userId = await getUserIdAsync()
+  const userId = await getUserIdAsync({ throwOnError: true })
   if (!userId) throw new Error("No user logged In")
 
   const { data, error: profileError } = await supabase

@@ -7,6 +7,7 @@ import ThemedText from "../ThemedText";
 import prettifyDate from "@/src/api/utils/prettifyDate"
 import extractMonthAndDay from "@/src/api/utils/extractMonthAndDay";
 import { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
+import { useCallback, useMemo } from "react";
 
 type SummaryComponentProps = Summary & {
   style?: StyleProp<ViewStyle>
@@ -38,9 +39,13 @@ export default function SummaryComponent({
         style={[styles.container, rStyles]}
       >
         <Image
-          source={cover_url ?? require("@/assets/images/icon.png")}
+          source={
+            cover_url
+              ? { uri: cover_url }
+              : require("@/assets/images/icon.png")
+          }
           style={styles.image}
-          contentFit={"fill"}
+          contentFit={"cover"}
         />
         <Details {...details} />
       </AnimatedThemedView>
@@ -95,11 +100,22 @@ const StatusAndDate = ({ created_at, status }: StatusAndDateProps) => {
 
   styles.useVariants({ status })
 
+  const statusText = useMemo(() => {
+    switch (status) {
+      case "pending":
+        return "preparing summary"
+      case "success":
+        return "ready to view"
+      case "error":
+        return "summarization failed"
+    }
+  }, [status])
+
   return (
     <View style={styles.statusAndDateContainer}>
       <ThemedView style={styles.statusIndicator} />
-      <ThemedText size={"xs"} fw={"medium"}>
-        {status}
+      <ThemedText size={"xs"} fw={"medium"} color={"secondary"}>
+        {statusText}
       </ThemedText>
       <ThemedText color={"disabled"} size={"xs"} style={styles.date}>
         {extractMonthAndDay(created_at)}

@@ -15,7 +15,7 @@ export default function SummaryListScreen() {
   const navigation = useNavigation<NavigationProp<SummaryStackParamList>>()
 
   const handlePress = useCallback(() => {
-    //navigation.navigate("SummaryCreation")
+    navigation.navigate("SummaryCreation")
   }, [])
 
   return (
@@ -52,6 +52,8 @@ const SummaryList = () => {
       refreshing={isRefetching}
       onRefresh={refetch}
       showsVerticalScrollIndicator={false}
+      onEndReached={() => hasNextPage && fetchNextPage()}
+      estimatedItemSize={123}
       ItemSeparatorComponent={() => <View style={styles.separator} />}
       renderItem={({ item, index }) => (
         <SummaryComponent
@@ -62,7 +64,6 @@ const SummaryList = () => {
           {...item}
         />
       )}
-      ListHeaderComponent={Header}
     />
   )
 }

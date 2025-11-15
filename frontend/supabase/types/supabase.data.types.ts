@@ -44,6 +44,7 @@ export type Database = {
           cover_url: string | null
           created_at: string
           description: string | null
+          document_url: string
           id: string
           owner: string
           status: Database["public"]["Enums"]["summary_status"]
@@ -54,6 +55,7 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           description?: string | null
+          document_url: string
           id?: string
           owner: string
           status?: Database["public"]["Enums"]["summary_status"]
@@ -64,6 +66,7 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           description?: string | null
+          document_url?: string
           id?: string
           owner?: string
           status?: Database["public"]["Enums"]["summary_status"]

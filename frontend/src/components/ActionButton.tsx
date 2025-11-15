@@ -12,15 +12,11 @@ type ActionButtonProps = ThemedButtonProps & {
   successText?: string;
 }
 
-type LabelProps = {
-  textStyle: StyleProp<TextStyle>
-}
 
 export default function ActionButton({
   status,
   title,
   pendingText,
-  textStyle,
   successText,
   ...props
 }: ActionButtonProps) {
@@ -28,10 +24,10 @@ export default function ActionButton({
   return (
     <ThemedButton title={title} {...props}>
       {status === "pending"
-        ? <PendingLabel pendingText={pendingText} textStyle={textStyle} />
+        ? <PendingLabel pendingText={pendingText} />
         : status === "success"
-          ? <SuccessLabel textStyle={textStyle} successText={successText} />
-          : <IdleLabel title={title} textStyle={textStyle} />
+          ? <SuccessLabel successText={successText} />
+          : <IdleLabel title={title} />
       }
     </ThemedButton>
   )
@@ -40,8 +36,9 @@ export default function ActionButton({
 
 const PendingLabel = ({
   pendingText,
-  textStyle
-}: LabelProps & { pendingText?: string }) => {
+}: {
+  pendingText?: string
+}) => {
 
   const { buttonText } = useUnistyles().theme.colors
 
@@ -50,7 +47,7 @@ const PendingLabel = ({
       <ActivityIndicator color={buttonText} />
       <ThemedText
         color={"buttonText"}
-        style={textStyle}>
+      >
         {pendingText ?? "pending..."}
       </ThemedText>
     </Animated.View>
@@ -59,12 +56,13 @@ const PendingLabel = ({
 
 const IdleLabel = ({
   title,
-  textStyle
-}: LabelProps & { title: string }) => {
+}: {
+  title: string
+}) => {
 
   return (
-    <Animated.View entering={SlideInDown.springify(500)}>
-      <ThemedText style={textStyle} color={"buttonText"}>
+    <Animated.View entering={SlideInDown.springify(500)} style={styles.labelContainer}>
+      <ThemedText color={"buttonText"}>
         {title}
       </ThemedText>
     </Animated.View>
@@ -72,9 +70,10 @@ const IdleLabel = ({
 }
 
 const SuccessLabel = ({
-  textStyle,
   successText
-}: LabelProps & { successText?: string }) => {
+}: {
+  successText?: string
+}) => {
 
   const { buttonText } = useUnistyles().theme.colors
 
@@ -85,12 +84,15 @@ const SuccessLabel = ({
         color={buttonText}
         size={16}
       />
-      <ThemedText style={textStyle} color={"buttonText"}>
+      <ThemedText color={"buttonText"}>
         {successText ?? "success"}
       </ThemedText>
     </Animated.View>
   )
 }
+
+
+export const AnimatedActionButton = Animated.createAnimatedComponent(ActionButton)
 
 const styles = StyleSheet.create(theme => ({
   labelContainer: {

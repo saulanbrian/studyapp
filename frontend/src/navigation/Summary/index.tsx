@@ -18,6 +18,10 @@ export default function SummaryStackNavigator() {
         name={"SummaryList"}
         component={SummaryListScreen}
       />
+      <Stack.Screen
+        name={"SummaryCreation"}
+        component={SummaryCreationPage}
+      />
     </Stack.Navigator>
   )
 }
