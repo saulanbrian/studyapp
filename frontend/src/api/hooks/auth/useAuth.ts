@@ -1,4 +1,4 @@
-import { supabase } from "@/src/lib/supabase"
+import { supabase } from "@/supabase/client"
 import { useQueryClient } from "@tanstack/react-query"
 import * as SecureStore from "expo-secure-store"
 

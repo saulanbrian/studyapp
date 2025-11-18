@@ -1,5 +1,5 @@
-import { supabase } from "@/src/lib/supabase";
-import getUserIdAsync from "../../auth/getUserIdAsync";
+import { supabase } from "@/supabase/client";
+import getUserIdAsync from "../auth/getUserIdAsync";
 
 export default async function uploadDocumentToSummaryStorage({
   document,

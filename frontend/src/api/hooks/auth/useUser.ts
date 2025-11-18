@@ -1,10 +1,9 @@
-import { startTransition, useActionState, useEffect, useState } from "react"
-import { supabase } from "../lib/supabase"
-import { AuthError, User } from "@supabase/supabase-js"
-import useEffectAfterMount from "./useEffectAfterMount"
+import { supabase } from "@/supabase/client"
+import { User } from "@supabase/supabase-js"
+import { startTransition, useActionState, useEffect } from "react"
+
 
 export const useUser = () => {
-
   const [user, getUser, isLoading] = useActionState<User | null>(
     async () => {
       const { data } = await supabase.auth.getUser()

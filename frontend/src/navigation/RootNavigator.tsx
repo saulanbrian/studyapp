@@ -21,8 +21,7 @@ import ErrorBoundary from "react-native-error-boundary"
 import { QueryErrorResetBoundary } from "@tanstack/react-query"
 import { ENV } from "../constants/Env";
 import { Session } from "@supabase/supabase-js";
-import { supabase } from "../lib/supabase";
-
+import { supabase } from "@/supabase/client"
 
 async function loadFonts() {
   try {

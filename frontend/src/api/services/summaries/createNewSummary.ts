@@ -1,6 +1,6 @@
-import { supabase } from "@/src/lib/supabase";
+import { supabase } from "@/supabase/client"
 import { Summary } from "../../types/summary";
-import getUserIdAsync from "../../auth/getUserIdAsync";
+import getUserIdAsync from "../auth/getUserIdAsync";
 import uploadDocumentToSummaryStorage from "./uploadDocumentToSummaryStorage";
 import uploadCoverToSummaryStorage from "./uploadCoverToSummaryStorage";
 

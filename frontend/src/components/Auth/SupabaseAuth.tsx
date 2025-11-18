@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
 import { Alert, StyleSheet, TextInput, View } from 'react-native'
-import { supabase } from '@/src/lib/supabase'
+import { supabase } from '@/supabase/client'
 import { Button, Input } from '@rneui/themed'
 import ThemedButton from '../ThemedButton'
 import ThemedTextInput from '../ThemedTextInput'
-import { useAuth } from '@/src/api/auth/useAuth'
+import { useAuth } from '@/src/api/hooks/auth/useAuth'
 
 export default function SupabaseAuth() {
   const [email, setEmail] = useState('')

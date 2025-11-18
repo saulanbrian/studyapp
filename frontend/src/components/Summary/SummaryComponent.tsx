@@ -7,18 +7,18 @@ import ThemedText from "../ThemedText";
 import prettifyDate from "@/src/api/utils/prettifyDate"
 import extractMonthAndDay from "@/src/api/utils/extractMonthAndDay";
 import { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
-import { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 
 type SummaryComponentProps = Summary & {
   style?: StyleProp<ViewStyle>
 }
 
 
-export default function SummaryComponent({
+const SummaryComponent = React.memo(({
   style,
   cover_url,
   ...details
-}: SummaryComponentProps) {
+}: SummaryComponentProps) => {
 
   const isPressed = useSharedValue(false)
 
@@ -51,7 +51,7 @@ export default function SummaryComponent({
       </AnimatedThemedView>
     </Pressable>
   )
-}
+})
 
 type DetailsProp = Pick<Summary, 'created_at' | 'title' | 'description' | 'status'>
 
@@ -124,6 +124,8 @@ const StatusAndDate = ({ created_at, status }: StatusAndDateProps) => {
   )
 }
 
+
+export default SummaryComponent
 
 const styles = StyleSheet.create(theme => ({
   container: {

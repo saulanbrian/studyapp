@@ -3,8 +3,8 @@ import ThemedText from "../ThemedText";
 import { StyleSheet } from "react-native-unistyles";
 import { Image } from "expo-image"
 import { ActivityIndicator, ViewProps } from "react-native";
-import { supabase } from "@/src/lib/supabase";
-import { useUser } from "@/src/hooks/useUser";
+import { supabase } from "@/supabase/client";
+import { useUser } from "@/src/api/hooks/auth/useUser";
 import { useGetProfile } from "@/src/api/queries/profiles";
 
 export default function UserCard({

@@ -6,8 +6,7 @@ import { ScrollView, TouchableOpacity, View } from "react-native";
 import { ThemedText, ThemedView, ThemedAlert } from "@/src/components"
 import { useCallback, useState } from "react";
 import { FontAwesome } from "@expo/vector-icons";
-import { supabase } from "@/src/lib/supabase";
-import { useAuth } from "@/src/api/auth/useAuth"
+import { useAuth } from "@/src/api/hooks/auth/useAuth"
 
 export default function CustomDrawerContent(props: DrawerContentComponentProps) {
 
