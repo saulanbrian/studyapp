@@ -10,14 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
-import os 
 from pathlib import Path
-from decouple import config
-import logging 
-from urllib.parse import urlparse
+from dotenv import load_dotenv
+import os
 
-
-logger = logging.getLogger(__name__)
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,18 +24,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY') 
+SECRET_KEY = 'django-insecure-u^g5ged$bp*$z2&03khhn*jxu*zc@7=lhe^((q-ibj^o!+r)um'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG')
+DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = []
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -47,10 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
-    'django_celery_results',
-    'user.apps.UserConfig',
-    'summary.apps.SummaryConfig',
-    'quiz.apps.QuizConfig'
+    'summary',
 ]
 
 MIDDLEWARE = [
@@ -63,9 +56,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
-
-CORS_ALLOW_ALL_ORIGIN = config('DEBUG',default=True)
 
 ROOT_URLCONF = 'backend.urls'
 
@@ -91,21 +81,10 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-tmpPostgres = urlparse(config('DATABASE_URL'))
-endpoint_id = config('ENDPOINT_ID')
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': tmpPostgres.path.replace('/', ''),
-        'USER': tmpPostgres.username,
-        'PASSWORD': tmpPostgres.password,
-        'HOST': tmpPostgres.hostname,
-        'PORT': 5432,
-        'OPTIONS': {
-            'sslmode':'require',
-            'options': f'endpoint={endpoint_id}'
-        }
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -146,46 +125,15 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR,'media')
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'user.authentication.ClerkJWTAuthentication',  
-    )
-}
-
-APPEND_SLASH = False
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CLERK_ISSUER=config("CLERK_ISSUER")
-CLERK_JWT_PUBLIC_KEY=config("CLERK_JWT_PUBLIC_KEY")
 
-ASGI_APPLICATION='backend.asgi.application'
+CORS_ALLOW_ALL_ORIGIN = True
 
-REDIS_URL  = config('REDIS_URL')
+CELERY_BROKER_URL=os.environ.get('CELERY_BROKER_URL')
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [
-                (REDIS_URL)
-            ],  
-        },
-    },
-}
-
-CELERY_BROKER_URL =config('CELERY_BROKER_URL')
-
-CELERY_TIME_LIMIT=200
-
-GEMINI_API_KEY=config('GEMINI_API_KEY')
-
-BASE_URL=config(
-    'BASE_URL',
-    default='http://127.0.0.1:8000'
-)
+SUPABASE_URL=os.environ.get('SUPABASE_URL')
+SUPABASE_KEY=os.environ.get('SUPABASE_KEY')

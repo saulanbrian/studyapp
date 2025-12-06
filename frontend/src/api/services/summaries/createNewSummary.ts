@@ -31,7 +31,7 @@ export default async function createNewSummary({
     documentTitle: documentName,
     summaryTitle: title
   })
-  if (documentUploadError || !documentUploaded) {
+  if (documentUploadError || !documentUploaded || !documentUrl) {
     throw documentUploadError || new Error("An error has occured upon uploading document")
   }
 
@@ -58,7 +58,7 @@ export default async function createNewSummary({
       owner: userId!,
       title,
       description,
-      document_url: documentUploaded.fullPath,
+      document_url: documentUrl,
       cover_url: coverUrl
     })
     .select()

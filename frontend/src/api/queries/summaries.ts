@@ -1,7 +1,8 @@
-import { useInfiniteQuery, useSuspenseInfiniteQuery } from "@tanstack/react-query"
+import { useInfiniteQuery, useQuery, useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query"
 import { getInfiniteSummaries } from "../services/summaries"
 import { Summary } from "../types/summary"
 import { PageResult } from "../types/PageResult"
+import getSingleSummary from "../services/summaries/getSingleSummary"
 
 export const useGetSummaries = () => {
   return useSuspenseInfiniteQuery<PageResult<Summary>>({
@@ -17,3 +18,13 @@ export const useGetSummaries = () => {
   })
 }
 
+
+export const useGetSummary = (id: string) => {
+  return useSuspenseQuery({
+    queryKey: ["summary", id],
+    queryFn: async () => {
+      const res = await getSingleSummary(id)
+      return res
+    },
+  })
+}

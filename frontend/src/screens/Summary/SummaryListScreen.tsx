@@ -1,12 +1,18 @@
+import useQueryUpdater from "@/src/api/hooks/useQueryUpdater";
 import { useGetSummaries } from "@/src/api/queries/summaries";
+import { PageResult } from "@/src/api/types/PageResult";
+import { Summary } from "@/src/api/types/summary";
+import addDataToTopOfInfiniteQueryData from "@/src/api/utils/addDataToTopOfInfiniteQueryData";
 import { mapInfiniteDataResult } from "@/src/api/utils/mapInfiniteDataResult";
 import { ErrorScreen, LoadingScreen, ThemedScreen, ThemedText, ThemedView } from "@/src/components";
 import SummaryComponent from "@/src/components/Summary/SummaryComponent";
 import ThemedButton, { AnimatedThemedButton } from "@/src/components/ThemedButton";
 import { SummaryStackParamList } from "@/src/navigation/Summary/types";
+import { supabase } from "@/supabase/client";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { FlashList } from "@shopify/flash-list";
-import { Suspense, useCallback } from "react";
+import { InfiniteData, useQueryClient } from "@tanstack/react-query";
+import { Suspense, useCallback, useEffect } from "react";
 import { View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
@@ -19,7 +25,7 @@ export default function SummaryListScreen() {
   }, [])
 
   return (
-    <ThemedScreen style={{ flex: 1 }}>
+    <ThemedScreen style={{ flex: 1, paddingHorizontal: 0 }}>
       <Suspense fallback={<LoadingScreen />}>
         <SummaryList />
       </Suspense>
@@ -43,7 +49,41 @@ const SummaryList = () => {
     refetch,
     isRefetching
   } = useGetSummaries()
+  const { insertIntoInfiniteQuery, updateDataFromInfiniteQuery } = useQueryUpdater<Summary>()
+
   const summaries = mapInfiniteDataResult(data)
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("summaries:all")
+      .on("postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "summaries"
+        },
+        ({ eventType, new: newSummary }) => {
+          switch (eventType) {
+            case "INSERT":
+              insertIntoInfiniteQuery({
+                newData: newSummary as Summary,
+                queryKey: ["summaries"]
+              })
+            case "UPDATE":
+              updateDataFromInfiniteQuery({
+                id: newSummary.id,
+                newData: newSummary as Summary,
+                queryKey: ["summaries"]
+              })
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [])
 
   return (
     <FlashList
@@ -54,6 +94,7 @@ const SummaryList = () => {
       showsVerticalScrollIndicator={false}
       onEndReached={() => hasNextPage && fetchNextPage()}
       estimatedItemSize={123}
+      decelerationRate={0.5}
       ItemSeparatorComponent={() => <View style={styles.separator} />}
       renderItem={({ item, index }) => (
         <SummaryComponent
@@ -64,23 +105,11 @@ const SummaryList = () => {
           {...item}
         />
       )}
+      contentContainerStyle={{ paddingHorizontal: 12 }}
     />
   )
 }
 
-
-const Header = () => {
-
-  return (
-    <ThemedText
-      fw={"bold"}
-      size={"lg"}
-      style={styles.header}
-    >
-      Summaries
-    </ThemedText>
-  )
-}
 
 const styles = StyleSheet.create(theme => ({
   fab: {
@@ -101,7 +130,7 @@ const styles = StyleSheet.create(theme => ({
     backgroundColor: "transparent"
   },
   separator: {
-    height: 4
+    height: 6
   },
   summaryContainer: {
     padding: theme.spacing.sm

@@ -21,7 +21,7 @@ export default async function uploadDocumentToSummaryStorage({
       contentType: 'application/pdf'
     })
 
-  let publicUrl: string | null = null;
+  let publicUrl = null;
 
   if (data) {
     const { data: uploadedDocument } = supabase.storage

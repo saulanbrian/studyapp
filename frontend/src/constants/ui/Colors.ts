@@ -62,7 +62,7 @@ export const darkColors = {
 
   background: '#121212',
   surface: '#1E1E1E',
-  elevated: '#2A2A2A',
+  elevated: '#141414',
   border: '#3F3F46',
   overlay: 'rgba(0,0,0,0.6)',
 

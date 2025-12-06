@@ -1,7 +1,6 @@
-env/ 
-__pycache__/
-*.py[cod]
-dump.rdb
 .env
+env/
 db.sqlite3
-media/
+**/__pycache__/
+dump.rdb
+*.pyc

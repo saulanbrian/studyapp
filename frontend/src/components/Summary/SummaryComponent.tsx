@@ -1,55 +1,54 @@
 import { Summary } from "@/src/api/types/summary";
 import ThemedView, { AnimatedThemedView } from "../ThemedView";
-import { StyleSheet } from "react-native-unistyles";
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import { Image } from "expo-image";
-import { Pressable, StyleProp, View, ViewStyle } from "react-native";
+import { ActivityIndicator, Pressable, StyleProp, View, ViewStyle } from "react-native";
 import ThemedText from "../ThemedText";
-import prettifyDate from "@/src/api/utils/prettifyDate"
 import extractMonthAndDay from "@/src/api/utils/extractMonthAndDay";
-import { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
-import React, { useCallback, useMemo } from "react";
+import Animated from "react-native-reanimated";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import { useNavigation } from "@react-navigation/native";
+import { SummaryNavigationProp, SummaryStackParamList } from "@/src/navigation/Summary/types";
+
 
 type SummaryComponentProps = Summary & {
   style?: StyleProp<ViewStyle>
 }
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
 
 const SummaryComponent = React.memo(({
   style,
   cover_url,
-  ...details
+  ...summary
 }: SummaryComponentProps) => {
 
-  const isPressed = useSharedValue(false)
+  const navigation = useNavigation<SummaryNavigationProp>()
 
-  const rStyles = useAnimatedStyle(() => ({
-    transform: [
-      { scale: withSpring(isPressed.value ? 0.96 : 1) }
-    ]
-  }))
+  const handlePress = useCallback(() => {
+    if (summary.status !== "success") return
+    navigation.navigate("SummaryDetail", { id: summary.id })
+  }, [summary])
+
 
   return (
-    <Pressable
-      onPressIn={() => isPressed.value = true}
-      onPressOut={() => isPressed.value = false}
-      style={style}
+    <AnimatedPressable
+      onPress={handlePress}
+      style={[styles.container, style]}
     >
-      <AnimatedThemedView
-        surface
-        style={[styles.container, rStyles]}
-      >
-        <Image
-          source={
-            cover_url
-              ? { uri: cover_url }
-              : require("@/assets/images/icon.png")
-          }
-          style={styles.image}
-          contentFit={"cover"}
-        />
-        <Details {...details} />
-      </AnimatedThemedView>
-    </Pressable>
+      {summary.status === "pending" && <View style={styles.overlay} />}
+      <Image
+        source={
+          cover_url
+            ? { uri: cover_url }
+            : require("@/assets/images/icon.png")
+        }
+        style={styles.image}
+        contentFit={"cover"}
+        cachePolicy={"memory-disk"}
+      />
+      <Details {...summary} />
+    </AnimatedPressable>
   )
 })
 
@@ -72,13 +71,13 @@ const Details = ({
       >
         {title}
       </ThemedText>
-      <DescriptionConatiner description={description} />
+      <DescriptionContainer description={description} />
       <StatusAndDate created_at={created_at} status={status} />
     </View>
   )
 }
 
-const DescriptionConatiner = ({ description }: { description: string | null }) => {
+const DescriptionContainer = ({ description }: { description: string | null }) => {
 
   return (
     <View style={styles.descriptionContainer}>
@@ -98,6 +97,7 @@ type StatusAndDateProps = Pick<Summary, 'created_at' | 'status'>
 
 const StatusAndDate = ({ created_at, status }: StatusAndDateProps) => {
 
+  const { colors } = useUnistyles().theme
   styles.useVariants({ status })
 
   const statusText = useMemo(() => {
@@ -113,7 +113,10 @@ const StatusAndDate = ({ created_at, status }: StatusAndDateProps) => {
 
   return (
     <View style={styles.statusAndDateContainer}>
-      <ThemedView style={styles.statusIndicator} />
+      {status === "pending"
+        ? <ActivityIndicator size={10} color={colors.primary} />
+        : <ThemedView style={styles.statusIndicator} />
+      }
       <ThemedText size={"xs"} fw={"medium"} color={"secondary"}>
         {statusText}
       </ThemedText>
@@ -131,7 +134,11 @@ const styles = StyleSheet.create(theme => ({
   container: {
     borderRadius: theme.radii.xs,
     padding: theme.spacing.sm,
-    flexDirection: "row"
+    flexDirection: "row",
+    backgroundColor: theme.colors.elevated,
+    borderColor: theme.colors.border,
+    position: "relative",
+    boxShadow: `2px 2px 2px ${theme.colors.neutral300}`,
   },
   date: {
     marginLeft: "auto"
@@ -157,6 +164,11 @@ const styles = StyleSheet.create(theme => ({
     width: 80,
     aspectRatio: 9 / 12,
     borderRadius: theme.radii.sm
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: theme.colors.disabledBg,
+    borderRadius: theme.radii.xs
   },
   statusAndDateContainer: {
     flexDirection: "row",

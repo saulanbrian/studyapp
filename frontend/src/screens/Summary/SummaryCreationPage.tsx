@@ -14,6 +14,7 @@ import createNewSummary from "@/src/api/services/summaries/createNewSummary";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { SummaryStackParamList } from "@/src/navigation/Summary/types";
 import { useAnimatedKeyboard, useAnimatedStyle } from "react-native-reanimated";
+import { requestSummary } from "@/src/api/services/summaries";
 
 
 const MaxDocumentSize = 5 * 1024 * 1024
@@ -81,8 +82,7 @@ export default function SummaryCreationPage() {
 const TitleInput = React.memo(({
   setTitle,
   title,
-  mutating
-}: Pick<PageStateAndSetter, 'setTitle' | 'title' | 'mutating'>
+}: Pick<PageStateAndSetter, 'setTitle' | 'title'>
 ) => {
 
   const [focused, setFocused] = useState(false)
@@ -237,6 +237,7 @@ const SubmitButton = React.memo(({
         document: document!.file,
         documentName: document!.title
       })
+      requestSummary(data.id)
       return data
     },
     onMutate: () => {
