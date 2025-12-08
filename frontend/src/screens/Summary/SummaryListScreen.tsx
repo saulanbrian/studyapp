@@ -5,7 +5,7 @@ import { Summary } from "@/src/api/types/summary";
 import addDataToTopOfInfiniteQueryData from "@/src/api/utils/addDataToTopOfInfiniteQueryData";
 import { mapInfiniteDataResult } from "@/src/api/utils/mapInfiniteDataResult";
 import { ErrorScreen, LoadingScreen, ThemedScreen, ThemedText, ThemedView } from "@/src/components";
-import SummaryComponent from "@/src/components/Summary/SummaryComponent";
+import SummaryComponent from "@/src/components/Summary";
 import ThemedButton, { AnimatedThemedButton } from "@/src/components/ThemedButton";
 import { SummaryStackParamList } from "@/src/navigation/Summary/types";
 import { supabase } from "@/supabase/client";
@@ -97,13 +97,7 @@ const SummaryList = () => {
       decelerationRate={0.5}
       ItemSeparatorComponent={() => <View style={styles.separator} />}
       renderItem={({ item, index }) => (
-        <SummaryComponent
-          style={index === 0
-            ? styles.initialSummary
-            : undefined
-          }
-          {...item}
-        />
+        <SummaryComponent {...item} />
       )}
       contentContainerStyle={{ paddingHorizontal: 12 }}
     />

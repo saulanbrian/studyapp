@@ -5,37 +5,21 @@ import { Image } from "expo-image";
 import { ActivityIndicator, Pressable, StyleProp, View, ViewStyle } from "react-native";
 import ThemedText from "../ThemedText";
 import extractMonthAndDay from "@/src/api/utils/extractMonthAndDay";
-import Animated from "react-native-reanimated";
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
-import { useNavigation } from "@react-navigation/native";
-import { SummaryNavigationProp, SummaryStackParamList } from "@/src/navigation/Summary/types";
 
 
-type SummaryComponentProps = Summary & {
-  style?: StyleProp<ViewStyle>
+export type SummaryCardProps = Summary & {
+  editable?: boolean
 }
 
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
-
-const SummaryComponent = React.memo(({
-  style,
+const SummaryCard = React.memo(({
   cover_url,
+  editable = false,
   ...summary
-}: SummaryComponentProps) => {
-
-  const navigation = useNavigation<SummaryNavigationProp>()
-
-  const handlePress = useCallback(() => {
-    if (summary.status !== "success") return
-    navigation.navigate("SummaryDetail", { id: summary.id })
-  }, [summary])
-
+}: SummaryCardProps) => {
 
   return (
-    <AnimatedPressable
-      onPress={handlePress}
-      style={[styles.container, style]}
-    >
+    <ThemedView style={[styles.container]}>
       {summary.status === "pending" && <View style={styles.overlay} />}
       <Image
         source={
@@ -48,7 +32,7 @@ const SummaryComponent = React.memo(({
         cachePolicy={"memory-disk"}
       />
       <Details {...summary} />
-    </AnimatedPressable>
+    </ThemedView>
   )
 })
 
@@ -128,7 +112,7 @@ const StatusAndDate = ({ created_at, status }: StatusAndDateProps) => {
 }
 
 
-export default SummaryComponent
+export default SummaryCard
 
 const styles = StyleSheet.create(theme => ({
   container: {
@@ -138,7 +122,7 @@ const styles = StyleSheet.create(theme => ({
     backgroundColor: theme.colors.elevated,
     borderColor: theme.colors.border,
     position: "relative",
-    boxShadow: `2px 2px 2px ${theme.colors.neutral300}`,
+    borderWidth: 0.5
   },
   date: {
     marginLeft: "auto"

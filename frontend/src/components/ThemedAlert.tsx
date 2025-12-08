@@ -6,11 +6,6 @@ import ThemedView from "./ThemedView";
 import ThemedButton from "./ThemedButton";
 
 
-const weights = {
-  xs: 400,
-  sm: 500
-}
-
 type AlertAction = {
   title: string;
   onDispatch: () => void

@@ -9,7 +9,9 @@ type ThemedTextProps = TextProps & {
   | "disabled"
   | "error"
   | "buttonText"
-  size?: "xs" | "sm" | "md" | "lg" | "xl";
+  | "warning"
+  | "themePrimary"
+  size?: "xxs" | "xs" | "sm" | "md" | "lg" | "xl";
   fw?: "regular" | "medium" | "semiBold" | "bold"
 }
 
@@ -36,9 +38,12 @@ const styles = StyleSheet.create(theme => ({
         tertiary: { color: theme.colors.textTertiary },
         disabled: { color: theme.colors.textDisabled },
         buttonText: { color: theme.colors.buttonText },
-        error: { color: theme.colors.error }
+        error: { color: theme.colors.error },
+        warning: { color: theme.colors.warning },
+        themePrimary: { color: theme.colors.primary }
       },
       size: {
+        xxs: { fontSize: theme.fontSize.xxs },
         xs: { fontSize: theme.fontSize.xs },
         sm: { fontSize: theme.fontSize.sm },
         md: { fontSize: theme.fontSize.md },
