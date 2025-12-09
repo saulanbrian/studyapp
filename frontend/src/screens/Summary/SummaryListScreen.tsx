@@ -5,7 +5,7 @@ import { Summary } from "@/src/api/types/summary";
 import addDataToTopOfInfiniteQueryData from "@/src/api/utils/addDataToTopOfInfiniteQueryData";
 import { mapInfiniteDataResult } from "@/src/api/utils/mapInfiniteDataResult";
 import { ErrorScreen, LoadingScreen, ThemedScreen, ThemedText, ThemedView } from "@/src/components";
-import SummaryComponent from "@/src/components/Summary";
+import SummaryComponent from "@/src/components/Summary/SummaryComponent";
 import ThemedButton, { AnimatedThemedButton } from "@/src/components/ThemedButton";
 import { SummaryStackParamList } from "@/src/navigation/Summary/types";
 import { supabase } from "@/supabase/client";
@@ -49,7 +49,11 @@ const SummaryList = () => {
     refetch,
     isRefetching
   } = useGetSummaries()
-  const { insertIntoInfiniteQuery, updateDataFromInfiniteQuery } = useQueryUpdater<Summary>()
+  const {
+    insertIntoInfiniteQuery,
+    updateDataFromInfiniteQuery,
+    removeDataFromInfiniteQuery
+  } = useQueryUpdater<Summary>()
 
   const summaries = mapInfiniteDataResult(data)
 
@@ -62,19 +66,29 @@ const SummaryList = () => {
           schema: "public",
           table: "summaries"
         },
-        ({ eventType, new: newSummary }) => {
+        ({ eventType, new: newSummary, old: oldSummary }) => {
           switch (eventType) {
             case "INSERT":
               insertIntoInfiniteQuery({
                 newData: newSummary as Summary,
                 queryKey: ["summaries"]
               })
+              break
+
             case "UPDATE":
               updateDataFromInfiniteQuery({
                 id: newSummary.id,
                 newData: newSummary as Summary,
                 queryKey: ["summaries"]
               })
+              break
+
+            case "DELETE":
+              removeDataFromInfiniteQuery({
+                queryKey: ["summaries"],
+                id: oldSummary.id,
+              })
+              break
           }
         }
       )

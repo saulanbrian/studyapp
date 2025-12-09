@@ -2,6 +2,7 @@ import { InfiniteData, useQueryClient } from "@tanstack/react-query"
 import { PageResult } from "../types/PageResult";
 import addDataToTopOfInfiniteQueryData from "../utils/addDataToTopOfInfiniteQueryData";
 import updateInfiniteQueryDataById from "../utils/updateInfiteQueryDataById";
+import removeDataFromInifiniteQueryDataById from "../utils/removeDataFromInfiniteQueryDataById";
 
 
 type QueryUpdaterCommonProps<T> = {
@@ -55,7 +56,29 @@ const useQueryUpdater = <T extends { id: string }>() => {
     )
   }
 
-  return { updateDataFromInfiniteQuery, insertIntoInfiniteQuery }
+  function removeDataFromInfiniteQuery({
+    id,
+    queryKey,
+  }: Omit<QueryUpdaterCommonProps<T>, 'newData'>) {
+
+    queryClient.setQueryData<InfiniteData<PageResult<T>>>(
+      queryKey,
+      data => {
+        if (!data) return
+        const updatedData = removeDataFromInifiniteQueryDataById({
+          data,
+          id
+        })
+        return updatedData
+      }
+    )
+  }
+
+  return {
+    updateDataFromInfiniteQuery,
+    insertIntoInfiniteQuery,
+    removeDataFromInfiniteQuery
+  }
 }
 
 export default useQueryUpdater

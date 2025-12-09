@@ -5,18 +5,12 @@ import { Image } from "expo-image";
 import { ActivityIndicator, Pressable, StyleProp, View, ViewStyle } from "react-native";
 import ThemedText from "../ThemedText";
 import extractMonthAndDay from "@/src/api/utils/extractMonthAndDay";
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-
-export type SummaryCardProps = Summary & {
-  editable?: boolean
-}
-
-const SummaryCard = React.memo(({
+const SummaryComponentCard = React.memo(({
   cover_url,
-  editable = false,
   ...summary
-}: SummaryCardProps) => {
+}: Summary) => {
 
   return (
     <ThemedView style={[styles.container]}>
@@ -42,7 +36,7 @@ const Details = ({
   created_at,
   title,
   description,
-  status
+  status,
 }: DetailsProp) => {
 
   return (
@@ -112,7 +106,7 @@ const StatusAndDate = ({ created_at, status }: StatusAndDateProps) => {
 }
 
 
-export default SummaryCard
+export default SummaryComponentCard
 
 const styles = StyleSheet.create(theme => ({
   container: {
