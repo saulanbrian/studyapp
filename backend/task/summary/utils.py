@@ -67,6 +67,6 @@ def update_summary(id:str,status:str):
 def construct_operation_value_error(operation:str,lookup_value:str):
     return ValueError(f"""
         Cannot proceed to the next operation: { operation } \
-        value: { str } is either None or Unknown
+        value: { lookup_value } is either None or Unknown
     """)
 
