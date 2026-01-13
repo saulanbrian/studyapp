@@ -29,7 +29,7 @@ SECRET_KEY = 'django-insecure-u^g5ged$bp*$z2&03khhn*jxu*zc@7=lhe^((q-ibj^o!+r)um
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["52.184.80.94"]
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -138,7 +138,5 @@ CELERY_BROKER_URL=os.environ.get('CELERY_BROKER_URL')
 SUPABASE_URL=os.environ.get('SUPABASE_URL')
 SUPABASE_KEY=os.environ.get('SUPABASE_KEY')
 
-DOCUMENT_INTELLIGENCE_ENDPOINT=os.environ.get('DOCUMENT_INTELLIGENCE_ENDPOINT')
-DOCUMENT_INTELLIGENCE_API_KEY=os.environ.get('DOCUMENT_INTELLIGENCE_API_KEY')
-
-GROQ_API_KEY=os.environ.get('GROQ_API_KEY')
+OLLAMA_URL=os.environ.get('OLLAMA_URL')
+OLLAMA_API_KEY=os.environ.get('OLLAMA_API_KEY')

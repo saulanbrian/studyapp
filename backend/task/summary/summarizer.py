@@ -1,29 +1,81 @@
-from azure.ai.documentintelligence.models import AnalyzeResult, ParagraphRole
-import httpx
 import requests
-
+import httpx
 from ..http_client import client
-from .utils import construct_operation_value_error
+from .utils import construct_operation_value_error, parse_ollama_output
 from django.conf import settings
 from celery.utils.log import get_logger
 from io import BytesIO
-
-from azure.core.credentials import AzureKeyCredential
-from azure.ai.documentintelligence import DocumentIntelligenceClient
-
-from requests import request
-
+import pymupdf.layout
+import pymupdf4llm
+import json
+from pydantic import BaseModel, RootModel
+from typing import  List, Literal, Optional, TypedDict
+from markdown_chunker import MarkdownChunkingStrategy
 
 logger = get_logger(__name__)
 
-credential = AzureKeyCredential(
-    settings.DOCUMENT_INTELLIGENCE_API_KEY
-)
 
-doc_intelligence_client = DocumentIntelligenceClient(
-    settings.DOCUMENT_INTELLIGENCE_ENDPOINT,
-    credential=credential
-)
+strategy = MarkdownChunkingStrategy()
+
+
+class JsonListItem(TypedDict):
+    key:str
+    value:str
+
+class ListType(TypedDict):
+    type:Literal["regular", "kv_pair"]
+    content:list[str] | list[JsonListItem]
+
+class ChunkSection(TypedDict):
+    heading:str | None
+    subheading:str | None
+    text:str | None
+    list:ListType | None
+
+
+class ChunkOutputStructure(RootModel[List[ChunkSection]]):
+    pass
+
+
+system_prompt = """
+You are a proffesor who prioritize efficiency rather than just effectiveness.
+Your goal is to make a document that contains lessons easier to understand by simplifying
+words and ommiting unneccessary information (eg. Instructor information). 
+The documents you will get are partial/chunks, make sure each section makes sense—
+make way if they don't. eg. If a section has a heading and list but there is no text,
+make up a text that will connect the heading to the list, making it more sequential
+
+Convert the chunk into a list of ChunkSection:
+
+ChunkSection structure:
+
+{
+    "heading": string | null,
+    "subheading": string | null,
+    "text": string | null,
+    "list": { 
+        "type": "regular" | "kv_pair" 
+        "content":string[] | { key: string, value:string }[]
+    } | null
+}
+
+Rules:
+
+1. **All lists must only contain strings. Never nest objects inside a list.**
+2. **Each input is a json that contains two keys "index" and "content".
+    if index is not equal to 0, every heading is a subheading
+    unless two headings exist in one section—in that case the first one is the main heading.
+    but if index is 0, the first heading in the first section must be set as heading, not a subheading
+3. If list items are Word-Definition list type must be kv_pair,
+    store the word to "key" and definition to "content", otherwise string. 
+    list items must be consistent; if type is regular, all the items are string
+4. Always prefer lists over paragraphs IF AND ONLY IF content is a sequence—even if marked by headings. 5. 
+5. Output strictly valid JSON, no extra text.
+6. Each key of ChunkSection must exist even it their values are null
+7. Use emojis to make the content more engaging
+8. Do not include unneccessary information (eg. Instructor information)
+9. Use plain texts instead of markdown
+"""
 
 
 class SummarizerObject:
@@ -34,10 +86,8 @@ class SummarizerObject:
         self.err = None
         self.summary = None
         self.document = None
-        self.content = None
-        self.content_chunks = []
-        self.output = None
-
+        self.md_chunks:list[str] = []
+        self.output: List[ChunkSection] = []
 
     def get_summary_object(self):
         try:
@@ -80,99 +130,97 @@ class SummarizerObject:
         if not self.document:
             self.err = construct_operation_value_error(
                     operation="read_doc_as_image",
-                    lookup_value="doc_as_image"
+                    lookup_value="document"
                 )
             return
         
-        doc = BytesIO(self.document)
-            
-        poller = doc_intelligence_client.begin_analyze_document(
-            "prebuilt-layout",
-            body=doc
-        )
-        res:AnalyzeResult = poller.result()
+        doc_bytes  = BytesIO(self.document)
+        with pymupdf.open(stream=doc_bytes) as doc:
+            md_text = pymupdf4llm.to_markdown(doc)
+            if not isinstance(md_text,str):
+                return
+            chunks = strategy.chunk_markdown(markdown_text=md_text)
+            current_chunk = []
+            for index, chunk in enumerate(chunks):
 
-        content = ""
+                lines = chunk.splitlines()
+                meaningful_lines = [
+                    line for line in lines if line.strip() 
+                    and "intentionally omitted" not in line
+                ]
+                current_chunk.extend([line for line in meaningful_lines]) 
 
-        chunks = []
-        current_chunk = ""
-        current_has_title = False
-        current_has_subheading = False
-        
-        if res.paragraphs:
-            for p in res.paragraphs:
-                if p.role == ParagraphRole.TITLE:
-                    if current_has_title:
-                        chunks.append(current_chunk)
-                        current_chunk = ""
-                    else:
-                        current_chunk += f"Title: {p.content} \n"
-                        current_has_title = True
-                elif p.role == ParagraphRole.SECTION_HEADING:
-                    if current_has_subheading:
-                        chunks.append(current_chunk)
-                        current_has_subheading = True
-                    else:
-                        current_chunk += f"SubHeading: {p.content} \n"
-                        current_has_subheading = True
-                elif p.role is None:
-                    current_chunk += p.content
+                if len(current_chunk) >= 15:
+                    self.md_chunks.append("\n".join(current_chunk))
+                    current_chunk = []
 
-        self.content_chunks = [
-            chunk for chunk in chunks if chunk.strip()
-        ]
+            if current_chunk:
+                self.md_chunks.append("\n".join(current_chunk))
+                
 
-        
+
     def summarize(self):
-        if not self.content_chunks:
+        if not self.md_chunks:
             error = construct_operation_value_error(
                 operation="summarize",
-                lookup_value="content_chunks"
+                lookup_value="document_chunks"
             )
             self.err = error
             return
 
-        chunks_summary = []
-
-        groq_key = settings.GROQ_API_KEY
-        logger.info(groq_key)
-
         try:
-            for chunk in self.content_chunks:
-                res = httpx.post(
-                    "https://api.groq.com/openai/v1/chat/completions",
+            for index, chunk in enumerate(self.md_chunks):
+
+                if index > 5:
+                    return 
+
+                res = requests.post(
+                    "https://ollama.com/api/chat",
                     headers={
-                        "Content-Type":"application/json",
-                        "Authorization": f"Bearer { groq_key }",
-                        "api-key":groq_key
+                        'Authorization': f'Bearer {settings.OLLAMA_API_KEY}',
+                        'Content-Type': 'application/json'
                     },
                     json={
                         "messages":[
                             {
+                                "role":"system",
+                                "content":system_prompt
+                            },
+                            {
                                 "role": "user",
-                                "content": f"summarize the following without losing context. \
-                                don\'t overdo it and use basic english. text:{ chunk }",
+                                "content": json.dumps({
+                                    "index": index,
+                                    "content": chunk
+                                })
                             }
                         ],
-                        "model":"llama-3.1-8b-instant",
-                    }
+                        "model":"ministral-3:14b",
+                        "stream":False,
+                        "format":ChunkOutputStructure.model_json_schema()
+                    },
                     )
                 res.raise_for_status()
-                logger.info(res.content)
-        except httpx.HTTPStatusError as e:
-            logger.info(f"Groq Error: { e }")
+                json_res = res.json()["message"]["content"]
+                output = parse_ollama_output(json_res)
+                validated = ChunkOutputStructure.model_validate(output)
+                sections = validated.model_dump()
+                for section in sections:
+                    self.output.append(section)
+
+        except requests.HTTPError as e:
+            logger.info(f"Ollama Error: { e }")
             self.err = e
         except Exception as e:
-            logger.info(f"Groq Error: { e }")
+            logger.info(e)
             self.err = e
-        else:
-            logger.info(f"chunks whole summary: \n {(''.join(chunks_summary))}")
-        
+        finally:
+            for index, section in enumerate(self.output):
+                logger.info(json.dumps(section, indent=2))
 
     def update_summary(self):
         try:
             client.patch(f"summaries?select=*&id=eq.{self.id}", json={
-                "status":"success" if not self.err else "error",
+                "status":"error",
                 "content":{"summary":self.output if self.output else "nigga"}
             }).raise_for_status()
         except Exception as e:
@@ -186,7 +234,7 @@ class SummarizerObject:
             self.get_summary_object,
             self.get_document,
             self.read_document,
-            self.summarize,
+            self.summarize
         ]
 
         for step in steps:
