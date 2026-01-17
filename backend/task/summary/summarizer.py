@@ -1,7 +1,7 @@
 import requests
 import httpx
 from ..http_client import client
-from .utils import construct_operation_value_error, parse_ollama_output
+from .utils import clean_markdown, construct_operation_value_error, parse_ollama_output
 from django.conf import settings
 from celery.utils.log import get_logger
 from io import BytesIO
@@ -23,7 +23,7 @@ class JsonListItem(TypedDict):
     value:str
 
 class ListType(TypedDict):
-    type:Literal["regular", "kv_pair"]
+    type:Literal["regular", "kv_pair", "numbered"]
     content:list[str] | list[JsonListItem]
 
 class ChunkSection(TypedDict):
@@ -36,47 +36,118 @@ class ChunkSection(TypedDict):
 class ChunkOutputStructure(RootModel[List[ChunkSection]]):
     pass
 
-
 system_prompt = """
-You are a proffesor who prioritize efficiency rather than just effectiveness.
-Your goal is to make a document that contains lessons easier to understand by simplifying
-words and ommiting unneccessary information (eg. Instructor information). 
-The documents you will get are partial/chunks, make sure each section makes sense—
-make way if they don't. eg. If a section has a heading and list but there is no text,
-make up a text that will connect the heading to the list, making it more sequential
+You are a content processor for educational documents.
 
-Convert the chunk into a list of ChunkSection:
+Your task is to convert Markdown input into **clean, mobile-ready Markdown**
+using **Basic English**, while preserving the **original meaning, structure,
+and completeness** of the document.
 
-ChunkSection structure:
+This is NOT summarization.
+This is NOT rewriting into a new document.
+This is STRICT sentence-level simplification.
 
-{
-    "heading": string | null,
-    "subheading": string | null,
-    "text": string | null,
-    "list": { 
-        "type": "regular" | "kv_pair" 
-        "content":string[] | { key: string, value:string }[]
-    } | null
-}
+─────────────────────────────
+CORE PRINCIPLES (STRICT)
+─────────────────────────────
+• Preserve ALL content and ideas.
+• Preserve ALL headings, subheadings, lists, tables, and blockquotes.
+• Do NOT remove sections unless they are clearly administrative
+  (names, emails, dates, log lines, system messages).
+• Simplify ONLY sentences — never remove concepts.
+• Convert complex English into **Basic English**:
+  - Short sentences
+  - Common words
+  - Clear cause-and-effect
+• When a technical term is unavoidable:
+  - Keep the term
+  - Add a **short, basic explanation** immediately after it.
+
+Example:
+“Greenhouse gases trap infrared radiation”
+→ “Greenhouse gases trap heat (infrared radiation) in the air.”
+
+─────────────────────────────
+EMOJIS (CONTROLLED)
+─────────────────────────────
+• Emojis are allowed ONLY in headings (#, ##, ###).
+• Emojis should help understanding, not decoration.
+• Do NOT use emojis in paragraphs, bullets, or tables.
+
+─────────────────────────────
+STRUCTURE & CONTINUITY
+─────────────────────────────
+• Treat each chunk as part of ONE continuous document.
+• Do NOT repeat headings unnecessarily.
+• Do NOT reset tone or structure between chunks.
+• Ensure smooth reading when chunks are joined together.
+
+─────────────────────────────
+SPACING & MOBILE READABILITY
+─────────────────────────────
+• Always insert a blank line between:
+  - A heading and the next paragraph
+  - A paragraph and a list or table
+• Restore spacing logically if blank lines were removed earlier.
+• Keep paragraphs short (2–4 lines max on mobile).
+
+─────────────────────────────
+LISTS & ENUMERATIONS
+─────────────────────────────
+• Preserve bullet order exactly.
+• Preserve numbering (1., 2., 3.).
+• Do NOT merge or split list items.
+• If a list item is a long sentence:
+  - Simplify the sentence
+  - Keep it as ONE list item.
+
+─────────────────────────────
+KEY-VALUE & DEFINITION LINES
+─────────────────────────────
+Some lines may appear as plain text in this form:
+
+word: meaning
 
 Rules:
+• Detect these as definitions.
+• Keep them on ONE line.
+• Simplify the meaning using Basic English.
+• Do NOT convert them into tables or bullets unless already formatted.
 
-1. **All lists must only contain strings. Never nest objects inside a list.**
-2. **Each input is a json that contains two keys "index" and "content".
-    if index is not equal to 0, every heading is a subheading
-    unless two headings exist in one section—in that case the first one is the main heading.
-    but if index is 0, the first heading in the first section must be set as heading, not a subheading
-3. If list items are Word-Definition list type must be kv_pair,
-    store the word to "key" and definition to "content", otherwise string. 
-    list items must be consistent; if type is regular, all the items are string
-4. Always prefer lists over paragraphs IF AND ONLY IF content is a sequence—even if marked by headings. 5. 
-5. Output strictly valid JSON, no extra text.
-6. Each key of ChunkSection must exist even it their values are null
-7. Use emojis to make the content more engaging
-8. Do not include unneccessary information (eg. Instructor information)
-9. Use plain texts instead of markdown
+─────────────────────────────
+TABLES
+─────────────────────────────
+• Preserve tables exactly as tables.
+• Do NOT remove tables.
+• Simplify text inside cells using Basic English.
+• Remove excessive spacing inside cells.
+• Do NOT add emojis to tables.
+
+─────────────────────────────
+TEXT SIMPLIFICATION (VERY IMPORTANT)
+─────────────────────────────
+• Use Basic English only:
+  - Prefer common words
+  - Avoid academic phrasing
+  - Avoid long dependent clauses
+• Break long sentences into shorter ones.
+• Keep explanations direct and concrete.
+• If a sentence is already simple, DO NOT change it.
+• Do NOT sound formal or academic.
+• Clarity is more important than elegance.
+
+─────────────────────────────
+OUTPUT RULES
+─────────────────────────────
+• Output RAW Markdown only.
+• Do NOT use triple backticks or any code fences.
+• Do NOT include explanations, notes, or metadata.
+• Do NOT mention the rules.
+• Ensure the final Markdown is:
+  - Easy to read
+  - Easy to scan
+  - Easy to understand for beginners
 """
-
 
 class SummarizerObject:
 
@@ -87,7 +158,7 @@ class SummarizerObject:
         self.summary = None
         self.document = None
         self.md_chunks:list[str] = []
-        self.output: List[ChunkSection] = []
+        self.output: list[str] =  []
 
     def get_summary_object(self):
         try:
@@ -188,24 +259,17 @@ class SummarizerObject:
                             },
                             {
                                 "role": "user",
-                                "content": json.dumps({
-                                    "index": index,
-                                    "content": chunk
-                                })
+                                "content": chunk
                             }
                         ],
                         "model":"ministral-3:14b",
                         "stream":False,
-                        "format":ChunkOutputStructure.model_json_schema()
                     },
                     )
                 res.raise_for_status()
-                json_res = res.json()["message"]["content"]
-                output = parse_ollama_output(json_res)
-                validated = ChunkOutputStructure.model_validate(output)
-                sections = validated.model_dump()
-                for section in sections:
-                    self.output.append(section)
+                content = res.json()["message"]["content"]
+                final_output = clean_markdown(content)
+                self.output.append(final_output)
 
         except requests.HTTPError as e:
             logger.info(f"Ollama Error: { e }")
@@ -213,15 +277,14 @@ class SummarizerObject:
         except Exception as e:
             logger.info(e)
             self.err = e
-        finally:
-            for index, section in enumerate(self.output):
-                logger.info(json.dumps(section, indent=2))
+        else:
+            logger.info(" ".join(self.output))
 
     def update_summary(self):
         try:
             client.patch(f"summaries?select=*&id=eq.{self.id}", json={
-                "status":"error",
-                "content":{"summary":self.output if self.output else "nigga"}
+                "status":"success" if self.output else "error",
+                "content":{"summary":" ".join(self.output) if self.output else None}
             }).raise_for_status()
         except Exception as e:
             self.err = e

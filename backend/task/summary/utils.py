@@ -85,3 +85,9 @@ def parse_ollama_output(raw: str):
     except json.JSONDecodeError as e:
         raise ValueError(f"LLM output is not valid JSON: {e}\n{raw}")
 
+
+def clean_markdown(raw_text: str) -> str:
+    cleaned = re.sub(r"^```(?:markdown)?\s*", "", raw_text, flags=re.IGNORECASE)
+    cleaned = re.sub(r"```$", "", cleaned, flags=re.IGNORECASE)
+    cleaned = cleaned.strip()
+    return cleaned
