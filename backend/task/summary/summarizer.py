@@ -277,14 +277,12 @@ class SummarizerObject:
         except Exception as e:
             logger.info(e)
             self.err = e
-        else:
-            logger.info(" ".join(self.output))
 
     def update_summary(self):
         try:
             client.patch(f"summaries?select=*&id=eq.{self.id}", json={
                 "status":"success" if self.output else "error",
-                "content":{"summary":" ".join(self.output) if self.output else None}
+                "content":" ".join(self.output) if self.output else None
             }).raise_for_status()
         except Exception as e:
             self.err = e

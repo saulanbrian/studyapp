@@ -40,7 +40,7 @@ export type Database = {
       }
       summaries: {
         Row: {
-          content: Json | null
+          content: string | null
           cover_url: string | null
           created_at: string
           description: string | null
@@ -51,7 +51,7 @@ export type Database = {
           title: string
         }
         Insert: {
-          content?: Json | null
+          content?: string | null
           cover_url?: string | null
           created_at?: string
           description?: string | null
@@ -62,7 +62,7 @@ export type Database = {
           title: string
         }
         Update: {
-          content?: Json | null
+          content?: string | null
           cover_url?: string | null
           created_at?: string
           description?: string | null
