@@ -1,13 +1,12 @@
 import requests
 import httpx
 from ..http_client import client
-from .utils import clean_markdown, construct_operation_value_error, parse_ollama_output
+from .utils import clean_markdown, construct_operation_value_error 
 from django.conf import settings
 from celery.utils.log import get_logger
 from io import BytesIO
 import pymupdf.layout
 import pymupdf4llm
-import json
 from pydantic import BaseModel, RootModel
 from typing import  List, Literal, Optional, TypedDict
 from markdown_chunker import MarkdownChunkingStrategy
@@ -17,24 +16,6 @@ logger = get_logger(__name__)
 
 strategy = MarkdownChunkingStrategy()
 
-
-class JsonListItem(TypedDict):
-    key:str
-    value:str
-
-class ListType(TypedDict):
-    type:Literal["regular", "kv_pair", "numbered"]
-    content:list[str] | list[JsonListItem]
-
-class ChunkSection(TypedDict):
-    heading:str | None
-    subheading:str | None
-    text:str | None
-    list:ListType | None
-
-
-class ChunkOutputStructure(RootModel[List[ChunkSection]]):
-    pass
 
 system_prompt = """
 You are a content processor for educational documents.

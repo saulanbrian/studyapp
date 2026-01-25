@@ -38,6 +38,32 @@ export type Database = {
         }
         Relationships: []
       }
+      quizzes: {
+        Row: {
+          content: Json
+          id: string
+          ref: string
+        }
+        Insert: {
+          content: Json
+          id?: string
+          ref: string
+        }
+        Update: {
+          content?: Json
+          id?: string
+          ref?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quizzes_ref_fkey"
+            columns: ["ref"]
+            isOneToOne: false
+            referencedRelation: "summaries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       summaries: {
         Row: {
           content: string | null
