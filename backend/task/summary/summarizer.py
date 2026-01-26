@@ -1,7 +1,9 @@
 import requests
 import httpx
+
+from task.utils import chunk_markdown, get_completion
 from ..http_client import client
-from .utils import clean_markdown, construct_operation_value_error 
+from .utils import clean_markdown, construct_operation_value_error, get_summary 
 from django.conf import settings
 from celery.utils.log import get_logger
 from io import BytesIO
@@ -11,7 +13,7 @@ from pydantic import BaseModel, RootModel
 from typing import  List, Literal, Optional, TypedDict
 from markdown_chunker import MarkdownChunkingStrategy
 
-logger = get_logger(__name__)
+logger =get_logger(__name__)
 
 
 strategy = MarkdownChunkingStrategy()
@@ -29,7 +31,7 @@ This is NOT rewriting into a new document.
 This is STRICT sentence-level simplification.
 
 ─────────────────────────────
-CORE PRINCIPLES (STRICT)
+COREPRINCIPLES (STRICT)
 ─────────────────────────────
 • Preserve ALL content and ideas.
 • Preserve ALL headings, subheadings, lists, tables, and blockquotes.
@@ -41,7 +43,7 @@ CORE PRINCIPLES (STRICT)
   - Common words
   - Clear cause-and-effect
 • When a technical term is unavoidable:
-  - Keep the term
+- Keep the term
   - Add a **short, basic explanation** immediately after it.
 
 Example:
@@ -130,6 +132,111 @@ OUTPUT RULES
   - Easy to understand for beginners
 """
 
+
+finalize_prompt = """
+You are a content refiner for educational Markdown documents.
+
+Your task is to refine an already simplified Markdown document into a
+shorter, clearer, and better-structured version for teenage
+non-native English readers.
+
+This IS NOT summarization.
+This IS NOT rewriting into a new document.
+This IS controlled refinement and compression.
+
+─────────────────────────────
+CORE GOALS
+─────────────────────────────
+• Keep the original meaning and learning value.
+• Make long explanations shorter while keeping context.
+• Remove repeated or unnecessary text.
+• Use very simple, natural English.
+• Avoid formal or academic tone unless required.
+• Improve spacing and Markdown hierarchy.
+
+─────────────────────────────
+WHAT YOU MAY REMOVE
+─────────────────────────────
+• Repeated explanations of the same idea.
+• Long examples if the idea is already clear.
+• Filler phrases that add no meaning.
+• Overly detailed background that does not help understanding.
+
+─────────────────────────────
+WHAT YOU MUST NEVER REMOVE
+─────────────────────────────
+• Definitions and key concepts.
+• Cause-and-effect explanations.
+• Lists that introduce new ideas.
+• Headings that define structure.
+• Tables (must always stay).
+
+─────────────────────────────
+STRUCTURE & MARKDOWN FIXING
+─────────────────────────────
+• Fix bad heading hierarchy (e.g., ### under # without ##).
+• Do NOT invent new sections.
+• Do NOT merge unrelated sections.
+• Ensure headings match their content.
+• Add missing blank lines for mobile reading.
+
+─────────────────────────────
+PRECISION RULE (VERY IMPORTANT)
+─────────────────────────────
+• Do NOT replace specific terms with more generic ones.
+• Do NOT remove words that limit or define the exact meaning.
+Bad example:
+“A specific group performs a task.”
+→ “People perform a task.” ❌
+Correct example:
+“A specific group performs a task.”
+→ “That specific group performs the task.” ✅
+Bad example:
+“A clearly defined type of thing”
+→ “A thing” ❌
+Correct example:
+“A clearly defined type of thing”
+→ “That defined type of thing.” ✅
+
+─────────────────────────────
+LANGUAGE RULES
+─────────────────────────────
+• Use short sentences.
+• Use common words.
+• Explain ideas directly.
+• Sound natural, not academic.
+• If a sentence is already clear, keep it.
+
+─────────────────────────────
+EMOJIS (ENGAGING BUT CONTROLLED)
+─────────────────────────────
+• Emojis ARE encouraged to improve engagement and scanning.
+• Emojis may be used in:
+  - Headings
+  - Subheadings
+  - The start of short list items
+• Do NOT use emojis inside long paragraphs.
+• Use at most ONE emoji per line.
+• Emojis must support meaning, not decoration.
+
+Good use:
+## 🌍 Types of Systems
+• ⚙️ Mechanical systems
+• 🧠 Biological systems
+
+Bad use:
+This 🌟 system 🌟 is 🌟 very 🌟 important ❌
+
+─────────────────────────────
+OUTPUT RULES
+─────────────────────────────
+• Output RAW Markdown only.
+• Do NOT use code fences.
+• Do NOT add explanations or notes.
+• Do NOT mention these rules.
+"""
+
+
 class SummarizerObject:
 
 
@@ -139,11 +246,12 @@ class SummarizerObject:
         self.summary = None
         self.document = None
         self.md_chunks:list[str] = []
-        self.output: list[str] =  []
+        self.output_chunks: list[str] =  []
+        self.final_output = None
 
     def get_summary_object(self):
         try:
-            r = client.get(f"summaries?select=*&id=eq.{self.id}")
+            r = get_summary(self.id)
             r.raise_for_status()
             if len(r.json()) < 1:
                 raise httpx.HTTPStatusError(
@@ -191,24 +299,10 @@ class SummarizerObject:
             md_text = pymupdf4llm.to_markdown(doc)
             if not isinstance(md_text,str):
                 return
-            chunks = strategy.chunk_markdown(markdown_text=md_text)
-            current_chunk = []
-            for index, chunk in enumerate(chunks):
-
-                lines = chunk.splitlines()
-                meaningful_lines = [
-                    line for line in lines if line.strip() 
-                    and "intentionally omitted" not in line
-                ]
-                current_chunk.extend([line for line in meaningful_lines]) 
-
-                if len(current_chunk) >= 15:
-                    self.md_chunks.append("\n".join(current_chunk))
-                    current_chunk = []
-
-            if current_chunk:
-                self.md_chunks.append("\n".join(current_chunk))
-                
+            self.md_chunks = chunk_markdown(
+                md=md_text,
+                min_chunk_lines=20
+            )
 
 
     def summarize(self):
@@ -222,35 +316,22 @@ class SummarizerObject:
 
         try:
             for index, chunk in enumerate(self.md_chunks):
-
-                if index > 5:
-                    return 
-
-                res = requests.post(
-                    "https://ollama.com/api/chat",
-                    headers={
-                        'Authorization': f'Bearer {settings.OLLAMA_API_KEY}',
-                        'Content-Type': 'application/json'
-                    },
-                    json={
-                        "messages":[
-                            {
-                                "role":"system",
-                                "content":system_prompt
-                            },
-                            {
-                                "role": "user",
-                                "content": chunk
-                            }
-                        ],
-                        "model":"ministral-3:14b",
-                        "stream":False,
-                    },
-                    )
+                res = get_completion(
+                    messages=[
+                        {
+                            "role":"system",
+                            "content":system_prompt
+                        },
+                        {
+                            "role":"user",
+                            "content":chunk
+                        }
+                    ]
+                )
                 res.raise_for_status()
                 content = res.json()["message"]["content"]
                 final_output = clean_markdown(content)
-                self.output.append(final_output)
+                self.output_chunks.append(final_output)
 
         except requests.HTTPError as e:
             logger.info(f"Ollama Error: { e }")
@@ -259,16 +340,46 @@ class SummarizerObject:
             logger.info(e)
             self.err = e
 
+
     def update_summary(self):
         try:
             client.patch(f"summaries?select=*&id=eq.{self.id}", json={
-                "status":"success" if self.output else "error",
-                "content":" ".join(self.output) if self.output else None
+                "status":"success" if self.final_output else "error",
+                "content": self.final_output if self.final_output else None
             }).raise_for_status()
         except Exception as e:
             self.err = e
         finally:
-            return self.output
+            return self.final_output
+
+
+    def refine_summary(self):
+        if not self.output_chunks or len(self.output_chunks) < 1:
+            self.err = construct_operation_value_error(
+                lookup_value="output (chunks)",
+                operation="refine_summary"
+            )
+            return
+        try:
+            r = get_completion(messages=[
+                {
+                    "role":"system",
+                    "content":finalize_prompt
+                },
+                {
+                    "role":"user",
+                    "content":"\n\n".join(self.output_chunks)
+                }
+            ])
+            r.raise_for_status()
+            output = r.json()["message"]["content"]
+            self.final_output = clean_markdown(output)
+        except requests.HTTPError as e:
+            logger.info(f"ollama error: { e }")
+            self.err = e
+        except Exception as e:
+            logger.info(e)
+            self.err = e
 
 
     def start(self):
@@ -276,7 +387,8 @@ class SummarizerObject:
             self.get_summary_object,
             self.get_document,
             self.read_document,
-            self.summarize
+            self.summarize,
+            self.refine_summary
         ]
 
         for step in steps:

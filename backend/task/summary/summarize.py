@@ -13,4 +13,4 @@ def process_summary(id:str):
     if summarizer.err:
         logger.info(f"err:{summarizer.err} ",)
     else:
-        return summarizer.output
+        return summarizer.final_output
