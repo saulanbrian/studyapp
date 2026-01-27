@@ -55,3 +55,12 @@ def chunk_markdown(md:str,min_chunk_lines=15) -> list[str]:
         output_chunks.append(" ".join(current_chunk))
     return output_chunks
 
+
+def cleanup_json_output(json_str:str):
+    return (
+        json_str.strip()
+            .removeprefix("```json")
+            .removeprefix("```")
+            .removesuffix("```")
+            .strip()
+    )
