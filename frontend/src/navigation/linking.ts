@@ -22,6 +22,11 @@ export const linking: LinkingOptions<RootNavigatorParamList> = {
         screens: {
           SSO: "sso"
         }
+      },
+      Quiz: {
+        screens: {
+          QuizList: "quizzes"
+        }
       }
     }
   }

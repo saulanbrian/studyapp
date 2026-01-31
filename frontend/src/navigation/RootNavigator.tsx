@@ -22,6 +22,7 @@ import { QueryErrorResetBoundary } from "@tanstack/react-query"
 import { ENV } from "../constants/Env";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/supabase/client"
+import QuizStackNavigator from "./Quiz";
 
 async function loadFonts() {
   try {
@@ -86,7 +87,7 @@ const MainDrawerNavigator = () => {
     <Drawer.Navigator
       screenOptions={({ route }) => ({
         drawerType: "slide",
-        headerShadowVisible:false,
+        headerShadowVisible: false,
         headerStyle: {
           backgroundColor: colors.surface
         },
@@ -98,12 +99,22 @@ const MainDrawerNavigator = () => {
         drawerInactiveTintColor: colors.textSecondary,
         drawerActiveBackgroundColor: colors.primary,
         drawerInactiveBackgroundColor: colors.elevated,
+        drawerItemStyle: {
+          marginBottom: 4
+        },
         drawerIcon: ({ color, focused, size }) => {
           let icon = null
 
-          if (route.name === "Summary") {
-            icon = focused ? "folder" : "folder-o"
+
+          switch (route.name) {
+            case "Summary":
+              icon = focused ? "folder" : "folder-o"
+              break
+            case "Quiz":
+              icon = focused ? "play-circle" : "play-circle-o"
+              break
           }
+
 
           return <FontAwesome
             name={icon as any}
@@ -124,6 +135,13 @@ const MainDrawerNavigator = () => {
         component={SummaryStackNavigator}
         options={{
           headerTitle: "Home"
+        }}
+      />
+      <Drawer.Screen
+        name={"Quiz"}
+        component={QuizStackNavigator}
+        options={{
+          headerTitle: "Quiz"
         }}
       />
     </Drawer.Navigator>
