@@ -1,6 +1,6 @@
 import { supabase } from "@/supabase/client";
 import { PageResult } from "../../types/PageResult";
-import { Quiz } from "../../types/Quiz";
+import { Quiz, QuizWithMetadata } from "../../types/Quiz";
 import getUserIdAsync from "../auth/getUserIdAsync";
 
 
@@ -8,7 +8,7 @@ const pageLimit = 10
 
 export default async function getInfiniteQuiz({
   page
-}: { page: number }): Promise<PageResult<Quiz>> {
+}: { page: number }): Promise<PageResult<QuizWithMetadata>> {
 
   const userId = await getUserIdAsync({ throwOnError: true })
   if (!userId) throw new Error(`
@@ -23,7 +23,8 @@ export default async function getInfiniteQuiz({
     .select(`
       *,
       summaries(
-        owner
+        owner,
+        title
       )
     `)
     .filter("summaries.owner", "eq", userId)
@@ -33,10 +34,14 @@ export default async function getInfiniteQuiz({
     "No fata found"
   )
 
+
   const hasNextPage = quizzes.length > pageLimit;
 
   return {
-    results: quizzes,
+    results: quizzes.map(q => ({
+      ...q,
+      summaryTitle: q.summaries.title
+    })),
     next: hasNextPage ? page + 1 : undefined
   }
 

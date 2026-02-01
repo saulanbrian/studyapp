@@ -28,3 +28,7 @@ export type Quiz = Omit<Q, "content"> & {
   }
 }
 
+
+export type QuizWithMetadata = Quiz & {
+  summaryTitle: string
+}
