@@ -14,10 +14,10 @@ logger = get_logger(__name__)
 
 system_prompt = """
 You are given a markdown chunk of a lesson document.
-
-Your task is to generate as many quiz questions as possible based strictly on the content.
+Your task is to generate questions based strictly on the content.
 
 Rules:
+- number of questions must be between 5-8
 - Output MUST be valid JSON only.
 - Do NOT include markdown, explanations, or extra text.
 - Follow the exact JSON structure defined below.
@@ -112,7 +112,7 @@ class QuizMaker:
                 operation="generate_questions"
             )
             return
-        chunks = chunk_markdown(self.summary_content)
+        chunks = chunk_markdown(self.summary_content,min_chunk_lines=50)
         for chunk in chunks:
             try:
                 r = get_completion(
@@ -137,7 +137,7 @@ class QuizMaker:
                 except ValidationError as e:
                     logger.info(f"Invalid quiz output: { e }")
                 else:
-                    self.questions.extend([output["questions"]])
+                    self.questions.extend(output["questions"])
 
             except requests.HTTPError as e:
                 logger.info(f"Ollama Error:{ e }")
