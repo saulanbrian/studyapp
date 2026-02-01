@@ -43,16 +43,19 @@ export type Database = {
           content: Json
           id: string
           ref: string
+          score: number | null
         }
         Insert: {
           content: Json
           id?: string
           ref: string
+          score?: number | null
         }
         Update: {
           content?: Json
           id?: string
           ref?: string
+          score?: number | null
         }
         Relationships: [
           {
