@@ -41,21 +41,27 @@ export type Database = {
       quizzes: {
         Row: {
           content: Json
+          created_at: string | null
           id: string
           ref: string
           score: number | null
+          status: Database["public"]["Enums"]["quiz_status"]
         }
         Insert: {
           content: Json
+          created_at?: string | null
           id?: string
           ref: string
           score?: number | null
+          status?: Database["public"]["Enums"]["quiz_status"]
         }
         Update: {
           content?: Json
+          created_at?: string | null
           id?: string
           ref?: string
           score?: number | null
+          status?: Database["public"]["Enums"]["quiz_status"]
         }
         Relationships: [
           {
@@ -111,6 +117,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      quiz_status: "pending" | "success" | "error"
       summary_status: "pending" | "success" | "error"
     }
     CompositeTypes: {
@@ -239,6 +246,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      quiz_status: ["pending", "success", "error"],
       summary_status: ["pending", "success", "error"],
     },
   },
