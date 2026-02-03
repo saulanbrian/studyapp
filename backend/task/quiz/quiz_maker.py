@@ -1,4 +1,5 @@
 import json
+from typing import Any, Dict
 import httpx
 from pydantic_core import ValidationError
 import requests
@@ -73,16 +74,18 @@ The output must be directly parsable by JSON.load().
 class QuizMaker:
 
     
-    def __init__(self,summary_id:str) -> None:
-        self.summary_id = summary_id
+    def __init__(self,quiz_id:str) -> None:
+        self.quiz_id = quiz_id
         self.summary_content: str | None = None
         self.err = None
         self.questions = []
 
     
-    def get_summary(self):
+    def get_summary_content(self):
         try:
-            r = get_summary(self.summary_id)
+            r = client.get(
+                f"quizzes?select=*,summaries(content)&id=eq.{self.quiz_id}"
+            )
             r.raise_for_status()
             if len(r.json()) < 1:
                 self.err = httpx.HTTPStatusError(
@@ -91,17 +94,13 @@ class QuizMaker:
                     response=r
                 )
                 return
-            summary = r.json()[0]
-            if not summary["content"] or summary["status"] != "success":
-                self.err = ValueError(
-                    "Error: Make sure your summary has status of succcess and content is not null"                
-                )   
-            self.summary_content = summary["content"]
+            content = r.json()[0]["summaries"]["content"]
+            self.summary_content = content
         except httpx.HTTPStatusError as e:
             logger.info(f"error upon retrieving summary: { e }")
             self.err = e
         except Exception as e:
-            print(f"Unexpected error: { e }")
+            logger.info(f"Unexpected error: { e }")
             self.err = e
 
 
@@ -146,28 +145,36 @@ class QuizMaker:
                 logger.info(f"Unexpected error: { e }")
 
 
-    def create_quiz(self):
+    def update_quiz(self):
+
+        payload:Dict[str,Any] = {
+            "status":"success" if self.questions else "error"
+        }
+
+        if self.questions:
+            payload["content"] = {
+                "questions":self.questions
+            }
+
         try:
-            client.post("quizzes", json={
-                "ref":self.summary_id,
-                "content":{
-                    "questions":self.questions
-                }
-            }).raise_for_status()
+            client.patch(
+                f"quizzes?id=eq.{self.quiz_id}", 
+                json=payload
+            ).raise_for_status()
         except httpx.HTTPStatusError as e:
             logger.info(f"Error creating quiz: { e }")
         except Exception as e:
             logger.info(e)
         else:
-            logger.info("Quiz Created!")
+            logger.info("Quiz Updated!")
 
                 
 
     def start(self):
         steps = [
-            self.get_summary,
+            self.get_summary_content,
             self.generate_questions,
-            self.create_quiz
+            self.update_quiz
         ]
 
         for step in steps:

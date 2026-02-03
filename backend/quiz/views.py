@@ -8,18 +8,18 @@ from task.quiz.generate_quiz import generate_quiz
 
 @api_view(['POST'])
 def generate_quiz_view(request):
-    summary_id = request.data.get('summary_id')
-    if not summary_id:
+    quiz_id = request.data.get('quiz_id')
+    if not quiz_id:
         return Response(
             {
                 "error": "Parameter summary_id is missing"
             },
             status=status.HTTP_400_BAD_REQUEST
         )
-    generate_quiz.delay(summary_id)
+    generate_quiz.delay(quiz_id)
     return Response(
         {
-            "success":f"generating quiz for summary {summary_id}"
+            "success":f"generating questions for quiz: { quiz_id }"
         },
         status=status.HTTP_200_OK
     )

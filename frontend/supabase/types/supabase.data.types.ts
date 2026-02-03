@@ -40,7 +40,7 @@ export type Database = {
       }
       quizzes: {
         Row: {
-          content: Json
+          content: Json | null
           created_at: string | null
           id: string
           ref: string
@@ -48,7 +48,7 @@ export type Database = {
           status: Database["public"]["Enums"]["quiz_status"]
         }
         Insert: {
-          content: Json
+          content?: Json | null
           created_at?: string | null
           id?: string
           ref: string
@@ -56,7 +56,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["quiz_status"]
         }
         Update: {
-          content?: Json
+          content?: Json | null
           created_at?: string | null
           id?: string
           ref?: string
