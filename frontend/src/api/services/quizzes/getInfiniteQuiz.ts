@@ -1,6 +1,6 @@
 import { supabase } from "@/supabase/client";
 import { PageResult } from "../../types/PageResult";
-import { Quiz, QuizWithMetadata } from "../../types/Quiz";
+import { Quiz } from "../../types/Quiz";
 import getUserIdAsync from "../auth/getUserIdAsync";
 
 
@@ -8,7 +8,7 @@ const pageLimit = 10
 
 export default async function getInfiniteQuiz({
   page
-}: { page: number }): Promise<PageResult<QuizWithMetadata>> {
+}: { page: number }): Promise<PageResult<Quiz>> {
 
   const userId = await getUserIdAsync({ throwOnError: true })
   if (!userId) throw new Error(`

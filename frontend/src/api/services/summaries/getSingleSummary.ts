@@ -1,12 +1,9 @@
 import { supabase } from "@/supabase/client";
 
 export default async function getSingleSummary(id: string) {
-  const { data, error } = await supabase
+  return await supabase
     .from("summaries")
-    .select("*")
+    .select("*, quizzes(id)")
     .eq("id", id)
     .single()
-
-  if (error) throw error
-  return data
 }

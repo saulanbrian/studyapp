@@ -18,7 +18,7 @@ export default async function getInfiniteSummaries({
 
   const { data, error } = await supabase
     .from("summaries")
-    .select("*")
+    .select("*, quizzes(id)")
     .filter("owner", "eq", userId)
     .order("created_at", { ascending: false })
     .range(from_, to_)
@@ -29,8 +29,13 @@ export default async function getInfiniteSummaries({
 
   const hasNextPage = data.length > pageLimit;
 
+  const summaries = hasNextPage ? data.slice(0, pageLimit) : data
+
   return {
-    results: hasNextPage ? data.slice(0, pageLimit) : data,
+    results: summaries.map(summary => ({
+      ...summary,
+      quizId: summary.quizzes[0]?.id
+    })),
     next: hasNextPage ? page + 1 : undefined,
   }
 }

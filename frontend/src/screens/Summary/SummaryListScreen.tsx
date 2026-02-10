@@ -1,19 +1,13 @@
-import useQueryUpdater from "@/src/api/hooks/useQueryUpdater";
 import { useGetSummaries } from "@/src/api/queries/summaries";
-import { PageResult } from "@/src/api/types/PageResult";
-import { Summary } from "@/src/api/types/summary";
-import addDataToTopOfInfiniteQueryData from "@/src/api/utils/addDataToTopOfInfiniteQueryData";
 import { mapInfiniteDataResult } from "@/src/api/utils/mapInfiniteDataResult";
 import { ErrorScreen, LoadingScreen, ThemedScreen, ThemedText, ThemedView } from "@/src/components";
-import SummaryComponent from "@/src/components/Summary/SummaryComponent";
 import ThemedButton, { AnimatedThemedButton } from "@/src/components/ThemedButton";
 import { SummaryStackParamList } from "@/src/navigation/Summary/types";
-import { supabase } from "@/supabase/client";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { FlashList } from "@shopify/flash-list";
-import { InfiniteData, useQueryClient } from "@tanstack/react-query";
 import { Suspense, useCallback, useEffect } from "react";
 import { View } from "react-native";
+import SummaryCard from "@/src/components/Summary/SummaryCard"
 import { StyleSheet } from "react-native-unistyles";
 
 export default function SummaryListScreen() {
@@ -49,59 +43,10 @@ const SummaryList = () => {
     refetch,
     isRefetching
   } = useGetSummaries()
-  const {
-    insertIntoInfiniteQuery,
-    updateDataFromInfiniteQuery,
-    removeDataFromInfiniteQuery
-  } = useQueryUpdater<Summary>()
-
-  const summaries = mapInfiniteDataResult(data)
-
-  useEffect(() => {
-    const channel = supabase
-      .channel("summaries:all")
-      .on("postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "summaries"
-        },
-        ({ eventType, new: newSummary, old: oldSummary }) => {
-          switch (eventType) {
-            case "INSERT":
-              insertIntoInfiniteQuery({
-                newData: newSummary as Summary,
-                queryKey: ["summaries"]
-              })
-              break
-
-            case "UPDATE":
-              updateDataFromInfiniteQuery({
-                id: newSummary.id,
-                newData: newSummary as Summary,
-                queryKey: ["summaries"]
-              })
-              break
-
-            case "DELETE":
-              removeDataFromInfiniteQuery({
-                queryKey: ["summaries"],
-                id: oldSummary.id,
-              })
-              break
-          }
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [])
 
   return (
     <FlashList
-      data={summaries}
+      data={mapInfiniteDataResult(data)}
       keyExtractor={item => item.id}
       refreshing={isRefetching}
       onRefresh={refetch}
@@ -110,8 +55,8 @@ const SummaryList = () => {
       estimatedItemSize={123}
       decelerationRate={0.5}
       ItemSeparatorComponent={() => <View style={styles.separator} />}
-      renderItem={({ item, index }) => (
-        <SummaryComponent {...item} />
+      renderItem={({ item }) => (
+        <SummaryCard {...item} />
       )}
       contentContainerStyle={{ paddingHorizontal: 12 }}
     />

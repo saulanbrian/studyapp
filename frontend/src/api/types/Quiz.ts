@@ -25,11 +25,7 @@ type Q = Database["public"]["Tables"]["quizzes"]["Row"]
 export type Quiz = Omit<Q, "content"> & {
   content: {
     questions: Question[]
-  } | null
-}
-
-
-export type QuizWithMetadata = Quiz & {
-  summaryTitle: string
+  } | null;
+  summaryTitle: string;
 }
 

@@ -1,20 +1,24 @@
 import { Summary } from "@/src/api/types/summary";
-import ThemedView, { AnimatedThemedView } from "../ThemedView";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import { Image } from "expo-image";
 import { ActivityIndicator, Pressable, StyleProp, View, ViewStyle } from "react-native";
-import ThemedText from "../ThemedText";
 import extractMonthAndDay from "@/src/api/utils/extractMonthAndDay";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import ThemedView from "../../ThemedView";
+import ThemedText from "../../ThemedText";
+import { useSummary } from "@/src/context/Summary/SummaryContext";
 
-const SummaryComponentCard = React.memo(({
-  cover_url,
-  ...summary
-}: Summary) => {
+
+export default function Card() {
+
+  const {
+    status,
+    cover_url,
+  } = useSummary()
 
   return (
     <ThemedView style={[styles.container]}>
-      {summary.status === "pending" && <View style={styles.overlay} />}
+      {status === "pending" && <View style={styles.overlay} />}
       <Image
         source={
           cover_url
@@ -25,19 +29,15 @@ const SummaryComponentCard = React.memo(({
         contentFit={"cover"}
         cachePolicy={"memory-disk"}
       />
-      <Details {...summary} />
+      <Details />
     </ThemedView>
   )
-})
+}
 
-type DetailsProp = Pick<Summary, 'created_at' | 'title' | 'description' | 'status'>
 
-const Details = ({
-  created_at,
-  title,
-  description,
-  status,
-}: DetailsProp) => {
+const Details = () => {
+
+  const { title } = useSummary()
 
   return (
     <View style={styles.detailsContainer}>
@@ -49,13 +49,15 @@ const Details = ({
       >
         {title}
       </ThemedText>
-      <DescriptionContainer description={description} />
-      <StatusAndDate created_at={created_at} status={status} />
+      <DescriptionContainer />
+      <StatusAndDate />
     </View>
   )
 }
 
-const DescriptionContainer = ({ description }: { description: string | null }) => {
+const DescriptionContainer = () => {
+
+  const { description } = useSummary()
 
   return (
     <View style={styles.descriptionContainer}>
@@ -71,9 +73,10 @@ const DescriptionContainer = ({ description }: { description: string | null }) =
   )
 }
 
-type StatusAndDateProps = Pick<Summary, 'created_at' | 'status'>
 
-const StatusAndDate = ({ created_at, status }: StatusAndDateProps) => {
+const StatusAndDate = () => {
+
+  const { created_at, status } = useSummary()
 
   const { colors } = useUnistyles().theme
   styles.useVariants({ status })
@@ -105,8 +108,6 @@ const StatusAndDate = ({ created_at, status }: StatusAndDateProps) => {
   )
 }
 
-
-export default SummaryComponentCard
 
 const styles = StyleSheet.create(theme => ({
   container: {

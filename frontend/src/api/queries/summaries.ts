@@ -20,11 +20,15 @@ export const useGetSummaries = () => {
 
 
 export const useGetSummary = (id: string) => {
-  return useSuspenseQuery({
+  return useSuspenseQuery<Summary>({
     queryKey: ["summary", id],
     queryFn: async () => {
-      const res = await getSingleSummary(id)
-      return res
+      const { data, error } = await getSingleSummary(id)
+      if (error) throw error
+      return {
+        ...data,
+        quizId: data.quizzes[0]?.id
+      }
     },
   })
 }

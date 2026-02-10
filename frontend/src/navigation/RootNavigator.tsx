@@ -1,6 +1,6 @@
 import { useAuth } from "@clerk/clerk-expo";
 import { LoadingScreen, ThemedView } from "../components";
-import { createNavigationContainerRef, NavigationContainer, NavigationProp, useFocusEffect, useNavigation } from "@react-navigation/native";
+import { createNavigationContainerRef, getFocusedRouteNameFromRoute, NavigationContainer, NavigationProp, useFocusEffect, useNavigation } from "@react-navigation/native";
 import { createDrawerNavigator } from "@react-navigation/drawer"
 import SummaryStackNavigator from "./Summary";
 import AuthStackNavigator from "./Auth";
@@ -140,8 +140,14 @@ const MainDrawerNavigator = () => {
       <Drawer.Screen
         name={"Quiz"}
         component={QuizStackNavigator}
-        options={{
-          headerTitle: "Quiz"
+        options={({ route }) => {
+
+          const routeName = getFocusedRouteNameFromRoute(route)
+
+          return {
+            headerTitle: "Quiz",
+            headerShown: routeName !== "QuizPlayScreen"
+          }
         }}
       />
     </Drawer.Navigator>
