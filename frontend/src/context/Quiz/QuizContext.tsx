@@ -1,7 +1,7 @@
-import { QuizWithMetadata } from "@/src/api/types/Quiz";
+import { Quiz } from "@/src/api/types/Quiz";
 import { createContext, PropsWithChildren, useContext } from "react";
 
-const QuizContext = createContext<QuizWithMetadata | undefined>(undefined)
+const QuizContext = createContext<Quiz | undefined>(undefined)
 
 export const useQuiz = () => {
   const context = useContext(QuizContext)
@@ -14,7 +14,7 @@ export const useQuiz = () => {
 export default function QuizContextProvider({
   children,
   ...quiz
-}: PropsWithChildren<QuizWithMetadata>) {
+}: PropsWithChildren<Quiz>) {
 
   return (
     <QuizContext.Provider value={{ ...quiz }}>

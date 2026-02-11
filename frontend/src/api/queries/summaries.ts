@@ -27,7 +27,7 @@ export const useGetSummary = (id: string) => {
       if (error) throw error
       return {
         ...data,
-        quizId: data.quizzes[0]?.id
+        quizId: data.quizzes?.id ?? null
       }
     },
   })

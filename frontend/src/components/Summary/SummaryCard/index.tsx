@@ -9,6 +9,7 @@ import OpenButton from "./OpenButton";
 import DeleteButton from "./DeleteButton";
 import PlayQuizButton from "./PlayQuizButton";
 import SummaryContextProvider, { useSummary } from "@/src/context/Summary/SummaryContext";
+import CreateQuizButton from "./CreateQuizButton";
 
 
 const INITIAL_ANIMATION_DURATION = 500
@@ -69,7 +70,7 @@ function MainComponent() {
 
 const ActionsContainer = ({ dismiss }: { dismiss: () => void }) => {
 
-  const { status } = useSummary()
+  const { status, quizId } = useSummary()
 
   return (
     <View style={styles.actionsContainer}>
@@ -79,7 +80,10 @@ const ActionsContainer = ({ dismiss }: { dismiss: () => void }) => {
           : <RetryButton modalDismissFn={dismiss} />
       )}
       <DeleteButton modalDismissFn={dismiss} />
-      <PlayQuizButton modalDismissFn={dismiss} />
+      {quizId
+        ? <PlayQuizButton modalDismissFn={dismiss} />
+        : <CreateQuizButton modalDismissFn={dismiss} />
+      }
     </View>
   )
 }

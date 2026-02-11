@@ -33,7 +33,7 @@ export default function QuizStackNavigator() {
             case "UPDATE":
               updateDataFromInfiniteQuery({
                 id: newQuiz.id,
-                newData: newQuiz as Quiz,
+                updateFields: newQuiz as Quiz,
                 queryKey: ["quizzes"]
               })
               break

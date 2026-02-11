@@ -8,7 +8,8 @@ import removeDataFromInifiniteQueryDataById from "../utils/removeDataFromInfinit
 type QueryUpdaterCommonProps<T> = {
   id: string;
   newData: T;
-  queryKey: string[]
+  queryKey: string[];
+  updateFields: Partial<T>
 }
 
 
@@ -37,9 +38,9 @@ const useQueryUpdater = <T extends { id: string }>() => {
 
   function updateDataFromInfiniteQuery({
     id,
-    newData,
-    queryKey
-  }: QueryUpdaterCommonProps<T>) {
+    queryKey,
+    updateFields
+  }: Omit<QueryUpdaterCommonProps<T>, 'newData'>) {
 
     queryClient.setQueryData<InfiniteData<PageResult<T>>>(
       queryKey,
@@ -48,7 +49,7 @@ const useQueryUpdater = <T extends { id: string }>() => {
 
         const updatedData = updateInfiniteQueryDataById({
           data,
-          newData,
+          updateFields,
           id
         })
         return updatedData
@@ -59,7 +60,7 @@ const useQueryUpdater = <T extends { id: string }>() => {
   function removeDataFromInfiniteQuery({
     id,
     queryKey,
-  }: Omit<QueryUpdaterCommonProps<T>, 'newData'>) {
+  }: Omit<QueryUpdaterCommonProps<T>, 'newData' | 'updateFields'>) {
 
     queryClient.setQueryData<InfiniteData<PageResult<T>>>(
       queryKey,

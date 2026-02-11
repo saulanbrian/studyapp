@@ -14,6 +14,7 @@ import deleteQuiz from "@/src/api/services/quizzes/deleteQuiz";
 import useQueryUpdater from "@/src/api/hooks/useQueryUpdater";
 import { Quiz } from "@/src/api/types/Quiz";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Summary } from "@/src/api/types/summary";
 
 export default function ActionContainer({
   style
@@ -31,10 +32,9 @@ export default function ActionContainer({
 const DeleteButton = () => {
 
   const { colors } = useUnistyles().theme
-  const { id, summaryId } = useQuiz()
+  const { id, ref: summaryId } = useQuiz()
   const [alertVisible, setAlertVisible] = useState(false)
-  const { removeDataFromInfiniteQuery } = useQueryUpdater<Quiz>()
-  const queryClient = useQueryClient()
+  const { removeDataFromInfiniteQuery, updateDataFromInfiniteQuery } = useQueryUpdater<Quiz | Summary>()
 
   const {
     mutate,
@@ -47,8 +47,14 @@ const DeleteButton = () => {
     },
     onSuccess: () => {
       setAlertVisible(false)
-      queryClient.invalidateQueries({ queryKey: ["summary", summaryId, "quiz"] })
       removeDataFromInfiniteQuery({ id, queryKey: ["quizzes"] })
+      updateDataFromInfiniteQuery({
+        id: summaryId,
+        queryKey: ["summaries"],
+        updateFields: {
+          quizId: null
+        }
+      })
     }
   })
 

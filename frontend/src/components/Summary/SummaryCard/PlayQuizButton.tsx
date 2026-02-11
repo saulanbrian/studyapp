@@ -25,78 +25,47 @@ export default function PlayQuizButton({
 }: PlayQuizButtonProps) {
 
   const navigation = useNavigation<NavigationProp<RootNavigatorParamList>>()
-  const { insertIntoInfiniteQuery } = useQueryUpdater<Quiz>()
-  const { id: summaryId } = useSummary()
+  const { id } = useSummary()
 
   const {
     data: quiz,
-    isPending: retrievingQuiz
-  } = useGetQuizBySummaryId(summaryId)
+    isPending,
+    error
+  } = useGetQuizBySummaryId(id)
 
-  const {
-    mutate,
-    isPending: creatingQuiz,
-    data: createdQuiz
-  } = useMutation<Quiz>({
-    mutationFn: async () => {
-      const { data, error } = await createNewQuiz(summaryId)
-      if (!data || error) throw error || new Error(`
-        An error has occures upon creating a quiz.
-      `)
-      return {
-        ...data,
-        summaryTitle: data.summaries.title
-      }
-    },
-    onSuccess: (quiz) => {
-      insertIntoInfiniteQuery({ newData: quiz, queryKey: ["quizzes"] })
+  const handlePress = useCallback(() => {
+    if (error) throw error
+    if (quiz?.status === "success") {
+      navigation.navigate("Quiz", {
+        screen: "QuizPlayScreen",
+        params: { id: quiz.id }
+      })
+    } else {
       navigation.navigate("Quiz", {
         screen: "QuizList"
       })
-    },
-    onError: e => {
-      console.log(e)
-    }
-  })
-
-
-  const handlePress = useCallback(() => {
-    if (!quiz && !createdQuiz) {
-      mutate()
-      return
-    }
-    const specQuiz = quiz ?? createdQuiz
-    if (specQuiz?.status === "success") {
-      navigation.navigate("Quiz", {
-        screen: "QuizPlayScreen",
-        params: { id: specQuiz.id }
-      })
-    } else {
-      navigation.navigate("Quiz", { screen: "QuizList" })
     }
     modalDismissFn()
-  }, [quiz, createdQuiz])
+  }, [quiz])
 
   return (
     <ModalActionButton
       style={[styles.button, style]}
+      disabled={isPending}
       onPress={handlePress}
-      disabled={retrievingQuiz}
     >
-      {retrievingQuiz || creatingQuiz
-        ? <ActivityIndicator color={darkColors.textPrimary} />
-        : (
-          <>
-            <Ionicons
-              name={"play"}
-              size={24}
-              color={darkColors.textPrimary}
-            />
-            <ThemedText style={styles.buttonText}>
-              Play Quiz
-            </ThemedText>
-          </>
-        )
+      {isPending ? (
+        <ActivityIndicator color={darkColors.textPrimary} />
+      ) : <>
+        <Ionicons
+          name={"play"}
+          size={24}
+          color={darkColors.textPrimary}
+        />
+        <ThemedText style={styles.buttonText}>
+          Play Quiz
+        </ThemedText>
+      </>
       }
     </ModalActionButton>
   )

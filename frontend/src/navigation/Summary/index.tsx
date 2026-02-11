@@ -42,7 +42,7 @@ export default function SummaryStackNavigator() {
             case "UPDATE":
               updateDataFromInfiniteQuery({
                 id: newSummary.id,
-                newData: newSummary as Summary,
+                updateFields: newSummary as Summary,
                 queryKey: ["summaries"]
               })
               break

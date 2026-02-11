@@ -3,14 +3,14 @@ import { PageResult } from "../types/PageResult"
 
 type Props<T> = {
   data: InfiniteData<PageResult<T>>;
-  newData: T;
+  updateFields: Partial<T>;
   id: string
 }
 
 export default function updateInfiniteQueryDataById<T extends { id: string }>({
   data,
   id,
-  newData
+  updateFields
 }: Props<T>): InfiniteData<PageResult<T>> {
 
   return {
@@ -21,7 +21,10 @@ export default function updateInfiniteQueryDataById<T extends { id: string }>({
           ...page,
           results: [
             ...page.results.map(res => {
-              if (res.id === id) return newData
+              if (res.id === id) return {
+                ...res,
+                ...updateFields
+              }
               return res
             })
           ]

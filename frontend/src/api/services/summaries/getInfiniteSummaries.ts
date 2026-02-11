@@ -23,8 +23,8 @@ export default async function getInfiniteSummaries({
     .order("created_at", { ascending: false })
     .range(from_, to_)
 
-  if (error || !data) {
-    throw error || new Error("No data found")
+  if (error) {
+    throw error
   }
 
   const hasNextPage = data.length > pageLimit;
@@ -34,7 +34,7 @@ export default async function getInfiniteSummaries({
   return {
     results: summaries.map(summary => ({
       ...summary,
-      quizId: summary.quizzes[0]?.id
+      quizId: summary.quizzes?.id ?? null
     })),
     next: hasNextPage ? page + 1 : undefined,
   }
