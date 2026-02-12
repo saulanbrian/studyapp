@@ -12,4 +12,6 @@ export default async function updateSummary({
     .from("summaries")
     .update(fields)
     .eq("id", id)
+    .select()
+    .single()
 }

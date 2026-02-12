@@ -1,12 +1,17 @@
 import { useCallback, useState } from "react";
 import ModalActionButton from "./ModalActionButton";
-import { View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import ThemedText from "../../ThemedText";
 import { useUnistyles } from "react-native-unistyles";
 import ThemedAlert from "../../ThemedAlert";
 import deleteSummary from "@/src/api/services/summaries/deleteSummary";
 import { useSummary } from "@/src/context/Summary/SummaryContext";
+import useQueryUpdater from "@/src/api/hooks/useQueryUpdater";
+import { useMutation } from "@tanstack/react-query";
+import { darkColors } from "@/src/constants/ui/Colors";
+import { Summary } from "@/src/api/types/summary";
+import { Quiz } from "@/src/api/types/Quiz";
 
 
 type DeleteButtonProps = {
@@ -17,22 +22,36 @@ export default function DeleteButton({ modalDismissFn }: DeleteButtonProps) {
 
   const [alertVisible, setAlertVisible] = useState(false)
   const { colors } = useUnistyles().theme
-  const { id } = useSummary()
+  const { id, quizId } = useSummary()
+  const { removeDataFromInfiniteQuery } = useQueryUpdater<Quiz>()
 
-  const handleDeletePress = useCallback(() => {
-    setAlertVisible(true)
-  }, [id])
+  const {
+    mutate,
+    isPending,
+  } = useMutation({
+    mutationFn: async () => {
+      const { error, data } = await deleteSummary(id)
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => {
+      if (quizId) {
+        removeDataFromInfiniteQuery({
+          id: quizId,
+          queryKey: ["quizzes"]
+        })
+      }
+      setAlertVisible(false)
+      modalDismissFn()
+    }
+  })
 
-  const handleDelete = useCallback(() => {
-    deleteSummary(id)
-    setAlertVisible(false)
-    modalDismissFn()
-  }, [id])
 
   return (
     <>
       <ModalActionButton
-        onPress={handleDeletePress}
+        onPress={() => setAlertVisible(true)}
+        disabled={isPending}
       >
         <Ionicons
           name={"trash-bin"}
@@ -52,8 +71,9 @@ export default function DeleteButton({ modalDismissFn }: DeleteButtonProps) {
         text="are you sure you want to delete this summary?"
         primaryAction={{
           title: "delete",
-          onDispatch: handleDelete,
-          warning: true
+          onDispatch: mutate,
+          warning: true,
+          isPending
         }}
         secondaryAction={{
           title: "cancel",

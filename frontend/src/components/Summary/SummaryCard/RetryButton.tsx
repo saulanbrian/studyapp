@@ -17,21 +17,25 @@ export default function RetryButton({
 }) {
 
   const { colors } = useUnistyles().theme
-  const { id } = useSummary()
+  const { id, status } = useSummary()
 
-  const handleRetry = useCallback(() => {
-    updateSummary({
+  const handleRetry = useCallback(async () => {
+    const { data, error } = await updateSummary({
       id,
       fields: {
         status: "pending"
       }
     })
-    requestSummary(id)
+    if (error) throw error
+    requestSummary(data.id)
     modalDismissFn()
   }, [id])
 
   return (
-    <ModalActionButton onPress={handleRetry}>
+    <ModalActionButton
+      onPress={handleRetry}
+      disabled={status !== "error"}
+    >
       <Ionicons
         name={"reload"}
         size={24}

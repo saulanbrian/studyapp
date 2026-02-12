@@ -20,7 +20,7 @@ export default function CreateQuizButton({
   modalDismissFn: () => void
 }) {
 
-  const { id } = useSummary()
+  const { id, status } = useSummary()
   const navigation = useNavigation<NavigationProp<RootNavigatorParamList>>()
 
   const {
@@ -58,7 +58,7 @@ export default function CreateQuizButton({
     <ModalActionButton
       onPress={mutate}
       style={styles.button}
-      disabled={isPending}
+      disabled={isPending || status !== "success"}
     >
       {isPending ? (
         <ActivityIndicator color={darkColors.textPrimary} />

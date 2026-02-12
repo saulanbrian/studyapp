@@ -26,11 +26,6 @@ export default function SummaryComponent(summary: Summary) {
 function MainComponent() {
 
   const [isPressed, setIsPressed] = useState(false)
-  const { status } = useSummary()
-
-  const handlePress = useCallback(() => {
-    if (status !== "pending") setIsPressed(true)
-  }, [status])
 
 
   const dismiss = useCallback(() => {
@@ -38,7 +33,7 @@ function MainComponent() {
   }, [isPressed])
 
   return (
-    <Pressable onPress={handlePress}>
+    <Pressable onPress={() => setIsPressed(true)}>
       <Card />
       <Modal
         transparent
@@ -74,11 +69,11 @@ const ActionsContainer = ({ dismiss }: { dismiss: () => void }) => {
 
   return (
     <View style={styles.actionsContainer}>
-      {status !== "pending" && (
+      {
         status === "success"
           ? <OpenButton modalDismissFn={dismiss} />
           : <RetryButton modalDismissFn={dismiss} />
-      )}
+      }
       <DeleteButton modalDismissFn={dismiss} />
       {quizId
         ? <PlayQuizButton modalDismissFn={dismiss} />
