@@ -12,6 +12,7 @@ import { useMutation } from "@tanstack/react-query";
 import { darkColors } from "@/src/constants/ui/Colors";
 import { Summary } from "@/src/api/types/summary";
 import { Quiz } from "@/src/api/types/Quiz";
+import { supabase } from "@/supabase/client";
 
 
 type DeleteButtonProps = {
@@ -22,7 +23,7 @@ export default function DeleteButton({ modalDismissFn }: DeleteButtonProps) {
 
   const [alertVisible, setAlertVisible] = useState(false)
   const { colors } = useUnistyles().theme
-  const { id, quizId } = useSummary()
+  const { id, quizId, cover_url, document_url } = useSummary()
   const { removeDataFromInfiniteQuery } = useQueryUpdater<Quiz>()
 
   const {
@@ -30,8 +31,7 @@ export default function DeleteButton({ modalDismissFn }: DeleteButtonProps) {
     isPending,
   } = useMutation({
     mutationFn: async () => {
-      const { error, data } = await deleteSummary(id)
-      if (error) throw error
+      const { data, error } = await deleteSummary(id)
       return data
     },
     onSuccess: () => {
@@ -43,6 +43,13 @@ export default function DeleteButton({ modalDismissFn }: DeleteButtonProps) {
       }
       setAlertVisible(false)
       modalDismissFn()
+      const urls = [document_url]
+      if (cover_url) {
+        urls.push(cover_url)
+      }
+      supabase.storage
+        .from("summary_bucket")
+        .remove(urls)
     }
   })
 

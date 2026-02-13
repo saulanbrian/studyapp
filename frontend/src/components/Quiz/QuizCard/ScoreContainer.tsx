@@ -26,7 +26,7 @@ export const ScoreContainer = (
   }, [scorePercentage]);
 
   const displayText = useCallback(() => {
-    return `${score}/${numberOfQuestions}`;
+    return `${score ?? 0}/${numberOfQuestions}`;
   }, [score, numberOfQuestions]);
 
   return (

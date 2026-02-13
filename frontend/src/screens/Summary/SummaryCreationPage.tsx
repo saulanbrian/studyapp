@@ -251,7 +251,8 @@ const SubmitButton = React.memo(({
           : navigation.navigate('SummaryList')
       }, 1000)
     },
-    onSettled: () => setMutating(false)
+    onSettled: () => setMutating(false),
+    onError: e => console.log(e)
   })
 
   const handleSubmit = useCallback(() => {

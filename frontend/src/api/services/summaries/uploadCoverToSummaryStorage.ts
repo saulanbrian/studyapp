@@ -23,14 +23,5 @@ export default async function uploadCoverToSummaryStorage({
       contentType: 'image/jpeg'
     })
 
-  let publicUrl = null
-
-  if (data) {
-    const { data: uploadedCover } = supabase.storage
-      .from('summary_bucket')
-      .getPublicUrl(data.path)
-    publicUrl = uploadedCover.publicUrl
-  }
-
-  return { data, error, uri: publicUrl }
+  return { data, error, uri: path }
 }

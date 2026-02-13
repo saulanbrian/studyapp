@@ -7,6 +7,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import ThemedView from "../../ThemedView";
 import ThemedText from "../../ThemedText";
 import { useSummary } from "@/src/context/Summary/SummaryContext";
+import { supabase } from "@/supabase/client";
 
 
 export default function Card() {
@@ -16,13 +17,21 @@ export default function Card() {
     cover_url,
   } = useSummary()
 
+  const publicCoverUrl = useMemo(() => {
+    if (!cover_url) return null
+    const { data } = supabase.storage
+      .from("summary_bucket")
+      .getPublicUrl(cover_url)
+    return data.publicUrl
+  }, [cover_url])
+
   return (
     <ThemedView style={[styles.container]}>
       {status === "pending" && <View style={styles.overlay} />}
       <Image
         source={
-          cover_url
-            ? { uri: cover_url }
+          publicCoverUrl
+            ? { uri: publicCoverUrl }
             : require("@/assets/images/icon.png")
         }
         style={styles.image}
