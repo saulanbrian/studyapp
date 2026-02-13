@@ -6,7 +6,7 @@ import requests
 from task.quiz.model import QuizModel
 from task.summary.utils import construct_operation_value_error, get_summary
 from celery.utils.log import get_logger
-from ..http_client import client
+from ..http_client import supabase_rest_client
 
 from task.utils import chunk_markdown, cleanup_json_output, get_completion
 
@@ -83,7 +83,7 @@ class QuizMaker:
     
     def get_summary_content(self):
         try:
-            r = client.get(
+            r = supabase_rest_client.get(
                 f"quizzes?select=*,summaries(content)&id=eq.{self.quiz_id}"
             )
             r.raise_for_status()
@@ -157,7 +157,7 @@ class QuizMaker:
             }
 
         try:
-            client.patch(
+            supabase_rest_client.patch(
                 f"quizzes?id=eq.{self.quiz_id}", 
                 json=payload
             ).raise_for_status()
