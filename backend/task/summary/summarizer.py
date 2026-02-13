@@ -2,7 +2,7 @@ import requests
 import httpx
 
 from task.utils import chunk_markdown, get_completion
-from ..http_client import client
+from ..http_client import supabase_rest_client, supabase_storage_client
 from .utils import clean_markdown, construct_operation_value_error, get_summary 
 from django.conf import settings
 from celery.utils.log import get_logger
@@ -275,7 +275,9 @@ class SummarizerObject:
 
         try:
             document_url = self.summary["document_url"]
-            r = client.get(document_url)
+            r = supabase_storage_client.get(
+                f"summary_bucket/{document_url}"
+            )
             r.raise_for_status()
             self.document = r.content
         except httpx.HTTPStatusError as e:
@@ -343,7 +345,7 @@ class SummarizerObject:
 
     def update_summary(self):
         try:
-            client.patch(f"summaries?select=*&id=eq.{self.id}", json={
+            supabase_rest_client.patch(f"summaries?select=*&id=eq.{self.id}", json={
                 "status":"success" if self.final_output else "error",
                 "content": self.final_output if self.final_output else None
             }).raise_for_status()

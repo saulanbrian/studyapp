@@ -1,10 +1,10 @@
 import re
 
 import httpx
-from ..http_client import client
+from ..http_client import supabase_rest_client
 
 def get_summary(id:str) -> httpx.Response:
-    return client.get(f"summaries?select=*&id=eq.{id}")
+    return supabase_rest_client.get(f"summaries?select=*&id=eq.{id}")
 
 def construct_operation_value_error(operation:str,lookup_value:str):
     return ValueError(f"""
