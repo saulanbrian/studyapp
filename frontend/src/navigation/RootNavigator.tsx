@@ -23,6 +23,7 @@ import { ENV } from "../constants/Env";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/supabase/client"
 import QuizStackNavigator from "./Quiz";
+import DrawerContextProvider, { useDrawer } from "../context/DrawerContext";
 
 async function loadFonts() {
   try {
@@ -67,7 +68,11 @@ export default function RootNavigator() {
       <QueryErrorResetBoundary >
         {({ reset }) =>
           session
-            ? <MainDrawerNavigator />
+            ? (
+              <DrawerContextProvider>
+                <MainDrawerNavigator />
+              </DrawerContextProvider>
+            )
             : isLoadingSession
               ? <LoadingScreen />
               : <AuthStackNavigator />
@@ -82,6 +87,7 @@ const Drawer = createDrawerNavigator<Omit<RootNavigatorParamList, "Auth">>()
 const MainDrawerNavigator = () => {
 
   const colors = useUnistyles().theme.colors
+  const { options } = useDrawer()
 
   return (
     <Drawer.Navigator
@@ -125,7 +131,10 @@ const MainDrawerNavigator = () => {
         sceneStyle: {
           backgroundColor: colors.background
         },
-        swipeEdgeWidth: Dimensions.get('screen').width / 2,
+        swipeEdgeWidth: options.swipeEnabled
+          ? Dimensions.get('screen').width / 2
+          : -1
+        ,
         swipeMinDistance: 20,
       })}
       drawerContent={props => <CustomDrawerContent {...props} />}
@@ -146,7 +155,8 @@ const MainDrawerNavigator = () => {
 
           return {
             headerTitle: "Quiz",
-            headerShown: routeName !== "QuizPlayScreen"
+            headerShown: routeName !== "QuizPlayScreen",
+            lazy:false
           }
         }}
       />

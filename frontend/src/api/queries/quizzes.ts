@@ -1,8 +1,9 @@
-import { useInfiniteQuery, useQuery, useSuspenseInfiniteQuery } from "@tanstack/react-query"
+import { useInfiniteQuery, useQuery, useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query"
 import { PageResult } from "../types/PageResult"
 import { Quiz } from "../types/Quiz"
 import getInfiniteQuiz from "../services/quizzes/getInfiniteQuiz"
 import getQuizBySummaryId from "../services/quizzes/getQuizBySummaryId"
+import getQuiz from "../services/quizzes/getQuiz"
 
 export const useGetInfiniteQuiz = () => {
   return useSuspenseInfiniteQuery<PageResult<Quiz>>({
@@ -27,5 +28,19 @@ export const useGetQuizBySummaryId = (summaryId: string) => {
         summaryTitle: data.summaries.title
       }
     },
+  })
+}
+
+export const useGetQuiz = (id: string) => {
+  return useSuspenseQuery<Quiz>({
+    queryKey: ["quiz", id],
+    queryFn: async () => {
+      const { data, error } = await getQuiz(id)
+      if (error) throw error
+      return {
+        ...data,
+        summaryTitle: data.summaries.title
+      }
+    }
   })
 }

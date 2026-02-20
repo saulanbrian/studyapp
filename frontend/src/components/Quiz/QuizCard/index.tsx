@@ -9,43 +9,58 @@ import ActionContainer from "./ActionContainer";
 import QuizContextProvider from "@/src/context/Quiz/QuizContext";
 
 type QuizCardProps = Quiz & Pick<PressableProps, 'onPress' | 'disabled'> & {
-  expanded: boolean
+  expanded: boolean;
+  selected?: boolean;
 }
 
 export default function QuizCard({
   expanded,
   disabled,
+  selected,
   onPress,
   ...quiz
 }: QuizCardProps) {
 
-  styles.useVariants({ expanded })
+  styles.useVariants({ expanded, selected })
 
   return (
     <QuizContextProvider {...quiz}>
-      <Pressable
-        style={[styles.mainCard]}
-        onPress={onPress}
-      >
-        <View style={{ flex: 1 }}>
-          <ThemedText numberOfLines={1} fw={"bold"}>
-            {quiz.summaryTitle}
-          </ThemedText>
-          <StatusContainer />
-        </View>
-        {
-          quiz.status === "success" ? (
-            <ScoreContainer
-            />
-          ) : <ScorePlaceholder />
-        }
-      </Pressable>
-      {expanded && <ActionContainer style={styles.actionCard} />}
+      <View style={styles.cardContainer}>
+        <Pressable
+          style={[styles.mainCard]}
+          onPress={onPress}
+        >
+          <View style={{ flex: 1 }}>
+            <ThemedText numberOfLines={1} fw={"bold"}>
+              {quiz.summaryTitle}
+            </ThemedText>
+            <StatusContainer />
+          </View>
+          {
+            quiz.status === "success" ? (
+              <ScoreContainer
+              />
+            ) : <ScorePlaceholder />
+          }
+        </Pressable>
+        {expanded && <ActionContainer style={styles.actionCard} />}
+      </View>
     </QuizContextProvider>
   )
 }
 
 const styles = StyleSheet.create(theme => ({
+  cardContainer: {
+    variants: {
+      selected: {
+        true: {
+          borderColor: theme.colors.primaryLight,
+          borderWidth: StyleSheet.hairlineWidth,
+          borderRadius: theme.radii.sm
+        }
+      }
+    }
+  },
   mainCard: {
     borderRadius: theme.radii.sm,
     flexDirection: "row",
@@ -60,7 +75,7 @@ const styles = StyleSheet.create(theme => ({
           borderBottomRightRadius: 0,
           paddingBottom: 0
         }
-      }
+      },
     }
   },
   actionCard: {

@@ -2,6 +2,8 @@ import { useGetInfiniteQuiz } from "@/src/api/queries/quizzes";
 import { mapInfiniteDataResult } from "@/src/api/utils/mapInfiniteDataResult";
 import { LoadingScreen, ThemedScreen, ThemedText } from "@/src/components";
 import QuizCard from "@/src/components/Quiz/QuizCard";
+import { QuizStackParamList } from "@/src/navigation/Quiz/types";
+import { RouteProp, useRoute } from "@react-navigation/native";
 import { FlashList } from "@shopify/flash-list";
 import { Suspense, useEffect, useState } from "react";
 import { View } from "react-native";
@@ -25,13 +27,12 @@ const Quizzes = () => {
     isRefetching
   } = useGetInfiniteQuiz()
 
-  const [selectedQuiz, setSelectedQuiz] = useState<string>(
-    mapInfiniteDataResult(quizzes)[0]?.id
-  )
+  const { params } = useRoute<RouteProp<QuizStackParamList, 'QuizList'>>()
+  const [selectedQuiz, setSelectedQuiz] = useState<string | undefined>()
 
   useEffect(() => {
-    setSelectedQuiz(mapInfiniteDataResult(quizzes)[0]?.id)
-  }, [quizzes])
+    setSelectedQuiz(params?.select)
+  }, [params])
 
   return (
     <FlashList
@@ -44,6 +45,7 @@ const Quizzes = () => {
         <QuizCard
           expanded={selectedQuiz === item.id}
           onPress={() => setSelectedQuiz(item.id)}
+          selected={selectedQuiz === item.id}
           {...item}
         />
       )}

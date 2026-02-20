@@ -26,7 +26,7 @@ export const linking: LinkingOptions<RootNavigatorParamList> = {
       Quiz: {
         screens: {
           QuizList: "quiz",
-          Quiz: "quiz/:id"
+          QuizPlayScreen: "quiz/:id"
         }
       }
     }

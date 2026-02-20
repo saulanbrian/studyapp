@@ -38,11 +38,12 @@ export default function PlayQuizButton({
     if (quiz?.status === "success") {
       navigation.navigate("Quiz", {
         screen: "QuizPlayScreen",
-        params: { id: quiz.id }
+        params: { id: quiz.id },
       })
     } else {
       navigation.navigate("Quiz", {
-        screen: "QuizList"
+        screen: "QuizList",
+        params: { select: quiz?.id }
       })
     }
     modalDismissFn()

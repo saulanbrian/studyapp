@@ -122,13 +122,13 @@ const AttachmentButton = () => {
 
 const PlayButton = () => {
 
-  const { status, ref: summaryId } = useQuiz()
+  const { status, id } = useQuiz()
   const navigation = useNavigation<NavigationProp<QuizStackParamList>>()
   styles.useVariants({ disabled: status !== "success" })
 
   const handlePress = useCallback(() => {
     if (status === "success") {
-      navigation.navigate("QuizPlayScreen", { id: summaryId })
+      navigation.navigate("QuizPlayScreen", { id })
     }
   }, [status])
 

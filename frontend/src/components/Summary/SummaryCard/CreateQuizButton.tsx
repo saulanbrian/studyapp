@@ -13,6 +13,7 @@ import { Quiz } from "@/src/api/types/Quiz";
 import { useNavigation } from "expo-router";
 import { RootNavigatorParamList } from "@/src/navigation/types";
 import { NavigationProp } from "@react-navigation/native";
+import processQuiz from "@/src/api/services/quizzes/processQuiz";
 
 export default function CreateQuizButton({
   modalDismissFn
@@ -38,6 +39,7 @@ export default function CreateQuizButton({
       }
     },
     onSuccess: (quiz) => {
+      processQuiz(quiz.id)
       updateDataFromInfiniteQuery({
         id,
         queryKey: ["summaries"],
@@ -49,7 +51,8 @@ export default function CreateQuizButton({
       })
       modalDismissFn()
       navigation.navigate("Quiz", {
-        screen: "QuizList"
+        screen: "QuizList",
+        params: { select: quiz.id }
       })
     }
   })

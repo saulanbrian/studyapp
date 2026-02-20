@@ -15,13 +15,13 @@ export const ScoreContainer = (
   const numberOfQuestions = content!.questions.length
 
   const scorePercentage = useMemo(() => {
-    const percentage = score ?? 0 / numberOfQuestions;
+    const percentage = (score ?? 0) / numberOfQuestions;
     return percentage;
   }, [numberOfQuestions, score]);
 
   const getColor = useCallback(() => {
-    if (scorePercentage >= 0.9) return colors.success;
-    if (scorePercentage >= 0.75) return colors.warning;
+    if (scorePercentage >= 0.75) return colors.success;
+    if (scorePercentage >= 0.6) return colors.warning;
     return colors.error;
   }, [scorePercentage]);
 
