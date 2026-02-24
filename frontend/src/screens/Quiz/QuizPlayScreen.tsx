@@ -15,6 +15,7 @@ import ExitConfirmationModal from "@/src/components/Quiz/ExitConfirmationModal";
 import updateQuiz from "@/src/api/services/quizzes/updateQuiz";
 import useQueryUpdater from "@/src/api/hooks/useQueryUpdater";
 import ProgressSavingView from "@/src/components/Quiz/ProgressSavingView";
+import { useQuizSound } from "@/src/context/Quiz/QuizSoundProvider";
 
 
 type QuizPlayScreenRouteProp = RouteProp<QuizStackParamList, 'QuizPlayScreen'>
@@ -50,6 +51,7 @@ type Choice = MultipleChoiceOption | TrueOrFalseOption
 const Content = ({ id }: { id: string; }) => {
 
   const { data } = useGetQuiz(id)
+  const { quizBackgroundMusic } = useQuizSound()
   const questions = useMemo(() => data.content!.questions, [data])
   const [question, setQuestion] = useState(questions[0])
   const [answers, setAnswers] = useState<Choice[]>([])
@@ -88,18 +90,26 @@ const Content = ({ id }: { id: string; }) => {
     }
   }, [answers, id])
 
+
+  const onCountdownEnd = useCallback(() => {
+    quizBackgroundMusic.play()
+  }, [quizBackgroundMusic])
+
   useFocusEffect(
     useCallback(() => {
       setQuestion(questions[0])
       setAnswers([])
+
+      return () => quizBackgroundMusic.stop()
     }, [])
   )
+
 
   if (isSaving) return <ProgressSavingView />
 
   return (
     <View style={styles.screen}>
-      <CountDownView>
+      <CountDownView onCountdownEnd={onCountdownEnd}>
         <TitleHeader summaryTitle={data.summaryTitle} />
         <QuestionContainer question={question.question} />
         <OptionsContainer
@@ -150,6 +160,12 @@ type OptionsProps = {
 const OptionsContainer = ({ advanceFn, question }: OptionsProps) => {
 
   styles.useVariants({ trueOrFalse: question.type === "true_or_false" })
+  const { quizAnswerClickSound } = useQuizSound()
+
+  const handleSelect = useCallback((choice: Choice) => {
+    quizAnswerClickSound.play()
+    advanceFn(choice)
+  }, [advanceFn])
 
   return (
     <View style={styles.optionsContainer}>
@@ -160,7 +176,7 @@ const OptionsContainer = ({ advanceFn, question }: OptionsProps) => {
               key={i.toString()}
               isCorrect={choice.is_correct}
               optionText={choice.text}
-              onPress={() => advanceFn(choice)}
+              onPress={() => handleSelect(choice)}
             />
           ))
           : question.choices.map((choice, i) => (
@@ -168,7 +184,7 @@ const OptionsContainer = ({ advanceFn, question }: OptionsProps) => {
               key={i.toString()}
               isCorrect={choice.is_correct}
               optionText={`${choice.value}`}
-              onPress={() => advanceFn(choice)}
+              onPress={() => handleSelect(choice)}
             />
           ))
       }

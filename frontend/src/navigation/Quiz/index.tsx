@@ -6,6 +6,7 @@ import { Quiz } from "@/src/api/types/Quiz";
 import { supabase } from "@/supabase/client";
 import { useEffect } from "react";
 import QuizPlayScreen from "@/src/screens/Quiz/QuizPlayScreen";
+import QuizSoundContextProvider from "@/src/context/Quiz/QuizSoundProvider";
 
 const Stack = createNativeStackNavigator<QuizStackParamList>()
 
@@ -55,17 +56,19 @@ export default function QuizStackNavigator() {
   }, [])
 
   return (
-    <Stack.Navigator screenOptions={{
-      headerShown: false
-    }}>
-      <Stack.Screen
-        name={"QuizList"}
-        component={QuizListScreen}
-      />
-      <Stack.Screen
-        name={"QuizPlayScreen"}
-        component={QuizPlayScreen}
-      />
-    </Stack.Navigator>
+    <QuizSoundContextProvider>
+      <Stack.Navigator screenOptions={{
+        headerShown: false
+      }}>
+        <Stack.Screen
+          name={"QuizList"}
+          component={QuizListScreen}
+        />
+        <Stack.Screen
+          name={"QuizPlayScreen"}
+          component={QuizPlayScreen}
+        />
+      </Stack.Navigator>
+    </QuizSoundContextProvider>
   )
 }
