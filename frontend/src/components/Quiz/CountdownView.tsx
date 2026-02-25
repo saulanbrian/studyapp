@@ -4,6 +4,7 @@ import { useQuizSound } from "@/src/context/Quiz/QuizSoundProvider"
 import { useFocusEffect, useNavigation } from "@react-navigation/native"
 import { PropsWithChildren, useCallback, useEffect, useRef, useState } from "react"
 import { Text, View } from "react-native"
+import { StyleSheet } from "react-native-unistyles"
 
 type CountDownViewProps = PropsWithChildren<{
   onCountdownEnd?: () => void;
@@ -43,11 +44,18 @@ export default function CountDownView({
       {
         count > 0 ? (
           <View style={S.centerContainer}>
-            <ThemedText size={"xl"}>{count}</ThemedText>
+            <ThemedText style={styles.count}>{count}</ThemedText>
           </View>
         ) : children
       }
     </View>
   )
 }
+
+const styles = StyleSheet.create(theme => ({
+  count: {
+    fontSize: 80,
+    fontWeight: "800"
+  }
+}))
 

@@ -61,6 +61,7 @@
     "react-native-screens": "~4.11.1",
     "react-native-svg": "15.11.2",
     "react-native-system-navigation-bar": "^2.6.4",
+    "react-native-toast-message": "^2.3.3",
     "react-native-unistyles": "^3.0.7",
     "react-native-url-polyfill": "^3.0.0",
     "react-native-web": "~0.20.0",

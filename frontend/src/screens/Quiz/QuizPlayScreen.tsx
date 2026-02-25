@@ -16,6 +16,8 @@ import updateQuiz from "@/src/api/services/quizzes/updateQuiz";
 import useQueryUpdater from "@/src/api/hooks/useQueryUpdater";
 import ProgressSavingView from "@/src/components/Quiz/ProgressSavingView";
 import { useQuizSound } from "@/src/context/Quiz/QuizSoundProvider";
+import Toast from "react-native-toast-message";
+import QuizFinishView from "./components/QuizFinishView";
 
 
 type QuizPlayScreenRouteProp = RouteProp<QuizStackParamList, 'QuizPlayScreen'>
@@ -55,26 +57,28 @@ const Content = ({ id }: { id: string; }) => {
   const questions = useMemo(() => data.content!.questions, [data])
   const [question, setQuestion] = useState(questions[0])
   const [answers, setAnswers] = useState<Choice[]>([])
-  const [isSaving, setIsSaving] = useState(false)
-  const navigation = useNavigation()
+  const [isFinished, setIsFinished] = useState(false)
 
   const { updateDataFromInfiniteQuery } = useQueryUpdater<Quiz>()
 
   const advanceFn = (answer: Choice) => {
+
+    if (answers.length === questions.length) return
+
     const updatedAnswers = [...answers, answer]
-    const answersLength = updatedAnswers.length
-    if (answersLength <= questions.length) {
-      setAnswers(updatedAnswers)
-      if (answersLength < questions.length) {
-        setQuestion(questions[answersLength])
-      }
-    } else {
-      saveResult()
+    setAnswers(updatedAnswers)
+    if (updatedAnswers.length < questions.length) {
+      setQuestion(questions[updatedAnswers.length])
     }
   }
 
   const saveResult = useCallback(async () => {
-    setIsSaving(true)
+    Toast.show({
+      type: "neutral",
+      autoHide: true,
+      text2: "saving score...",
+      visibilityTime: 2000
+    })
     const correctAnswers = answers.filter(a => a.is_correct).length
     const { data, error } = await updateQuiz({ id, updateFields: { score: correctAnswers } })
     if (!error && data) {
@@ -85,11 +89,14 @@ const Content = ({ id }: { id: string; }) => {
           score: correctAnswers
         }
       })
-      setIsSaving(false)
-      navigation.goBack()
     }
+    Toast.show({
+      type: "success",
+      autoHide: true,
+      text2: "score saved!",
+      visibilityTime: 2000,
+    })
   }, [answers, id])
-
 
   const onCountdownEnd = useCallback(() => {
     quizBackgroundMusic.play()
@@ -99,13 +106,23 @@ const Content = ({ id }: { id: string; }) => {
     useCallback(() => {
       setQuestion(questions[0])
       setAnswers([])
-
       return () => quizBackgroundMusic.stop()
     }, [])
   )
 
+  useEffect(() => {
+    if (answers.length === questions.length) {
+      setIsFinished(true)
+      saveResult()
+    }
+  }, [answers, questions])
 
-  if (isSaving) return <ProgressSavingView />
+  if (isFinished) return (
+    <QuizFinishView
+      score={answers.filter(a => a.is_correct).length}
+      numberOfQuestions={questions.length}
+    />
+  )
 
   return (
     <View style={styles.screen}>

@@ -1,5 +1,5 @@
 import { LoadingScreen, ThemedView } from "../components";
-import {  getFocusedRouteNameFromRoute, NavigationContainer, NavigationProp, useFocusEffect, useNavigation } from "@react-navigation/native";
+import { getFocusedRouteNameFromRoute, NavigationContainer, NavigationProp, useFocusEffect, useNavigation } from "@react-navigation/native";
 import { createDrawerNavigator } from "@react-navigation/drawer"
 import SummaryStackNavigator from "./Summary";
 import AuthStackNavigator from "./Auth";
@@ -17,6 +17,10 @@ import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/supabase/client"
 import QuizStackNavigator from "./Quiz";
 import DrawerContextProvider, { useDrawer } from "../context/DrawerContext";
+import * as SystemNavigationBar from "expo-navigation-bar"
+
+
+SystemNavigationBar.setVisibilityAsync("hidden")
 
 async function loadFonts() {
   try {
@@ -149,7 +153,7 @@ const MainDrawerNavigator = () => {
           return {
             headerTitle: "Quiz",
             headerShown: routeName !== "QuizPlayScreen",
-            lazy:false
+            lazy: false
           }
         }}
       />
