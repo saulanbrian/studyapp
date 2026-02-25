@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { Alert, StyleSheet, TextInput, View } from 'react-native'
 import { supabase } from '@/supabase/client'
-import { Button, Input } from '@rneui/themed'
 import ThemedButton from '../ThemedButton'
 import ThemedTextInput from '../ThemedTextInput'
 import { useAuth } from '@/src/api/hooks/auth/useAuth'

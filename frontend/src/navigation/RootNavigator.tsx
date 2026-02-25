@@ -1,25 +1,18 @@
-import { useAuth } from "@clerk/clerk-expo";
 import { LoadingScreen, ThemedView } from "../components";
-import { createNavigationContainerRef, getFocusedRouteNameFromRoute, NavigationContainer, NavigationProp, useFocusEffect, useNavigation } from "@react-navigation/native";
+import {  getFocusedRouteNameFromRoute, NavigationContainer, NavigationProp, useFocusEffect, useNavigation } from "@react-navigation/native";
 import { createDrawerNavigator } from "@react-navigation/drawer"
 import SummaryStackNavigator from "./Summary";
 import AuthStackNavigator from "./Auth";
 import { linking } from "./linking";
 import { RootNavigatorParamList } from "./types";
-import { SignedInRoute, SignedOutRoute } from "../components/Auth";
 import { navigationRef } from "./navigationRef";
 import { useUnistyles } from "react-native-unistyles";
 import { Dimensions } from "react-native";
 import { CustomDrawerContent } from "../components/Drawer";
 import { FontAwesome } from "@expo/vector-icons"
 import { useCallback, useEffect, useState } from "react";
-import { SplashScreen } from "expo-router";
 import * as Fonts from "expo-font"
-import SystemNavigationBar from "react-native-system-navigation-bar"
-import { useAppNavigation } from "../hooks/useAppNavigation";
-import ErrorBoundary from "react-native-error-boundary"
 import { QueryErrorResetBoundary } from "@tanstack/react-query"
-import { ENV } from "../constants/Env";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/supabase/client"
 import QuizStackNavigator from "./Quiz";
