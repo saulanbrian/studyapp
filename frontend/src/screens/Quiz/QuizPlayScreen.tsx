@@ -10,11 +10,10 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "rea
 import { Alert, StatusBar, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { StyleSheet } from "react-native-unistyles";
-import CountDownView from "@/src/components/Quiz/CountdownView";
+import CountDownView from "@/src/screens/Quiz/components/CountdownView";
 import ExitConfirmationModal from "@/src/components/Quiz/ExitConfirmationModal";
 import updateQuiz from "@/src/api/services/quizzes/updateQuiz";
 import useQueryUpdater from "@/src/api/hooks/useQueryUpdater";
-import ProgressSavingView from "@/src/components/Quiz/ProgressSavingView";
 import { useQuizSound } from "@/src/context/Quiz/QuizSoundProvider";
 import Toast from "react-native-toast-message";
 import QuizFinishView from "./components/QuizFinishView";
@@ -191,17 +190,17 @@ const OptionsContainer = ({ advanceFn, question }: OptionsProps) => {
           ? question.choices.map((choice, i) => (
             <OptionButton
               key={i.toString()}
-              isCorrect={choice.is_correct}
               optionText={choice.text}
               onPress={() => handleSelect(choice)}
+              style={styles.optionButton}
             />
           ))
           : question.choices.map((choice, i) => (
             <OptionButton
               key={i.toString()}
-              isCorrect={choice.is_correct}
               optionText={`${choice.value}`}
               onPress={() => handleSelect(choice)}
+              style={styles.optionButton}
             />
           ))
       }
@@ -210,8 +209,24 @@ const OptionsContainer = ({ advanceFn, question }: OptionsProps) => {
 }
 
 const styles = StyleSheet.create(theme => ({
+  optionButton: {
+    padding: theme.spacing.lg,
+    variants: {
+      trueOrFalse: {
+        true: {
+          flexGrow: 1,
+          aspectRatio: 1
+        },
+        false: {
+          paddingHorizontal: theme.spacing.md,
+          alignItems: 'flex-start',
+        }
+      }
+    }
+  },
   optionsContainer: {
     padding: theme.spacing.md,
+    gap: theme.spacing.xs,
     variants: {
       trueOrFalse: {
         true: {
@@ -221,7 +236,8 @@ const styles = StyleSheet.create(theme => ({
     }
   },
   question: {
-    alignSelf: "center"
+    alignSelf: "center",
+    color: darkColors.textPrimary,
   },
   questionContainer: {
     padding: theme.spacing.lg,

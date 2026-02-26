@@ -122,7 +122,8 @@ const styles = StyleSheet.create(theme => ({
   },
   score: {
     fontSize: 120,
-    fontWeight: "800"
+    fontWeight: "800",
+    color: darkColors.textPrimary
   },
   viewResultButton: {
     borderColor: darkColors.textPrimary,

@@ -1,28 +1,66 @@
-import { Pressable, PressableProps, View } from "react-native";
+import { Pressable, PressableProps, PressableStateCallbackType, View, ViewStyle } from "react-native";
 import ThemedText from "../ThemedText";
-import { StyleSheet } from "react-native-unistyles";
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import { darkColors } from "@/src/constants/ui/Colors";
+import { useMemo } from "react";
+import { Entypo } from "@expo/vector-icons";
 
 type OptionButtonProps = {
   optionText: string;
-  isCorrect: boolean;
-} & Pick<PressableProps, 'onPress'>
+  style?: ViewStyle,
+} & Pick<PressableProps, 'onPress' | 'disabled'>
 
 export default function OptionButton({
-  isCorrect,
   onPress,
+  disabled,
+  style,
   optionText,
 }: OptionButtonProps) {
 
+  const _true = useMemo(() => {
+    return optionText.toLowerCase() === "true"
+  }, [optionText])
+
+  const _false = useMemo(() => {
+    return optionText.toLowerCase() === "false"
+  }, [optionText])
 
   return (
-    <Pressable style={styles.button} onPress={onPress}>
-      <ThemedText style={styles.buttonText}>
-        {optionText}
-      </ThemedText>
+    <Pressable
+      style={[styles.button, style]}
+      onPress={onPress}
+      disabled={disabled}
+    >
+      {_true ? <CheckIcon />
+        : _false ? <CrossIcon />
+          : (
+            <ThemedText style={styles.buttonText}>
+              {optionText}
+            </ThemedText>
+          )
+      }
     </Pressable>
   )
 }
+
+const CheckIcon = () => {
+
+  return <Entypo
+    name={"check"}
+    size={40}
+    color={darkColors.textPrimary}
+  />
+}
+
+const CrossIcon = () => {
+
+  return <Entypo
+    name={"cross"}
+    size={40}
+    color={darkColors.textPrimary}
+  />
+}
+
 
 const styles = StyleSheet.create(theme => ({
   button: {

@@ -1,5 +1,6 @@
 import { ThemedText } from "@/src/components"
 import { S } from "@/src/constants/Styles"
+import { darkColors } from "@/src/constants/ui/Colors"
 import { useQuizSound } from "@/src/context/Quiz/QuizSoundProvider"
 import { useFocusEffect, useNavigation } from "@react-navigation/native"
 import { PropsWithChildren, useCallback, useEffect, useRef, useState } from "react"
@@ -55,7 +56,8 @@ export default function CountDownView({
 const styles = StyleSheet.create(theme => ({
   count: {
     fontSize: 80,
-    fontWeight: "800"
+    fontWeight: "800",
+    color: darkColors.textPrimary
   }
 }))
 
