@@ -17,6 +17,7 @@ import useQueryUpdater from "@/src/api/hooks/useQueryUpdater";
 import { useQuizSound } from "@/src/context/Quiz/QuizSoundProvider";
 import Toast from "react-native-toast-message";
 import QuizFinishView from "./components/QuizFinishView";
+import { QuizResultQuestion, useQuizResult } from "@/src/stores/quiz";
 
 
 type QuizPlayScreenRouteProp = RouteProp<QuizStackParamList, 'QuizPlayScreen'>
@@ -55,47 +56,29 @@ const Content = ({ id }: { id: string; }) => {
   const { quizBackgroundMusic } = useQuizSound()
   const questions = useMemo(() => data.content!.questions, [data])
   const [question, setQuestion] = useState(questions[0])
-  const [answers, setAnswers] = useState<Choice[]>([])
+  const [finishedQuestions, setFinishedQuestions] = useState<QuizResultQuestion[]>([])
   const [isFinished, setIsFinished] = useState(false)
 
-  const { updateDataFromInfiniteQuery } = useQueryUpdater<Quiz>()
+  const { saveResult } = useQuizResult()
 
   const advanceFn = (answer: Choice) => {
-
-    if (answers.length === questions.length) return
-
-    const updatedAnswers = [...answers, answer]
-    setAnswers(updatedAnswers)
-    if (updatedAnswers.length < questions.length) {
-      setQuestion(questions[updatedAnswers.length])
+    if (finishedQuestions.length < questions.length) {
+      const updatedFinishedQuestions: QuizResultQuestion[] = [
+        ...finishedQuestions,
+        {
+          ...question,
+          choices: question.choices.map(choice => ({
+            ...choice,
+            selected: choice === answer
+          }))
+        }
+      ]
+      setFinishedQuestions(updatedFinishedQuestions)
+      if (updatedFinishedQuestions.length < questions.length) {
+        setQuestion(questions[updatedFinishedQuestions.length])
+      }
     }
   }
-
-  const saveResult = useCallback(async () => {
-    Toast.show({
-      type: "neutral",
-      autoHide: true,
-      text2: "saving score...",
-      visibilityTime: 2000
-    })
-    const correctAnswers = answers.filter(a => a.is_correct).length
-    const { data, error } = await updateQuiz({ id, updateFields: { score: correctAnswers } })
-    if (!error && data) {
-      updateDataFromInfiniteQuery({
-        id,
-        queryKey: ["quizzes"],
-        updateFields: {
-          score: correctAnswers
-        }
-      })
-    }
-    Toast.show({
-      type: "success",
-      autoHide: true,
-      text2: "score saved!",
-      visibilityTime: 2000,
-    })
-  }, [answers, id])
 
   const onCountdownEnd = useCallback(() => {
     quizBackgroundMusic.play()
@@ -104,21 +87,26 @@ const Content = ({ id }: { id: string; }) => {
   useFocusEffect(
     useCallback(() => {
       setQuestion(questions[0])
-      setAnswers([])
+      setFinishedQuestions([])
       return () => quizBackgroundMusic.stop()
     }, [])
   )
 
   useEffect(() => {
-    if (answers.length === questions.length) {
+    if (finishedQuestions.length === questions.length) {
       setIsFinished(true)
-      saveResult()
+      saveResult({
+        quizId: id,
+        questions: finishedQuestions
+      })
     }
-  }, [answers, questions])
+  }, [finishedQuestions, questions])
 
   if (isFinished) return (
     <QuizFinishView
-      score={answers.filter(a => a.is_correct).length}
+      score={finishedQuestions.filter(
+        q => q.choices.find(choice => choice.is_correct && choice.selected)
+      ).length}
       numberOfQuestions={questions.length}
     />
   )

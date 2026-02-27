@@ -2,42 +2,39 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 import { create } from "zustand"
 import { createJSONStorage, persist } from "zustand/middleware"
 import { MultipleChoiceOption, Question, Quiz, TrueOrFalseOption } from "../api/types/Quiz";
-import { useEffect, useState } from "react";
+import { useCallback } from "react";
+import Toast from "react-native-toast-message";
+import useQueryUpdater from "../api/hooks/useQueryUpdater";
+import updateQuiz from "../api/services/quizzes/updateQuiz";
 
 
 type Choice = MultipleChoiceOption | TrueOrFalseOption
 
-type Q = {
-  id: string;
-  currentQuestionNumber: number;
-  currentScore: number;
+export type QuizResultQuestion = Omit<Question, 'choices'> & {
+  choices: (Choice & { selected: boolean })[]
 }
 
-type QuizStore = {
-  quizzes: Q[];
-  addQuiz: (quiz: Q) => void;
-  updateQuiz: (id: string, updater: (quiz: Q) => Q) => void;
-  reset: () => void;
+type Result = {
+  quizId: string;
+  questions: QuizResultQuestion[]
 }
 
-export const useQuizStore = create<QuizStore>()(
+type QuizResultStore = {
+  results: Result[];
+  saveResult: (result: Result) => void
+}
+
+const useQuizResultStore = create<QuizResultStore>()(
   persist(
-    (set, get) => ({
-      quizzes: [],
-      addQuiz: (quiz: Q) => set((state) => ({
-        quizzes: state.quizzes.find(q => q.id === quiz.id)
-          ? state.quizzes
-          : [...state.quizzes, quiz]
-      })),
-      updateQuiz: (id: string, updater: (quiz: Q) => Q) => {
-        set(state => ({
-          quizzes: state.quizzes.map(q => q.id === id
-            ? updater(q)
-            : q
-          )
-        }))
-      },
-      reset: () => set(state => ({ quizzes: [] }))
+    (set) => ({
+      results: [],
+      saveResult: (result: Result) => set((state) => ({
+        results: state.results.find(res => res.quizId === result.quizId)
+          ? state.results.map(res => {
+            return res.quizId === result.quizId ? result : res
+          })
+          : [...state.results, result]
+      }))
     }),
     {
       name: "quiz-storage",
@@ -46,30 +43,77 @@ export const useQuizStore = create<QuizStore>()(
   )
 )
 
-export const useGetOrCreateStoreQuiz = (id: string) => {
 
-  const { quizzes, addQuiz } = useQuizStore()
-  const [isLoading, setIsLoading] = useState(true)
-  const [quiz, setQuiz] = useState(
-    quizzes.find(q => q.id === id)
-  )
+export const useQuizResult = () => {
 
-  useEffect(() => {
-    if (!quiz) {
-      const newQuiz: Q = {
-        id,
-        currentQuestionNumber: 1,
-        currentScore: 0
-      }
-      addQuiz(newQuiz)
-      setQuiz(newQuiz)
+  const { results, saveResult: saveToStore } = useQuizResultStore()
+  const { updateDataFromInfiniteQuery } = useQueryUpdater<Quiz>()
+
+  const saveResult = useCallback(async (result: Result) => {
+
+    showPendingToast()
+
+    let correctAnswers = 0
+
+    result.questions.forEach(question => {
+      question.choices.forEach(choice => {
+        if (choice.is_correct && choice.selected) {
+          correctAnswers++
+        }
+      })
+    })
+
+    const { data, error } = await updateQuiz({
+      id: result.quizId,
+      updateFields: { score: correctAnswers }
+    })
+
+    if (error) {
+      showErrorToast()
+      return
     }
-    setIsLoading(false)
+
+    if (!error && data) {
+      updateDataFromInfiniteQuery({
+        id: result.quizId,
+        queryKey: ["quizzes"],
+        updateFields: {
+          score: correctAnswers
+        }
+      })
+      saveToStore(result)
+    }
+    showSucessToast()
+
   }, [])
 
+  const showPendingToast = useCallback(() => {
+    Toast.show({
+      type: "neutral",
+      autoHide: true,
+      text2: "saving result...",
+      visibilityTime: 2000
+    })
+  }, [])
 
-  return { isLoading, quiz }
+  const showSucessToast = useCallback(() => {
+    Toast.show({
+      type: "success",
+      autoHide: true,
+      text2: "result saved!",
+      visibilityTime: 2000
+    })
+  }, [])
+
+  const showErrorToast = useCallback(() => {
+    Toast.show({
+      type: "error",
+      autoHide: true,
+      text2: "error saving result",
+      visibilityTime: 2000
+    })
+  }, [])
+
+  return { results, saveResult }
 
 }
-
-
