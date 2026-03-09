@@ -1,6 +1,7 @@
 import { ThemedScreen, ThemedText, ThemedView } from "@/src/components";
 import { S } from "@/src/constants/Styles";
 import { darkColors, lightColors } from "@/src/constants/ui/Colors";
+import { QuizNavigationProp } from "@/src/navigation/Quiz/types";
 import { Feather, FontAwesome6 } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
@@ -12,11 +13,13 @@ import { StyleSheet } from "react-native-unistyles";
 type QuizFinishViewProps = {
   score: number;
   numberOfQuestions: number;
+  id: string;
 }
 
 export default function QuizFinishView({
   score: finalScore,
-  numberOfQuestions
+  numberOfQuestions,
+  id
 }: QuizFinishViewProps) {
 
   const score = useSharedValue(0)
@@ -29,7 +32,7 @@ export default function QuizFinishView({
     <ThemedScreen style={[S.centerContainer, styles.screen]}>
       <DisplayScore score={score} />
       <View style={styles.buttonsContainer}>
-        <ViewResultButton />
+        <ViewResultButton id={id} />
         <SkipButton />
       </View>
     </ThemedScreen>
@@ -59,13 +62,22 @@ const DisplayScore = ({
 
 }
 
-const ViewResultButton = () => {
+const ViewResultButton = ({ id }: { id: string }) => {
+
+  const navigation = useNavigation<QuizNavigationProp>()
+
+  const handlePress = useCallback(() => {
+    navigation.navigate("QuizResult", { id })
+  }, [id])
 
   return (
-    <TouchableOpacity style={[
-      styles.mainButton,
-      styles.viewResultButton
-    ]}>
+    <TouchableOpacity
+      style={[
+        styles.mainButton,
+        styles.viewResultButton
+      ]}
+      onPress={handlePress}
+    >
       <ThemedText
         fw={"semiBold"}
         style={styles.viewResultButtonText}

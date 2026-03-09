@@ -1,6 +1,11 @@
 import { Database } from "@/supabase/types/supabase.data.types";
 
 
+export enum QuestionType {
+  TrueOrFalse = "true_or_false",
+  MultipleChoice = "multiple_choice",
+}
+
 type BaseChoice = {
   is_correct: boolean;
 }
@@ -8,14 +13,13 @@ type BaseChoice = {
 export type MultipleChoiceOption = BaseChoice & { text: string }
 export type TrueOrFalseOption = BaseChoice & { value: boolean }
 
-
-type MultipleChoiceQuestion = {
-  type: "multiple_choice";
+export type MultipleChoiceQuestion = {
+  type: QuestionType.MultipleChoice;
   choices: MultipleChoiceOption[]
 }
 
-type TrueOrFalseQuestion = {
-  type: "true_or_false";
+export type TrueOrFalseQuestion = {
+  type: QuestionType.TrueOrFalse;
   choices: TrueOrFalseOption[]
 }
 

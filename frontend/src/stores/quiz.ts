@@ -1,34 +1,30 @@
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { create } from "zustand"
 import { createJSONStorage, persist } from "zustand/middleware"
-import { MultipleChoiceOption, Question, Quiz, TrueOrFalseOption } from "../api/types/Quiz";
 import { useCallback } from "react";
 import Toast from "react-native-toast-message";
 import useQueryUpdater from "../api/hooks/useQueryUpdater";
 import updateQuiz from "../api/services/quizzes/updateQuiz";
+import { Question, QuestionType, Quiz } from "../api/types/Quiz";
 
 
-type Choice = MultipleChoiceOption | TrueOrFalseOption
+export type QuizResultQuestion = Question & { selectedAnswer: string | boolean };
 
-export type QuizResultQuestion = Omit<Question, 'choices'> & {
-  choices: (Choice & { selected: boolean })[]
-}
-
-type Result = {
+export type QuizResult = {
   quizId: string;
   questions: QuizResultQuestion[]
 }
 
 type QuizResultStore = {
-  results: Result[];
-  saveResult: (result: Result) => void
+  results: QuizResult[];
+  saveResult: (result: QuizResult) => void
 }
 
 const useQuizResultStore = create<QuizResultStore>()(
   persist(
     (set) => ({
       results: [],
-      saveResult: (result: Result) => set((state) => ({
+      saveResult: (result: QuizResult) => set((state) => ({
         results: state.results.find(res => res.quizId === result.quizId)
           ? state.results.map(res => {
             return res.quizId === result.quizId ? result : res
@@ -49,18 +45,30 @@ export const useQuizResult = () => {
   const { results, saveResult: saveToStore } = useQuizResultStore()
   const { updateDataFromInfiniteQuery } = useQueryUpdater<Quiz>()
 
-  const saveResult = useCallback(async (result: Result) => {
+  const saveResult = useCallback(async (result: QuizResult) => {
 
     showPendingToast()
 
     let correctAnswers = 0
 
     result.questions.forEach(question => {
-      question.choices.forEach(choice => {
-        if (choice.is_correct && choice.selected) {
-          correctAnswers++
-        }
-      })
+      if (question.type === QuestionType.MultipleChoice) {
+        question.choices.forEach(choice => {
+          if (choice.text === question.selectedAnswer) {
+            if (choice.is_correct) {
+              correctAnswers++
+            }
+          }
+        })
+      } else {
+        question.choices.forEach(choice => {
+          if (choice.value === question.selectedAnswer) {
+            if (choice.is_correct) {
+              correctAnswers++
+            }
+          }
+        })
+      }
     })
 
     const { data, error } = await updateQuiz({

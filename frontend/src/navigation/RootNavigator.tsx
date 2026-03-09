@@ -148,11 +148,11 @@ const MainDrawerNavigator = () => {
         component={QuizStackNavigator}
         options={({ route }) => {
 
-          const routeName = getFocusedRouteNameFromRoute(route)
+          const routeName = getFocusedRouteNameFromRoute(route) ?? "QuizList"
 
           return {
             headerTitle: "Quiz",
-            headerShown: routeName !== "QuizPlayScreen",
+            headerShown: routeName === "QuizList",
             lazy: false
           }
         }}

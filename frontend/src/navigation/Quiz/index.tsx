@@ -7,6 +7,7 @@ import { supabase } from "@/supabase/client";
 import { useEffect } from "react";
 import QuizPlayScreen from "@/src/screens/Quiz/QuizPlayScreen";
 import QuizSoundContextProvider from "@/src/context/Quiz/QuizSoundProvider";
+import QuizResultScreen from "@/src/screens/Quiz/QuizResultScreen";
 
 const Stack = createNativeStackNavigator<QuizStackParamList>()
 
@@ -67,6 +68,10 @@ export default function QuizStackNavigator() {
         <Stack.Screen
           name={"QuizPlayScreen"}
           component={QuizPlayScreen}
+        />
+        <Stack.Screen
+          name={"QuizResult"}
+          component={QuizResultScreen}
         />
       </Stack.Navigator>
     </QuizSoundContextProvider>

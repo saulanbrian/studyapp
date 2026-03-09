@@ -1,5 +1,5 @@
 import { useGetQuiz } from "@/src/api/queries/quizzes";
-import { MultipleChoiceOption, Question, Quiz, TrueOrFalseOption } from "@/src/api/types/Quiz";
+import { MultipleChoiceOption, Question, QuestionType, Quiz, TrueOrFalseOption } from "@/src/api/types/Quiz";
 import { LoadingScreen, ThemedScreen, ThemedText, ThemedView } from "@/src/components";
 import OptionButton from "@/src/components/Quiz/OptionButton";
 import { darkColors } from "@/src/constants/ui/Colors";
@@ -12,12 +12,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { StyleSheet } from "react-native-unistyles";
 import CountDownView from "@/src/screens/Quiz/components/CountdownView";
 import ExitConfirmationModal from "@/src/components/Quiz/ExitConfirmationModal";
-import updateQuiz from "@/src/api/services/quizzes/updateQuiz";
-import useQueryUpdater from "@/src/api/hooks/useQueryUpdater";
 import { useQuizSound } from "@/src/context/Quiz/QuizSoundProvider";
-import Toast from "react-native-toast-message";
 import QuizFinishView from "./components/QuizFinishView";
-import { QuizResultQuestion, useQuizResult } from "@/src/stores/quiz";
+import { QuizResult, QuizResultQuestion, useQuizResult } from "@/src/stores/quiz";
+import checkFileSize from "@/src/utils/FileSystem/getFileSize";
 
 
 type QuizPlayScreenRouteProp = RouteProp<QuizStackParamList, 'QuizPlayScreen'>
@@ -67,10 +65,9 @@ const Content = ({ id }: { id: string; }) => {
         ...finishedQuestions,
         {
           ...question,
-          choices: question.choices.map(choice => ({
-            ...choice,
-            selected: choice === answer
-          }))
+          selectedAnswer: question.type === QuestionType.MultipleChoice
+            ? (answer as MultipleChoiceOption).text
+            : (answer as TrueOrFalseOption).value
         }
       ]
       setFinishedQuestions(updatedFinishedQuestions)
@@ -102,14 +99,36 @@ const Content = ({ id }: { id: string; }) => {
     }
   }, [finishedQuestions, questions])
 
-  if (isFinished) return (
-    <QuizFinishView
-      score={finishedQuestions.filter(
-        q => q.choices.find(choice => choice.is_correct && choice.selected)
-      ).length}
-      numberOfQuestions={questions.length}
-    />
-  )
+  if (isFinished) {
+
+    let score = 0
+
+    finishedQuestions.forEach(question => {
+      question.choices.forEach(choice => {
+        if (question.type === QuestionType.MultipleChoice) {
+          if (question.selectedAnswer === (choice as MultipleChoiceOption).text) {
+            if (choice.is_correct) {
+              score++
+            }
+          }
+        } else {
+          if (question.selectedAnswer === (choice as TrueOrFalseOption).value) {
+            if (choice.is_correct) {
+              score++
+            }
+          }
+        }
+      })
+    })
+
+    return (
+      <QuizFinishView
+        score={score}
+        numberOfQuestions={questions.length}
+        id={id}
+      />
+    )
+  }
 
   return (
     <View style={styles.screen}>
