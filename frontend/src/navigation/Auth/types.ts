@@ -1,3 +1,8 @@
+import { NavigationProp } from "@react-navigation/native";
+
 export type AuthStackParamList = {
-  SSO: undefined;
+  SignIn: undefined;
+  SignUp: undefined;
 }
+
+export type AuthStackNavigationProp = NavigationProp<AuthStackParamList>

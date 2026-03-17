@@ -198,6 +198,12 @@ otp_expiry = 3600
 # subject = "You have been invited"
 # content_path = "./supabase/templates/invite.html"
 
+[auth.external.google]
+enabled = true
+client_id = "643870734379-vf6av7j0hlf3g8vpsshes8vtsg2jad1h.apps.googleusercontent.com,643870734379-4197k75j054boumkkhtufivagj5c5enn.apps.googleusercontent.com"
+secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_SECRET)"
+skip_nonce_check = false
+
 [auth.sms]
 # Allow/disallow new user signups via SMS to your project.
 enable_signup = false

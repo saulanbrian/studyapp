@@ -79,7 +79,18 @@ const Result = ({ result }: { result: QuizResult }) => {
           >
             {question.question}
           </ThemedText>
-          {renderChoices(question)}
+          <View style={[
+            styles.optionsContainer,
+            {
+              ...(
+                question.type === QuestionType.TrueOrFalse
+                  ? { flexDirection: "row" }
+                  : {}
+              )
+            }
+          ]}>
+            {renderChoices(question)}
+          </View>
         </>
       ))}
     </ScrollView>
@@ -125,14 +136,13 @@ const Option = ({
   return (
     <OptionButton
       optionText={optionText}
-      style={{
-        ...styles.option,
-        ...(isCorrect
+      style={
+        isCorrect
           ? styles.correctOption
           : selected
             ? styles.selectedWrong
-            : {})
-      }}
+            : {}
+      }
     />
   )
 }
@@ -149,7 +159,9 @@ const styles = StyleSheet.create(theme => ({
     }
   },
   option: {
-    marginBottom: theme.spacing.xxs
+  },
+  optionsContainer: {
+    gap: theme.spacing.xxs
   },
   questionText: {
     fontSize: 20,

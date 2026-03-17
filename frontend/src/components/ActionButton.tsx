@@ -3,7 +3,7 @@ import ThemedButton, { ThemedButtonProps } from "./ThemedButton";
 import { ActivityIndicator, StyleProp, TextStyle, View } from "react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import ThemedText from "./ThemedText";
-import Animated, { SlideInDown, SlideInUp } from "react-native-reanimated";
+import Animated, { FadeInDown, FadeInUp, SlideInDown, SlideInUp } from "react-native-reanimated";
 import { FontAwesome } from "@expo/vector-icons";
 
 type ActionButtonProps = ThemedButtonProps & {
@@ -43,7 +43,10 @@ const PendingLabel = ({
   const { buttonText } = useUnistyles().theme.colors
 
   return (
-    <Animated.View style={styles.labelContainer} entering={SlideInDown.springify(500)}>
+    <Animated.View
+      style={styles.labelContainer}
+      entering={FadeInDown.springify(500)}
+    >
       <ActivityIndicator color={buttonText} />
       <ThemedText
         color={"buttonText"}
@@ -61,7 +64,10 @@ const IdleLabel = ({
 }) => {
 
   return (
-    <Animated.View entering={SlideInDown.springify(500)} style={styles.labelContainer}>
+    <Animated.View
+      entering={FadeInDown.springify(500)}
+      style={styles.labelContainer}
+    >
       <ThemedText color={"buttonText"}>
         {title}
       </ThemedText>
@@ -78,7 +84,10 @@ const SuccessLabel = ({
   const { buttonText } = useUnistyles().theme.colors
 
   return (
-    <Animated.View style={styles.labelContainer} entering={SlideInUp.springify(500)}>
+    <Animated.View
+      style={styles.labelContainer}
+      entering={FadeInUp.springify(500)}
+    >
       <FontAwesome
         name={"check"}
         color={buttonText}

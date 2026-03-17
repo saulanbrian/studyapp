@@ -20,7 +20,8 @@ export const linking: LinkingOptions<RootNavigatorParamList> = {
       Auth: {
         path: "auth",
         screens: {
-          SSO: "sso"
+          SignIn: "signin",
+          SignUp: "signup"
         }
       },
       Quiz: {

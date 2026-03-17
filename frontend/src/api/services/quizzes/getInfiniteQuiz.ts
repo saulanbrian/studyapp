@@ -20,20 +20,11 @@ export default async function getInfiniteQuiz({
 
   const { data: quizzes, error } = await supabase
     .from("quizzes")
-    .select(`
-      *,
-      summaries(
-        owner,
-        title
-      )
-    `)
+    .select(`*, summaries!inner(owner,title)`)
     .filter("summaries.owner", "eq", userId)
     .range(from_, to_)
 
-  if (error || !quizzes) throw new Error(
-    "No fata found"
-  )
-
+  if (error) throw error
 
   const hasNextPage = quizzes.length > pageLimit;
 

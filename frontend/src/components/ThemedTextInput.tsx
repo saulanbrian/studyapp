@@ -29,6 +29,7 @@ const styles = StyleSheet.create(theme => ({
     backgroundColor: theme.colors.surface,
     padding: theme.spacing.md,
     borderWidth: 1,
+    color: theme.colors.textPrimary,
     variants: {
       error: {
         true: {
