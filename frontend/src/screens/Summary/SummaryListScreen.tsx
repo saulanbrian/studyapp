@@ -5,10 +5,11 @@ import ThemedButton, { AnimatedThemedButton } from "@/src/components/ThemedButto
 import { SummaryStackParamList } from "@/src/navigation/Summary/types";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { FlashList } from "@shopify/flash-list";
-import { Suspense, useCallback, useEffect } from "react";
+import { Suspense, useCallback, useEffect, useMemo } from "react";
 import { View } from "react-native";
 import SummaryCard from "@/src/components/Summary/SummaryCard"
 import { StyleSheet } from "react-native-unistyles";
+import EmptyQueryScreen from "@/src/components/EmptyQueryScreen";
 
 export default function SummaryListScreen() {
 
@@ -44,9 +45,13 @@ const SummaryList = () => {
     isRefetching
   } = useGetSummaries()
 
+  const summaries = useMemo(() => {
+    return mapInfiniteDataResult(data)
+  }, [data])
+
   return (
     <FlashList
-      data={mapInfiniteDataResult(data)}
+      data={summaries}
       keyExtractor={item => item.id}
       refreshing={isRefetching}
       onRefresh={refetch}
@@ -58,11 +63,19 @@ const SummaryList = () => {
       renderItem={({ item }) => (
         <SummaryCard {...item} />
       )}
-      contentContainerStyle={{ paddingHorizontal: 12 }}
+      contentContainerStyle={styles.summaryContainer}
+      ListEmptyComponent={EmptyComponent}
     />
   )
 }
 
+const EmptyComponent = () => {
+  return (
+    <EmptyQueryScreen queryName={"summary"}>
+      <EmptyQueryScreen.Message />
+    </EmptyQueryScreen>
+  )
+}
 
 const styles = StyleSheet.create(theme => ({
   fab: {
@@ -86,6 +99,7 @@ const styles = StyleSheet.create(theme => ({
     height: 6
   },
   summaryContainer: {
-    padding: theme.spacing.sm
+    padding: theme.spacing.sm,
+    flex: 1
   },
 }))

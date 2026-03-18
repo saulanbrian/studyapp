@@ -1,11 +1,11 @@
 import { useGetInfiniteQuiz } from "@/src/api/queries/quizzes";
 import { mapInfiniteDataResult } from "@/src/api/utils/mapInfiniteDataResult";
-import { LoadingScreen, ThemedScreen, ThemedText } from "@/src/components";
+import { EmptyQueryScreen, LoadingScreen, ThemedScreen, ThemedText } from "@/src/components";
 import QuizCard from "@/src/components/Quiz/QuizCard";
 import { QuizStackParamList } from "@/src/navigation/Quiz/types";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { FlashList } from "@shopify/flash-list";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
@@ -22,7 +22,7 @@ export default function QuizListScreen() {
 const Quizzes = () => {
 
   const {
-    data: quizzes,
+    data,
     refetch,
     isRefetching
   } = useGetInfiniteQuiz()
@@ -30,13 +30,17 @@ const Quizzes = () => {
   const { params } = useRoute<RouteProp<QuizStackParamList, 'QuizList'>>()
   const [selectedQuiz, setSelectedQuiz] = useState<string | undefined>()
 
+  const quizzes = useMemo(() => {
+    return mapInfiniteDataResult(data)
+  }, [data])
+
   useEffect(() => {
     setSelectedQuiz(params?.select)
   }, [params])
 
   return (
     <FlashList
-      data={mapInfiniteDataResult(quizzes)}
+      data={quizzes}
       keyExtractor={item => item.id}
       onRefresh={refetch}
       refreshing={isRefetching}
@@ -53,9 +57,18 @@ const Quizzes = () => {
       contentContainerStyle={{
         paddingVertical: 8
       }}
+      ListEmptyComponent={EmptyComponent}
     />
   )
 
+}
+
+const EmptyComponent = () => {
+  return (
+    <EmptyQueryScreen queryName={"quiz"}>
+      <EmptyQueryScreen.Message />
+    </EmptyQueryScreen>
+  )
 }
 
 const styles = StyleSheet.create(theme => ({

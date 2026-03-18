@@ -1,7 +1,7 @@
 import { Text, TextProps } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
-type ThemedTextProps = TextProps & {
+export type ThemedTextProps = TextProps & {
   color?:
   | "primary"
   | "secondary"
