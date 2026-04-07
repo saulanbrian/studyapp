@@ -14,7 +14,8 @@ export const linking: LinkingOptions<RootNavigatorParamList> = {
         screens: {
           SummaryList: "",
           SummaryDetail: "summary/:id",
-          SummaryCreation: "summarize"
+          SummaryCreation: "summarize",
+          SummaryPdfView: "summary/pdf-prefview/:id"
         }
       },
       Auth: {

@@ -7,6 +7,7 @@ import useQueryUpdater from "@/src/api/hooks/useQueryUpdater";
 import { Summary } from "@/src/api/types/summary";
 import { supabase } from "@/supabase/client";
 import { useEffect } from "react";
+import SummaryPdfView from "@/src/screens/Summary/SummaryPdfView";
 
 const Stack = createNativeStackNavigator<SummaryStackParamList>()
 
@@ -79,6 +80,10 @@ export default function SummaryStackNavigator() {
       <Stack.Screen
         name={"SummaryDetail"}
         component={SummaryDetailScreen}
+      />
+      <Stack.Screen
+        name={"SummaryPdfView"}
+        component={SummaryPdfView}
       />
     </Stack.Navigator>
   )

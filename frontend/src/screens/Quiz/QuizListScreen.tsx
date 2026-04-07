@@ -29,6 +29,7 @@ const Quizzes = () => {
 
   const { params } = useRoute<RouteProp<QuizStackParamList, 'QuizList'>>()
   const [selectedQuiz, setSelectedQuiz] = useState<string | undefined>()
+  const [height, setHeight] = useState(0)
 
   const quizzes = useMemo(() => {
     return mapInfiniteDataResult(data)
@@ -38,34 +39,40 @@ const Quizzes = () => {
     setSelectedQuiz(params?.select)
   }, [params])
 
+
   return (
     <FlashList
       data={quizzes}
+      extraData={selectedQuiz}
       keyExtractor={item => item.id}
       onRefresh={refetch}
       refreshing={isRefetching}
       showsVerticalScrollIndicator={false}
       renderItem={({ item }) => (
         <QuizCard
-          expanded={selectedQuiz === item.id}
-          onPress={() => setSelectedQuiz(item.id)}
-          selected={selectedQuiz === item.id}
+          onPress={() => { setSelectedQuiz(item.id) }}
+          selected={selectedQuiz === item.id ? true : false}
           {...item}
         />
       )}
+      estimatedItemSize={80}
       ItemSeparatorComponent={() => <View style={styles.separator} />}
       contentContainerStyle={{
         paddingVertical: 8
       }}
-      ListEmptyComponent={EmptyComponent}
+      onLayout={e => setHeight(e.nativeEvent.layout.height)}
+      ListEmptyComponent={EmptyComponent({ height })}
     />
   )
 
 }
 
-const EmptyComponent = () => {
+const EmptyComponent = ({ height }: { height: number }) => {
   return (
-    <EmptyQueryScreen queryName={"quiz"}>
+    <EmptyQueryScreen
+      queryName={"quiz"}
+      style={{ height }}
+    >
       <EmptyQueryScreen.Message />
     </EmptyQueryScreen>
   )

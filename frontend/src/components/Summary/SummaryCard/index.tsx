@@ -10,6 +10,7 @@ import DeleteButton from "./DeleteButton";
 import PlayQuizButton from "./PlayQuizButton";
 import SummaryContextProvider, { useSummary } from "@/src/context/Summary/SummaryContext";
 import CreateQuizButton from "./CreateQuizButton";
+import ViewPdfButton from "./ViewPdfButton";
 
 
 const INITIAL_ANIMATION_DURATION = 500
@@ -25,8 +26,8 @@ export default function SummaryComponent(summary: Summary) {
 
 function MainComponent() {
 
+  const { document_url } = useSummary()
   const [isPressed, setIsPressed] = useState(false)
-
 
   const dismiss = useCallback(() => {
     setIsPressed(false)
@@ -54,6 +55,7 @@ function MainComponent() {
               <ActionsContainer
                 dismiss={dismiss}
               />
+              <ViewPdfButton />
             </View>
           </TouchableWithoutFeedback>
         </Pressable>

@@ -5,11 +5,13 @@ import ThemedButton, { AnimatedThemedButton } from "@/src/components/ThemedButto
 import { SummaryStackParamList } from "@/src/navigation/Summary/types";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { FlashList } from "@shopify/flash-list";
-import { Suspense, useCallback, useEffect, useMemo } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { View } from "react-native";
 import SummaryCard from "@/src/components/Summary/SummaryCard"
 import { StyleSheet } from "react-native-unistyles";
 import EmptyQueryScreen from "@/src/components/EmptyQueryScreen";
+import { Summary } from "@/src/api/types/summary";
+import Animated, { measure, useAnimatedRef } from "react-native-reanimated";
 
 export default function SummaryListScreen() {
 
@@ -35,6 +37,7 @@ export default function SummaryListScreen() {
 }
 
 
+
 const SummaryList = () => {
 
   const {
@@ -44,6 +47,8 @@ const SummaryList = () => {
     refetch,
     isRefetching
   } = useGetSummaries()
+
+  const [height, setHeight] = useState(0)
 
   const summaries = useMemo(() => {
     return mapInfiniteDataResult(data)
@@ -63,15 +68,18 @@ const SummaryList = () => {
       renderItem={({ item }) => (
         <SummaryCard {...item} />
       )}
-      contentContainerStyle={styles.summaryContainer}
-      ListEmptyComponent={EmptyComponent}
+      onLayout={e => setHeight(e.nativeEvent.layout.height)}
+      ListEmptyComponent={EmptyComponent({ height })}
     />
   )
 }
 
-const EmptyComponent = () => {
+const EmptyComponent = ({ height }: { height: number }) => {
   return (
-    <EmptyQueryScreen queryName={"summary"}>
+    <EmptyQueryScreen
+      queryName={"summary"}
+      style={{ height }}
+    >
       <EmptyQueryScreen.Message />
     </EmptyQueryScreen>
   )

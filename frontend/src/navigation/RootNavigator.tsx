@@ -139,8 +139,14 @@ const MainDrawerNavigator = () => {
       <Drawer.Screen
         name={"Summary"}
         component={SummaryStackNavigator}
-        options={{
-          headerTitle: "Home"
+        options={({ route }) => {
+
+          const routeName = getFocusedRouteNameFromRoute(route)
+
+          return {
+            headerTitle:"Home",
+            headerShown:routeName !== "SummaryPdfView"
+          }
         }}
       />
       <Drawer.Screen

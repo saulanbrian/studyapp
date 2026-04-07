@@ -9,19 +9,17 @@ import ActionContainer from "./ActionContainer";
 import QuizContextProvider from "@/src/context/Quiz/QuizContext";
 
 type QuizCardProps = Quiz & Pick<PressableProps, 'onPress' | 'disabled'> & {
-  expanded: boolean;
   selected?: boolean;
 }
 
 export default function QuizCard({
-  expanded,
   disabled,
   selected,
   onPress,
   ...quiz
 }: QuizCardProps) {
 
-  styles.useVariants({ expanded, selected })
+  styles.useVariants({ selected })
 
   return (
     <QuizContextProvider {...quiz}>
@@ -43,7 +41,7 @@ export default function QuizCard({
             ) : <ScorePlaceholder />
           }
         </Pressable>
-        {expanded && <ActionContainer style={styles.actionCard} />}
+        {selected && <ActionContainer style={styles.actionCard} />}
       </View>
     </QuizContextProvider>
   )
@@ -69,7 +67,7 @@ const styles = StyleSheet.create(theme => ({
     alignItems: "center",
     backgroundColor: theme.colors.surface,
     variants: {
-      expanded: {
+      selected: {
         true: {
           borderBottomLeftRadius: 0,
           borderBottomRightRadius: 0,
