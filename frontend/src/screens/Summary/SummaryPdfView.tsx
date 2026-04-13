@@ -21,6 +21,10 @@ export default function SummaryPdfView() {
 
   useEffect(() => {
     setOptions({ swipeEnabled: false })
+
+    return () => {
+      setOptions({ swipeEnabled: true })
+    }
   }, [])
 
   return (

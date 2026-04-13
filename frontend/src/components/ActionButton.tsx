@@ -6,12 +6,11 @@ import ThemedText from "./ThemedText";
 import Animated, { FadeInDown, FadeInUp, SlideInDown, SlideInUp } from "react-native-reanimated";
 import { FontAwesome } from "@expo/vector-icons";
 
-type ActionButtonProps = ThemedButtonProps & {
+export type ActionButtonProps = ThemedButtonProps & {
   status: MutationStatus;
   pendingText?: string;
   successText?: string;
 }
-
 
 export default function ActionButton({
   status,

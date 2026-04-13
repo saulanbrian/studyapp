@@ -3,7 +3,7 @@ import { Modal, Pressable, StyleProp, TouchableWithoutFeedback, View, ViewStyle 
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import Animated, { useAnimatedStyle, useSharedValue, withDelay, withSpring, withTiming } from "react-native-reanimated";
 import { Summary } from "@/src/api/types/summary"
-import Card from "./Card";
+import SummaryCard from "./SummaryCard";
 import RetryButton from "./RetryButton";
 import OpenButton from "./OpenButton";
 import DeleteButton from "./DeleteButton";
@@ -26,7 +26,6 @@ export default function SummaryComponent(summary: Summary) {
 
 function MainComponent() {
 
-  const { document_url } = useSummary()
   const [isPressed, setIsPressed] = useState(false)
 
   const dismiss = useCallback(() => {
@@ -35,7 +34,7 @@ function MainComponent() {
 
   return (
     <Pressable onPress={() => setIsPressed(true)}>
-      <Card />
+      <SummaryCard />
       <Modal
         transparent
         statusBarTranslucent
@@ -50,7 +49,7 @@ function MainComponent() {
           <TouchableWithoutFeedback>
             <View>
               <AnimatedModalContent>
-                <Card />
+                <SummaryCard />
               </AnimatedModalContent>
               <ActionsContainer
                 dismiss={dismiss}
