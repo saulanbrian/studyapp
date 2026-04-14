@@ -13,6 +13,11 @@ import GenerateQuizButton from "./GenerateQuizButton";
 import { S } from "@/src/constants/Styles";
 
 
+const SUMMARY_CREATION_NOTES = [
+  "only 1 quiz can be generated for each summary",
+  "summary status must be success / \"ready to view\" "
+]
+
 const MODAL_HEIGHT = Dimensions.get('window').height * 0.6
 const MODAL_WIDTH = Dimensions.get('window').width * 0.8
 
@@ -39,6 +44,23 @@ export default function QuizCreationModalContent({
         summaryId={selectedSummary?.id}
         onSettled={toggleSelf}
       />
+      <View>
+        <ThemedText
+          size={"xs"}
+          color={"secondary"}
+        >
+          Note:
+        </ThemedText>
+        {SUMMARY_CREATION_NOTES.map((note, i) => (
+          <ThemedText
+            size={"xs"}
+            color={"secondary"}
+            key={i.toString()}
+          >
+            {`${i + 1}. ${note}`}
+          </ThemedText>
+        ))}
+      </View>
       <TransparentModalView ref={modalRef}>
         <SummaryPicker
           onPickSummary={handleSummaryPick}
@@ -89,13 +111,6 @@ const SummaryPicker = ({
 
   return (
     <ThemedView style={styles.summaryListModalContainer}>
-      <ThemedText
-        size={"sm"}
-        color={"secondary"}
-        style={styles.summaryListNote}
-      >
-        note: a summary can only have one(1) quiz
-      </ThemedText>
       <Suspense fallback={LoadingScreen()}>
         <SummaryList onPickSummary={onPickSummary} />
       </Suspense>
@@ -118,8 +133,13 @@ const SummaryList = ({
     renderItem={({ item }) => (
       <SummaryContextProvider {...item}>
         <Pressable
-          style={{ opacity: item.quizId ? 0.5 : 1 }}
-          disabled={!!item.quizId}
+          style={{
+            opacity:
+              (item.quizId || item.status !== "success")
+                ? 0.5
+                : 1
+          }}
+          disabled={!!item.quizId || item.status !== "success"}
           onPress={() => onPickSummary(item)}
         >
           <SummaryCardBase />
