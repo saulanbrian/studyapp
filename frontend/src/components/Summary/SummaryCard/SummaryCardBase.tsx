@@ -10,7 +10,7 @@ import { useSummary } from "@/src/context/Summary/SummaryContext";
 import { supabase } from "@/supabase/client";
 
 
-export default function SummaryCard() {
+export default function SummaryCardBase() {
 
   const {
     status,

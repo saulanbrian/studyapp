@@ -3,14 +3,12 @@ import { Modal, Pressable, StyleProp, TouchableWithoutFeedback, View, ViewStyle 
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import Animated, { useAnimatedStyle, useSharedValue, withDelay, withSpring, withTiming } from "react-native-reanimated";
 import { Summary } from "@/src/api/types/summary"
-import SummaryCard from "./SummaryCard";
-import RetryButton from "./RetryButton";
 import OpenButton from "./OpenButton";
 import DeleteButton from "./DeleteButton";
-import PlayQuizButton from "./PlayQuizButton";
 import SummaryContextProvider, { useSummary } from "@/src/context/Summary/SummaryContext";
-import CreateQuizButton from "./CreateQuizButton";
 import ViewPdfButton from "./ViewPdfButton";
+import SummaryCardBase from "./SummaryCardBase";
+import RetryButton from "./RetryButton";
 
 
 const INITIAL_ANIMATION_DURATION = 500
@@ -34,7 +32,7 @@ function MainComponent() {
 
   return (
     <Pressable onPress={() => setIsPressed(true)}>
-      <SummaryCard />
+      <SummaryCardBase />
       <Modal
         transparent
         statusBarTranslucent
@@ -49,12 +47,11 @@ function MainComponent() {
           <TouchableWithoutFeedback>
             <View>
               <AnimatedModalContent>
-                <SummaryCard />
+                <SummaryCardBase />
               </AnimatedModalContent>
               <ActionsContainer
                 dismiss={dismiss}
               />
-              <ViewPdfButton />
             </View>
           </TouchableWithoutFeedback>
         </Pressable>
@@ -75,11 +72,8 @@ const ActionsContainer = ({ dismiss }: { dismiss: () => void }) => {
           ? <OpenButton modalDismissFn={dismiss} />
           : <RetryButton modalDismissFn={dismiss} />
       }
+      <ViewPdfButton />
       <DeleteButton modalDismissFn={dismiss} />
-      {quizId
-        ? <PlayQuizButton modalDismissFn={dismiss} />
-        : <CreateQuizButton modalDismissFn={dismiss} />
-      }
     </View>
   )
 }

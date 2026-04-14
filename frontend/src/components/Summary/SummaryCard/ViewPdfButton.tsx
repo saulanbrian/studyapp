@@ -5,10 +5,13 @@ import { Pressable } from "react-native";
 import ThemedText from "../../ThemedText";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import { useCallback } from "react";
+import ModalActionButton from "./ModalActionButton";
+import { FontAwesome, Ionicons } from "@expo/vector-icons";
 
 export default function ViewPdfButton() {
 
   const navigation = useNavigation<SummaryNavigationProp>()
+  const { colors } = useUnistyles().theme
   const { id } = useSummary()
 
   const handlePress = useCallback(() => {
@@ -16,14 +19,16 @@ export default function ViewPdfButton() {
   }, [id])
 
   return (
-    <Pressable onPress={handlePress}>
-      <ThemedText style={styles.text}>view original file</ThemedText>
-    </Pressable>
+    <ModalActionButton onPress={handlePress}>
+      <FontAwesome
+        name={"file-pdf-o"}
+        size={20}
+        color={colors.primary}
+      />
+      <ThemedText size={"xxs"} color={"themePrimary"}>
+        view pdf
+      </ThemedText>
+    </ModalActionButton>
   )
 }
 
-const styles = StyleSheet.create(theme => ({
-  text: {
-    color: theme.colors.info
-  }
-}))

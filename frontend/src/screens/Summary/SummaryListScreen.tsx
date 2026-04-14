@@ -67,6 +67,7 @@ const SummaryList = () => {
       renderItem={({ item }) => (
         <SummaryCard {...item} />
       )}
+      contentContainerStyle={styles.summaryContainer}
       onLayout={e => setHeight(e.nativeEvent.layout.height)}
       ListEmptyComponent={EmptyComponent({ height })}
     />
