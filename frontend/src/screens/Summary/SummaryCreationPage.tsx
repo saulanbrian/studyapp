@@ -4,8 +4,7 @@ import * as DocumentPicket from "expo-document-picker"
 import * as FileSystem from "expo-file-system"
 import { decode } from "base64-arraybuffer";
 import getFileSize from "@/src/utils/FileSystem/getFileSize";
-import useEffectAfterMount from "@/src/hooks/useEffectAfterMount";
-import { Alert, Keyboard } from "react-native";
+import { Alert, Keyboard, TouchableOpacity } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 import * as ImagePicker from "expo-image-picker"
 import ActionButton, { AnimatedActionButton } from "@/src/components/ActionButton";
@@ -15,77 +14,41 @@ import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { SummaryStackParamList } from "@/src/navigation/Summary/types";
 import { useAnimatedKeyboard, useAnimatedStyle } from "react-native-reanimated";
 import { requestSummary } from "@/src/api/services/summaries";
-
+import SamplePdfModal from "./components/SamplePdfModal";
+import SummaryCreationContextProvider, { useSummaryCreation } from "./context/SummaryCreationPageContext";
+import useQueryUpdater from "@/src/api/hooks/useQueryUpdater";
+import { Summary } from "@/src/api/types/summary";
 
 const MaxDocumentSize = 5 * 1024 * 1024
 
-type ReactStateSetter<T> = React.Dispatch<React.SetStateAction<T>>
-
-type PageState = {
-  title: string;
-  description: string;
-  document: { file: ArrayBuffer; title: string } | null;
-  cover: { file: ArrayBuffer; fileName: string } | null;
-  mutating: boolean
-}
-
-type PageStateAndSetter = PageState & {
-  setTitle: ReactStateSetter<PageState['title']>;
-  setDocument: ReactStateSetter<PageState['document']>;
-  setDescription: ReactStateSetter<PageState['description']>;
-  setCover: ReactStateSetter<PageState['cover']>;
-  setMutating: ReactStateSetter<PageState['mutating']>
-}
-
 export default function SummaryCreationPage() {
 
-  const [title, setTitle] = useState<PageState['title']>('')
-  const [document, setDocument] = useState<PageState['document']>(null)
-  const [description, setDescription] = useState<PageState['description']>('')
-  const [cover, setCover] = useState<PageState['cover']>(null)
-  const [mutating, setMutating] = useState<PageState['mutating']>(false)
-
   return (
-    <ThemedScreen style={styles.screen}>
-      <TitleInput setTitle={setTitle} title={title} />
-      <DocumentInput
-        document={document}
-        setDocument={setDocument}
-      />
-      <ThemedText
-        size={"xs"}
-        color={"secondary"}
-        style={{ marginTop: 8 }}
-      >
-        optional fields
-      </ThemedText>
-      <DescriptionInput
-        description={description}
-        setDescription={setDescription}
-      />
-      <CoverInput
-        cover={cover}
-        setCover={setCover}
-      />
-      <SubmitButton
-        setMutating={setMutating}
-        mutating={mutating}
-        cover={cover}
-        description={description}
-        document={document}
-        title={title}
-      />
-    </ThemedScreen>
+    <SummaryCreationContextProvider>
+      <ThemedScreen style={styles.screen}>
+        <TitleInput />
+        <DocumentInput />
+        <ThemedText
+          size={"xs"}
+          color={"secondary"}
+          style={{ marginTop: 8 }}
+        >
+          optional fields
+        </ThemedText>
+        <DescriptionInput />
+        <CoverInput />
+        <SamplePdfModalButton />
+        <SubmitButton />
+        <SamplePdfModal />
+      </ThemedScreen>
+    </SummaryCreationContextProvider>
   )
 }
 
-const TitleInput = React.memo(({
-  setTitle,
-  title,
-}: Pick<PageStateAndSetter, 'setTitle' | 'title'>
-) => {
+const TitleInput = () => {
 
   const [focused, setFocused] = useState(false)
+  const { title, setTitle } = useSummaryCreation()
   styles.useVariants({ focused })
 
   return <ThemedTextInput
@@ -97,14 +60,11 @@ const TitleInput = React.memo(({
     placeholder={"title of the summmary"}
     autoFocus={true}
   />
+}
 
-})
+const DocumentInput = () => {
 
-const DocumentInput = React.memo(({
-  document,
-  setDocument
-}: Pick<PageStateAndSetter, 'document' | 'setDocument'>
-) => {
+  const { document, setDocument } = useSummaryCreation()
 
   const pickDocument = useCallback(async () => {
 
@@ -144,14 +104,11 @@ const DocumentInput = React.memo(({
       onPress={() => { document ? setDocument(null) : pickDocument() }}
     />
   )
-})
+}
 
-const DescriptionInput = React.memo(({
-  description,
-  setDescription
-}: Pick<PageStateAndSetter, 'description' | 'setDescription'>
-) => {
+const DescriptionInput = () => {
 
+  const { description, setDescription } = useSummaryCreation()
   const [focused, setFocused] = useState(false)
   styles.useVariants({ focused })
 
@@ -167,13 +124,11 @@ const DescriptionInput = React.memo(({
       style={[styles.descriptionInput, styles.textInputs]}
     />
   )
-})
+}
 
-const CoverInput = React.memo(({
-  cover,
-  setCover
-}: Pick<PageStateAndSetter, 'cover' | 'setCover'>
-) => {
+const CoverInput = () => {
+
+  const { cover, setCover } = useSummaryCreation()
 
   const pickImage = useCallback(async () => {
     const { assets, canceled } = await ImagePicker.launchImageLibraryAsync({
@@ -184,20 +139,16 @@ const CoverInput = React.memo(({
     if (canceled || assets.length < 1) {
       throw new Error("an error has occured")
     }
-
     const image = assets[0]
-
     const b64 = await FileSystem.readAsStringAsync(
       image.uri,
       { encoding: 'base64' }
     )
-
     const coverArrayBuffer = decode(b64)
     setCover({
       file: coverArrayBuffer,
       fileName: image.fileName ?? "cover_image.jpeg"
     })
-
   }, [cover])
 
   return (
@@ -209,19 +160,24 @@ const CoverInput = React.memo(({
       }}
     />
   )
-})
+}
 
-const SubmitButton = React.memo(({
-  cover,
-  description,
-  document,
-  title,
-  mutating,
-  setMutating
-}: PageState & Pick<PageStateAndSetter, 'setMutating'>) => {
+const SubmitButton = () => {
 
   const navigation = useNavigation<NavigationProp<SummaryStackParamList>>()
   const keyboard = useAnimatedKeyboard()
+  const {
+    title,
+    description,
+    cover,
+    document,
+    mutating,
+    setMutating
+  } = useSummaryCreation()
+  const {
+    insertIntoInfiniteQuery,
+    updateDataFromInfiniteQuery
+  } = useQueryUpdater<Summary>()
 
   const { status, mutate } = useMutation({
     mutationFn: async () => {
@@ -237,7 +193,14 @@ const SubmitButton = React.memo(({
         document: document!.file,
         documentName: document!.title
       })
-      requestSummary(data.id)
+      insertIntoInfiniteQuery({
+        newData: {
+          ...data,
+          quizId: null
+        },
+        queryKey: ["summaries"]
+      })
+      requestForSummary(data.id)
       return data
     },
     onMutate: () => {
@@ -267,18 +230,44 @@ const SubmitButton = React.memo(({
     ]
   }))
 
+  const requestForSummary = useCallback(
+    async (id: string) => {
+      const data = await requestSummary(id)
+      if (!data) {
+        updateDataFromInfiniteQuery({
+          id,
+          queryKey: ["summaries"],
+          updateFields: {
+            status: "error"
+          }
+        })
+      }
+    }, [])
+
   return (
     <AnimatedActionButton
       status={status}
       title={"submit"}
       onPress={handleSubmit}
-      disabled={!document || !title || mutating}
+      disabled={!document || !title.trim() || mutating}
       textStyle={styles.buttonText}
       style={[styles.submitButton, rStyles]}
     />
   )
-})
+}
 
+const SamplePdfModalButton = () => {
+
+  const { sampleModalRef } = useSummaryCreation()
+
+  return (
+    <TouchableOpacity onPress={() => sampleModalRef.current?.toggle()}>
+      <ThemedText size={"sm"} color={"themePrimary"}>
+        don't have a pdf? try our sample pdf
+      </ThemedText>
+    </TouchableOpacity>
+  )
+}
 
 const styles = StyleSheet.create(theme => ({
   buttonText: {

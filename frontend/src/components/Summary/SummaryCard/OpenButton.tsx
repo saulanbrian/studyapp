@@ -6,11 +6,11 @@ import ModalActionButton from "./ModalActionButton"
 import { Ionicons } from "@expo/vector-icons"
 import ThemedText from "../../ThemedText"
 import { useSummary } from "@/src/context/Summary/SummaryContext"
+import { darkColors } from "@/src/constants/ui/Colors"
 
 
 export default function OpenButton({ modalDismissFn }: { modalDismissFn: () => void }) {
 
-  const { colors } = useUnistyles().theme
   const navigation = useNavigation<SummaryNavigationProp>()
   const { id } = useSummary()
 
@@ -26,10 +26,14 @@ export default function OpenButton({ modalDismissFn }: { modalDismissFn: () => v
     >
       <Ionicons
         name={"open-outline"}
-        color={colors.textPrimary}
+        color={darkColors.textPrimary}
         size={24}
       />
-      <ThemedText size={"md"} fw={"bold"}>
+      <ThemedText
+        size={"md"}
+        fw={"bold"}
+        style={styles.buttonText}
+      >
         read summary
       </ThemedText>
     </ModalActionButton>
@@ -41,5 +45,8 @@ const styles = StyleSheet.create(theme => ({
     flexDirection: "row",
     backgroundColor: theme.colors.primary,
     flexGrow: 1
+  },
+  buttonText: {
+    color: darkColors.textPrimary
   }
 }))

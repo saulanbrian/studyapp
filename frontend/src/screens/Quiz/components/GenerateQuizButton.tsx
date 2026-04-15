@@ -1,5 +1,6 @@
 import useQueryUpdater from "@/src/api/hooks/useQueryUpdater";
 import createNewQuiz from "@/src/api/services/quizzes/createNewQuiz";
+import processQuiz from "@/src/api/services/quizzes/processQuiz";
 import { Quiz } from "@/src/api/types/Quiz";
 import ActionButton, { ActionButtonProps } from "@/src/components/ActionButton";
 import { useMutation } from "@tanstack/react-query";
@@ -35,6 +36,7 @@ export default function GenerateQuizButton({
       console.log(e)
     },
     onSuccess: (quiz) => {
+      processQuiz(quiz.id)
       insertIntoInfiniteQuery({ newData: quiz, queryKey: ["quizzes"] })
     },
     onSettled

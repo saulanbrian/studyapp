@@ -114,7 +114,7 @@ const AttachmentButton = () => {
         color={colors.secondary}
       />
       <ThemedText size={"xs"} color={"secondary"}>
-        read document
+        read summary
       </ThemedText>
     </TouchableOpacity>
   )

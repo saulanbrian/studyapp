@@ -24,7 +24,7 @@ export default function DeleteButton({ modalDismissFn }: DeleteButtonProps) {
   const [alertVisible, setAlertVisible] = useState(false)
   const { colors } = useUnistyles().theme
   const { id, quizId, cover_url, document_url } = useSummary()
-  const { removeDataFromInfiniteQuery } = useQueryUpdater<Quiz>()
+  const { removeDataFromInfiniteQuery } = useQueryUpdater<Quiz | Summary>()
 
   const {
     mutate,
@@ -35,6 +35,10 @@ export default function DeleteButton({ modalDismissFn }: DeleteButtonProps) {
       return data
     },
     onSuccess: () => {
+      removeDataFromInfiniteQuery({
+        id,
+        queryKey: ["summaries"]
+      })
       if (quizId) {
         removeDataFromInfiniteQuery({
           id: quizId,

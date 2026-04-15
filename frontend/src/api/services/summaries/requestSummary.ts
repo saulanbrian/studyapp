@@ -11,6 +11,7 @@ export default async function requestSummary(id: string) {
     if (res.status !== 202) {
       throw new AxiosError("summary request failed")
     }
+    return res
   } catch (e) {
     console.log("summary request failed", e)
     await supabase.from("summaries")

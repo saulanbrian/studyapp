@@ -3,6 +3,7 @@ import { PageResult } from "../types/PageResult";
 import addDataToTopOfInfiniteQueryData from "../utils/addDataToTopOfInfiniteQueryData";
 import updateInfiniteQueryDataById from "../utils/updateInfiteQueryDataById";
 import removeDataFromInifiniteQueryDataById from "../utils/removeDataFromInfiniteQueryDataById";
+import { mapInfiniteDataResult } from "../utils/mapInfiniteDataResult";
 
 
 type QueryUpdaterCommonProps<T> = {
@@ -26,7 +27,8 @@ const useQueryUpdater = <T extends { id: string }>() => {
       queryKey,
       data => {
         if (!data) return
-
+        const mappedData = mapInfiniteDataResult(data)
+        if (mappedData.find(oldData => oldData.id === newData.id)) return
         const updatedData = addDataToTopOfInfiniteQueryData({
           data,
           dataToAdd: newData
