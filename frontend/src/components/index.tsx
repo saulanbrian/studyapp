@@ -10,3 +10,4 @@ export { default as AppHeader } from './AppHeader'
 export { default as AppLogo } from './AppLogo'
 export { default as EmptyQueryScreen } from './EmptyQueryScreen'
 export { default as TransparentModalView } from './TransparentModalView'
+export { default as BackScreenHeader } from "./BackScreenHeader"

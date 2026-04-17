@@ -32,10 +32,10 @@ export default function SummaryCardBase() {
         source={
           publicCoverUrl
             ? { uri: publicCoverUrl }
-            : require("@/assets/images/icon.png")
+            : require("@/assets/images/new-icon.png")
         }
         style={styles.image}
-        contentFit={"cover"}
+        contentFit={"fill"}
         cachePolicy={"memory-disk"}
       />
       <Details />

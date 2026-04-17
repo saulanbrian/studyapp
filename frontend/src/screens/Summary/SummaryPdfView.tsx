@@ -1,5 +1,5 @@
 import { useGetSummary } from "@/src/api/queries/summaries";
-import { LoadingScreen, ThemedScreen, ThemedText, ThemedView } from "@/src/components";
+import { BackScreenHeader, LoadingScreen, ThemedScreen, ThemedText, ThemedView } from "@/src/components";
 import { SummaryNavigationProp, SummaryStackParamList } from "@/src/navigation/Summary/types";
 import { supabase } from "@/supabase/client";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
@@ -29,7 +29,7 @@ export default function SummaryPdfView() {
 
   return (
     <ThemedScreen style={{ flex: 1, paddingHorizontal: 0 }}>
-      <CustomHeader />
+      <BackScreenHeader />
       <Suspense>
         <Content id={summaryId} />
       </Suspense>
@@ -74,35 +74,3 @@ const Content = ({ id }: { id: string }) => {
     />
   )
 }
-
-const CustomHeader = () => {
-
-  const { colors: { textPrimary } } = useUnistyles().theme
-  const navigation = useNavigation<SummaryNavigationProp>()
-  const { top } = useSafeAreaInsets()
-
-  return (
-    <ThemedView
-      style={[styles.header, { paddingTop: top }]}
-      surface
-    >
-      <Ionicons
-        name={"arrow-back"}
-        color={textPrimary}
-        size={20}
-        onPress={navigation.goBack}
-      />
-      <ThemedText>back</ThemedText>
-    </ThemedView>
-  )
-}
-
-const styles = StyleSheet.create(theme => ({
-  header: {
-    flexDirection: "row",
-    padding: theme.spacing.md,
-    gap: theme.spacing.sm,
-    alignItems: "center",
-    height: 80
-  }
-}))

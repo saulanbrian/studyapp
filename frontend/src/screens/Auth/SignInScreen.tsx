@@ -9,15 +9,31 @@ import { supabase } from "@/supabase/client";
 import { useNavigation } from "@react-navigation/native";
 import { AuthError } from "@supabase/supabase-js";
 import { MutationStatus } from "@tanstack/react-query";
+import LottieView from "lottie-react-native";
 import { useCallback, useState } from "react";
-import { TouchableOpacity, View } from "react-native";
+import { Dimensions, TouchableOpacity, View } from "react-native";
 import Animated, { useAnimatedKeyboard, useAnimatedStyle, withSpring } from "react-native-reanimated";
-import { StyleSheet } from "react-native-unistyles";
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 export default function SignInScreen() {
+
+  const { colors } = useUnistyles().theme
+
   return (
     <ThemedScreen style={styles.screen}>
-      <Actions />
+      <View style={{ flex: 1, backgroundColor: "red" }}>
+        <LottieView
+          source={require("@/assets/lotties/welcome_character.json")}
+          style={styles.lottieView}
+          autoPlay
+        />
+      </View>
+      <View style={{
+        backgroundColor: colors.primaryDark,
+        flex: 1
+      }}>
+        <Actions />
+      </View>
     </ThemedScreen>
   )
 }
@@ -52,14 +68,21 @@ function Actions() {
   }, [email, password])
 
   const rStyles = useAnimatedStyle(() => ({
-    paddingBottom: withSpring(
-      keyboard.height.value ?? 0
-    )
+    transform: [
+      {
+        translateY: withSpring(
+          keyboard.height.value
+            ? -keyboard.height.value - 16
+            : -16,
+          { damping: 400 }
+        )
+      }
+    ]
   }))
 
   return (
     <AnimatedThemedView
-      style={[rStyles, styles.actionsContainer]}
+      style={[styles.actionsContainer, rStyles]}
     >
       <ThemedText
         style={styles.titleText}
@@ -156,9 +179,21 @@ const styles = StyleSheet.create(theme => ({
     backgroundColor: theme.colors.primaryDark,
     borderTopRightRadius: theme.radii.lg,
     borderTopLeftRadius: theme.radii.lg,
+    borderBottomWidth: 0,
+    borderColor: darkColors.textPrimary,
     marginTop: "auto",
     padding: theme.spacing.lg,
+    paddingBottom: theme.spacing.lg * 1.5,
     gap: theme.spacing.xs,
+    zIndex: 999
+  },
+  lottieView: {
+    width: Dimensions.get("screen").width,
+    aspectRatio: 1,
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0
   },
   googleButton: {
     marginBottom: theme.spacing.lg

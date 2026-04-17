@@ -145,7 +145,7 @@ const MainDrawerNavigator = () => {
 
           return {
             headerTitle:"Home",
-            headerShown:routeName !== "SummaryPdfView"
+            headerShown:routeName !== "SummaryPdfView" && routeName !== "SummaryDetail"
           }
         }}
       />
