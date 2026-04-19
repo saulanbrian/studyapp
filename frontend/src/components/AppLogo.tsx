@@ -1,13 +1,11 @@
 import { Image, ImageProps } from "expo-image";
 import { StyleSheet } from "react-native-unistyles";
 
-type AppLogoProps = Omit<ImageProps, "source">
-
 
 export default function AppLogo() {
 
   return <Image
-    source={require("@/assets/images/icon.png")}
+    source={require("@/assets/images/new-icon.png")}
     cachePolicy={"memory-disk"}
     contentFit="contain"
     style={styles.image}
