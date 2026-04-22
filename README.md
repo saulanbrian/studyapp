@@ -1,23 +1,64 @@
-# Cut D' Crop
+# Cut D' Crop v2.0.0
+> Version 2.0.0 — Rebuilt. Redesigned. Smarter.
 
 <p align="center">
-  <img src="docs/logo/logo.png" alt="CutDCrop Logo" width="150" />
+  <img src="docs/logo.png" alt="CutDCrop Logo" width="150" />
 </p>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-> A smart application that helps students or anyone  
-> efficiently learn without spending too much time  
-> reading unnecessary parts of a document.
+> An intelligent app designed to help students—and anyone else—learn more effectively by cutting through unnecessary content and focusing only on what truly matters.
 
 ---
 
 ## 📑 Table of Contents
+- [📌 Introduction](#-introduction)
+- [▶️ Demo](#-demo)
+- [🖼️ Screenshots](#-screenshots)
 - [🚀 Features](#-features)
 - [📱 Download the App](#-download-the-app)
 - [🛠️ Tech Stack](#-tech-stack)
-- [🖼️ Screenshots](#-screenshots)
 - [📄 License](#-license)
+
+---
+
+## 📌 Introduction
+
+> Welcome to Cut D' Crop —  
+an intelligent app that helps you understand documents without wasting time on repetitive or unnecessary content.
+
+
+> Wether you're studying for an exam, preparing for interviews, or simply want to learn something new without spending too much time, this app helps you:
+
+> 1. 📘 Simplify your Documents 
+> 2. ⚡ Learn Faster  and more efficient
+> 3. 🧠 Strengthen retention through Quizzes
+
+---
+
+## 🎬 Demo (v2.0.0)
+[▶️ Watch Demo](https://github.com/user-attachments/assets/2a21606d-872a-4f70-81f9-e44792999813)
+
+---
+
+## 📸 Screenshots
+
+<p align="center">
+  <img src="docs/screenshots/signin.jpg" width="200" />
+  <img src="docs/screenshots/summary-modal.jpg" width="200"/>
+  <img src="docs/screenshots/quiz-creation.jpg" width="200"/>
+  <img src="docs/screenshots/quiz.jpg" width="200"/>
+</p>
+
+---
+
+## ✨ What’s New in v2.0.0
+
+- 🔥 Completely redesigned user interface  
+- ⚡  Migrated to Supabase for database and authentication
+- 🚀 Improved performance and realtime updates
+- 🧠 Enhanced AI summarization pipeline  
+- 🛠️ Refactored internal architecture
 
 ---
 
@@ -34,9 +75,9 @@
 
 ## 📱 Download the App
 
-> You can download the latest version of StudyApp directly from the link below:
+> You can download the latest version of Cut D' Crop directly from the link below:
 
-👉 [**Download APK**](https://github.com/saulanbrian/studyapp/releases/latest)
+👉 **[Download APK v2.0.0](https://github.com/saulanbrian/studyapp/releases/latest)**
 
 _If installation is blocked, go to `Settings > Security` and enable `Install unknown apps`._
 
@@ -45,57 +86,19 @@ _If installation is blocked, go to `Settings > Security` and enable `Install unk
 ## 🛠️ Tech Stack
 
 ### 📱 Frontend
-- **[React Native](https://reactnative.dev/)** & **[Expo Router](https://expo.github.io/router/)**  
+- **[React Native](https://reactnative.dev/)** 
+- **[Expo](https://expo.dev/)**
 - **[TypeScript](https://www.typescriptlang.org/)**  
 - **[Reanimated](https://docs.swmansion.com/react-native-reanimated/)**  
 - **[React Query](https://tanstack.com/query/v4)** (TanStack Query)  
-- **[Clerk](https://clerk.com/)** (SSO & authentication)  
 - **[EAS Build](https://docs.expo.dev/eas/)** (Expo Application Services)
 
 ### 🌐 Backend
-- **[Django](https://www.djangoproject.com/)** (Python web framework)  
+- **[Supabase](https://supabase.com/)** (Data management & Authentication)
 - **[Django REST Framework](https://www.django-rest-framework.org/)** (API layer)  
 - **[Celery](https://docs.celeryq.dev/)** + **[RabbitMQ](https://www.rabbitmq.com/)** (async tasks & broker)  
 - **[Channels](https://channels.readthedocs.io/)** + **[Redis](https://redis.io/)** (WebSockets & realtime)  
-- **[Azure App Service](https://azure.microsoft.com/en-us/services/app-service/)** (backend hosting)
-
-### 💾 Database & Hosting
-- **[Neon](https://neon.tech/)** (PostgreSQL as a service)  
-- **[Azure](https://azure.microsoft.com/)** (CI/CD, environment & secrets)
-
----
-
-## 🖼️ Screenshots
-
-### 🔐 Authentication
-
-#### SSO Page
-![Landing Page](docs/screenshots/sso-page.jpg)
-
-#### Signin / Signup
-![Signin / Signup](docs/screenshots/signup.jpg)
-
-#### Email Verification
-![Email Verification](docs/screenshots/email-verification.jpg)
-
-### 📊 Dashboard
-
-#### Dashboard View
-![Dashboard View](docs/screenshots/dashboard.jpg)
-
-#### Quizzes
-![Quizzes](docs/screenshots/quizzes.jpg)
-
-### 📚 Summarization
-
-#### Summary Creation
-![Summary Creation](docs/screenshots/summary-creation.jpg)
-
-#### Summary
-![Summary](docs/screenshots/summary.jpg)
-
-### 🧠 Quiz
-![Quiz](docs/screenshots/quiz.jpg)
+- **[Ollama Cloud](https://docs.ollama.com/cloud)** (LLM for Document Summarizing and Quiz Generation)
 
 ---
 
