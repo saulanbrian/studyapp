@@ -1,4 +1,3 @@
-import SupabaseAuth from "@/src/components/Auth/SupabaseAuth"
 import { createStackNavigator } from "@react-navigation/stack"
 import { AuthStackParamList } from "./types"
 import SignInScreen from "@/src/screens/Auth/SignInScreen"

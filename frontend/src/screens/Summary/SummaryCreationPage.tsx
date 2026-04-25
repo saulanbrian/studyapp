@@ -1,23 +1,24 @@
-import { AttachmentInputButton, ThemedScreen, ThemedText, ThemedTextInput } from "@/src/components";
-import React, { useCallback, useState } from "react";
+import { AttachmentInputButton, ThemedAlert, ThemedScreen, ThemedText, ThemedTextInput, ThemedView, TransparentModalView } from "@/src/components";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import * as DocumentPicket from "expo-document-picker"
 import * as FileSystem from "expo-file-system"
 import { decode } from "base64-arraybuffer";
 import getFileSize from "@/src/utils/FileSystem/getFileSize";
-import { Alert, Keyboard, TouchableOpacity } from "react-native";
+import { Alert, Keyboard, TouchableOpacity, View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 import * as ImagePicker from "expo-image-picker"
 import ActionButton, { AnimatedActionButton } from "@/src/components/ActionButton";
 import { useMutation } from "@tanstack/react-query";
 import createNewSummary from "@/src/api/services/summaries/createNewSummary";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { NavigationProp, useFocusEffect, useNavigation } from "@react-navigation/native";
 import { SummaryStackParamList } from "@/src/navigation/Summary/types";
-import { useAnimatedKeyboard, useAnimatedStyle } from "react-native-reanimated";
 import { requestSummary } from "@/src/api/services/summaries";
 import SamplePdfModal from "./components/SamplePdfModal";
 import SummaryCreationContextProvider, { useSummaryCreation } from "./context/SummaryCreationPageContext";
 import useQueryUpdater from "@/src/api/hooks/useQueryUpdater";
 import { Summary } from "@/src/api/types/summary";
+import { supabase } from "@/supabase/client";
+import getUserIdAsync from "@/src/api/services/auth/getUserIdAsync";
 
 const MaxDocumentSize = 5 * 1024 * 1024
 
@@ -26,20 +27,22 @@ export default function SummaryCreationPage() {
   return (
     <SummaryCreationContextProvider>
       <ThemedScreen style={styles.screen}>
-        <TitleInput />
-        <DocumentInput />
-        <ThemedText
-          size={"xs"}
-          color={"secondary"}
-          style={{ marginTop: 8 }}
-        >
-          optional fields
+        <ThemedText size={"lg"} fw={"semiBold"}>
+          Create a Summary
         </ThemedText>
+        <TitleInput />
         <DescriptionInput />
-        <CoverInput />
-        <SamplePdfModalButton />
+        <View style={styles.attachmentInputsContainer}>
+          <DocumentInput />
+          <CoverInput />
+        </View>
         <SubmitButton />
+        <ThemedText color={"secondary"} >
+          Document must be:
+        </ThemedText>
+        <SamplePdfModalButton />
         <SamplePdfModal />
+        <ErrorModal />
       </ThemedScreen>
     </SummaryCreationContextProvider>
   )
@@ -47,15 +50,12 @@ export default function SummaryCreationPage() {
 
 const TitleInput = () => {
 
-  const [focused, setFocused] = useState(false)
   const { title, setTitle } = useSummaryCreation()
-  styles.useVariants({ focused })
+  styles.useVariants({ empty: !title })
 
   return <ThemedTextInput
     value={title}
-    style={styles.textInputs}
-    onFocus={() => setFocused(true)}
-    onBlur={() => setFocused(false)}
+    style={[styles.input, styles.requiredInput]}
     onChangeText={setTitle}
     placeholder={"title of the summmary"}
     autoFocus={true}
@@ -64,16 +64,22 @@ const TitleInput = () => {
 
 const DocumentInput = () => {
 
-  const { document, setDocument } = useSummaryCreation()
+  const { document, setDocument, setErrorMessage } = useSummaryCreation()
+  styles.useVariants({ empty: !document, attachment: true })
 
   const pickDocument = useCallback(async () => {
 
     const { assets, canceled } = await DocumentPicket.getDocumentAsync({
       base64: false,
-      multiple: false
+      multiple: false,
+      type: "application/pdf",
     })
 
-    if (canceled || assets.length < 1) return;
+    if (canceled) return;
+    if (assets.length < 1) {
+      setErrorMessage("Unknown error occured, please try again")
+      return
+    }
 
     const chosenDocument = assets[0]
     let size = chosenDocument.size ?? null
@@ -81,7 +87,7 @@ const DocumentInput = () => {
       size = await getFileSize({ uri: chosenDocument.uri })
     }
     if (!size || size > MaxDocumentSize) {
-      Alert.alert("an error has occured")
+      setErrorMessage("File is too large")
       return
     }
 
@@ -99,9 +105,10 @@ const DocumentInput = () => {
 
   return (
     <AttachmentInputButton
-      placeholder={"Attach PDF to summarize"}
+      placeholder={"Attach your pdf"}
       selectedFileName={document?.title ?? undefined}
       onPress={() => { document ? setDocument(null) : pickDocument() }}
+      style={[styles.input, styles.requiredInput, styles.attachmentInput]}
     />
   )
 }
@@ -109,8 +116,6 @@ const DocumentInput = () => {
 const DescriptionInput = () => {
 
   const { description, setDescription } = useSummaryCreation()
-  const [focused, setFocused] = useState(false)
-  styles.useVariants({ focused })
 
   return (
     <ThemedTextInput
@@ -119,16 +124,15 @@ const DescriptionInput = () => {
       placeholder={"provide a description for this summary..."}
       multiline={true}
       numberOfLines={3}
-      onFocus={() => setFocused(true)}
-      onBlur={() => setFocused(false)}
-      style={[styles.descriptionInput, styles.textInputs]}
+      style={[styles.input, styles.descriptionInput]}
     />
   )
 }
 
 const CoverInput = () => {
 
-  const { cover, setCover } = useSummaryCreation()
+  const { cover, setCover, setErrorMessage } = useSummaryCreation()
+  styles.useVariants({ attachment: true })
 
   const pickImage = useCallback(async () => {
     const { assets, canceled } = await ImagePicker.launchImageLibraryAsync({
@@ -137,7 +141,8 @@ const CoverInput = () => {
       aspect: [9, 12]
     })
     if (canceled || assets.length < 1) {
-      throw new Error("an error has occured")
+      setErrorMessage("Unknown error occured, please try again")
+      return
     }
     const image = assets[0]
     const b64 = await FileSystem.readAsStringAsync(
@@ -158,6 +163,7 @@ const CoverInput = () => {
       onPress={() => {
         cover ? setCover(null) : pickImage()
       }}
+      style={[styles.input, styles.attachmentInput]}
     />
   )
 }
@@ -165,14 +171,14 @@ const CoverInput = () => {
 const SubmitButton = () => {
 
   const navigation = useNavigation<NavigationProp<SummaryStackParamList>>()
-  const keyboard = useAnimatedKeyboard()
   const {
     title,
     description,
     cover,
     document,
     mutating,
-    setMutating
+    setMutating,
+    setErrorMessage
   } = useSummaryCreation()
   const {
     insertIntoInfiniteQuery,
@@ -215,7 +221,7 @@ const SubmitButton = () => {
       }, 1000)
     },
     onSettled: () => setMutating(false),
-    onError: e => console.log(e)
+    onError: e => setErrorMessage(e.message)
   })
 
   const handleSubmit = useCallback(() => {
@@ -223,12 +229,6 @@ const SubmitButton = () => {
       mutate()
     }
   }, [cover, description, document, title])
-
-  const rStyles = useAnimatedStyle(() => ({
-    transform: [
-      { translateY: keyboard.height.value > 0 ? -keyboard.height.value : 0 }
-    ]
-  }))
 
   const requestForSummary = useCallback(
     async (id: string) => {
@@ -251,7 +251,7 @@ const SubmitButton = () => {
       onPress={handleSubmit}
       disabled={!document || !title.trim() || mutating}
       textStyle={styles.buttonText}
-      style={[styles.submitButton, rStyles]}
+      style={styles.submitButton}
     />
   )
 }
@@ -259,9 +259,29 @@ const SubmitButton = () => {
 const SamplePdfModalButton = () => {
 
   const { sampleModalRef } = useSummaryCreation()
+  const [isLoading, setIsLoading] = useState(true)
+  const [hasSummary, setHasSummary] = useState<boolean>()
+
+  useEffect(() => {
+    (async () => {
+      const userId = await getUserIdAsync({
+        throwOnError: true
+      })
+      const { data } = await supabase
+        .from("summaries")
+        .select("*")
+        .eq("owner", userId!)
+      setHasSummary(data?.length ?? 0 > 1 ? true : false)
+      setIsLoading(false)
+    })()
+  }, [])
+
+  if (isLoading || hasSummary) return null
 
   return (
-    <TouchableOpacity onPress={() => sampleModalRef.current?.toggle()}>
+    <TouchableOpacity
+      onPress={() => sampleModalRef.current?.toggle()}
+    >
       <ThemedText size={"sm"} color={"themePrimary"}>
         don't have a pdf? try our sample pdf
       </ThemedText>
@@ -269,34 +289,74 @@ const SamplePdfModalButton = () => {
   )
 }
 
+const ErrorModal = () => {
+
+  const { errorMessage, setErrorMessage } = useSummaryCreation()
+
+  return <ThemedAlert
+    text={errorMessage!}
+    title={"error"}
+    visible={!!errorMessage}
+    primaryAction={{
+      title: "Got it",
+      onDispatch: () => setErrorMessage(undefined)
+    }}
+  />
+
+}
+
 const styles = StyleSheet.create(theme => ({
+  attachmentInput: {
+    height: 40,
+    borderRadius: theme.spacing.md
+  },
+  attachmentInputsContainer: {
+    flexDirection: "row",
+    gap: theme.spacing.xs,
+    alignItems: "center"
+  },
   buttonText: {
-    fontSize: theme.fontSize.lg
+    fontSize: theme.fontSize.lg,
+    fontWeight: "bold"
+  },
+  buttonsContainer: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "flex-start",
   },
   descriptionInput: {
     padding: theme.spacing.sm,
     textAlignVertical: 'top',
     minHeight: (theme.fontSize.xs * 3) + 24
   },
-  screen: {
-    gap: theme.spacing.xs,
-    paddingVertical: theme.spacing.sm
-  },
-  submitButton: {
-    borderRadius: theme.radii.pill,
-    position: 'absolute',
-    right: theme.spacing.sm,
-    left: theme.spacing.sm,
-    bottom: theme.spacing.sm
-  },
-  textInputs: {
-    borderRadius: theme.radii.xs,
+  input: {
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: theme.spacing.sm,
     variants: {
-      focused: {
+      attachment: {
         true: {
-          borderColor: theme.colors.primary
+          borderRadius: theme.radii.pill,
+          flex: 1
         }
       }
     }
-  }
+  },
+  screen: {
+    gap: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.sm,
+    paddingTop: theme.spacing.sm
+  },
+  submitButton: {
+    borderRadius: theme.radii.md,
+    padding: theme.spacing.lg
+  },
+  requiredInput: {
+    variants: {
+      empty: {
+        true: {
+          borderColor: theme.colors.error
+        }
+      }
+    }
+  },
 }))

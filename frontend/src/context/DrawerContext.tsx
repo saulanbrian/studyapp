@@ -1,13 +1,9 @@
 import React, { createContext, useContext, useState } from "react"
-
-
-type DrawerOptions = {
-  swipeEnabled: boolean;
-}
+import { DrawerNavigationOptions } from "@react-navigation/drawer";
 
 type DrawerContextType = {
-  options: DrawerOptions;
-  setOptions: React.Dispatch<React.SetStateAction<DrawerOptions>>;
+  options: DrawerNavigationOptions;
+  setOptions: React.Dispatch<React.SetStateAction<DrawerNavigationOptions>>;
 }
 
 const DrawerContext = createContext<DrawerContextType | null>(null)
@@ -26,7 +22,7 @@ export default function DrawerContextProvider({
   children: React.ReactNode
 }) {
 
-  const [options, setOptions] = useState<DrawerOptions>({
+  const [options, setOptions] = useState<DrawerNavigationOptions>({
     swipeEnabled: true
   })
 

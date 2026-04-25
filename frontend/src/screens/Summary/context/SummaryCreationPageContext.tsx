@@ -1,5 +1,5 @@
 import { TransparentModalViewRef } from "@/src/components/TransparentModalView";
-import React, { createContext, useContext, useRef, useState } from "react";
+import React, { createContext, useCallback, useContext, useRef, useState } from "react";
 
 type StateSetter<T> = React.Dispatch<React.SetStateAction<T>>
 
@@ -9,7 +9,8 @@ type PageState = {
   document: { file: ArrayBuffer; title: string } | null;
   cover: { file: ArrayBuffer; fileName: string } | null;
   mutating: boolean;
-  sampleModalRef: React.RefObject<TransparentModalViewRef | null>
+  sampleModalRef: React.RefObject<TransparentModalViewRef | null>;
+  errorMessage?: string
 }
 
 type SummaryCreationContextType = PageState & {
@@ -18,6 +19,7 @@ type SummaryCreationContextType = PageState & {
   setDocument: StateSetter<PageState["document"]>;
   setCover: StateSetter<PageState["cover"]>
   setMutating: StateSetter<PageState["mutating"]>;
+  setErrorMessage: StateSetter<PageState["errorMessage"]>;
 }
 
 const SummaryCreationContext = createContext<
@@ -42,6 +44,7 @@ export default function SummaryCreationContextProvider({
   const [document, setDocument] = useState<PageState["document"]>(null)
   const [mutating, setMutating] = useState<PageState["mutating"]>(false)
   const modalRef = useRef<TransparentModalViewRef>(null)
+  const [errorMessage, setErrorMessage] = useState<string>()
 
   return (
     <SummaryCreationContext.Provider value={{
@@ -50,6 +53,8 @@ export default function SummaryCreationContextProvider({
       description,
       mutating,
       document,
+      errorMessage,
+      setErrorMessage,
       setTitle,
       setDescription,
       setCover,

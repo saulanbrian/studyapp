@@ -59,7 +59,8 @@ export default function QuizStackNavigator() {
   return (
     <QuizSoundContextProvider>
       <Stack.Navigator screenOptions={{
-        headerShown: false
+        headerShown: false,
+        animation: "ios_from_right"
       }}>
         <Stack.Screen
           name={"QuizList"}

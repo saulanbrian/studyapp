@@ -1,8 +1,7 @@
 import { useGetSummary } from "@/src/api/queries/summaries";
-import { BackScreenHeader, LoadingScreen, ThemedScreen, ThemedText, ThemedView } from "@/src/components";
+import { LoadingScreen, ThemedScreen, ThemedText, ThemedView } from "@/src/components";
 import { S } from "@/src/constants/Styles";
 import { SummaryNavigationProp, SummaryStackParamList } from "@/src/navigation/Summary/types";
-import { Ionicons } from "@expo/vector-icons";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { Suspense, useCallback, useEffect, useMemo } from "react";
 import { ScrollView, Text, View } from "react-native";
@@ -18,7 +17,6 @@ export default function SummaryDetailScreen() {
 
   return (
     <ThemedScreen style={S.centerContainer}>
-      <BackScreenHeader />
       <Suspense fallback={LoadingScreen()}>
         <Details id={id} />
       </Suspense>

@@ -15,7 +15,8 @@ import ExitConfirmationModal from "@/src/components/Quiz/ExitConfirmationModal";
 import { useQuizSound } from "@/src/context/Quiz/QuizSoundProvider";
 import QuizFinishView from "./components/QuizFinishView";
 import { QuizResult, QuizResultQuestion, useQuizResult } from "@/src/stores/quiz";
-import checkFileSize from "@/src/utils/FileSystem/getFileSize";
+import { AnimatedThemedText } from "@/src/components/ThemedText";
+import { SlideInDown, SlideInUp } from "react-native-reanimated";
 
 
 type QuizPlayScreenRouteProp = RouteProp<QuizStackParamList, 'QuizPlayScreen'>
@@ -30,11 +31,10 @@ export default function QuizPlayScreen() {
     setOptions({
       swipeEnabled: false
     })
-    StatusBar.setHidden(true)
 
     return () => {
       setOptions({
-        swipeEnabled: true
+        swipeEnabled: true,
       })
     }
   }, [])
@@ -56,6 +56,7 @@ const Content = ({ id }: { id: string; }) => {
   const [question, setQuestion] = useState(questions[0])
   const [finishedQuestions, setFinishedQuestions] = useState<QuizResultQuestion[]>([])
   const [isFinished, setIsFinished] = useState(false)
+  const { setOptions } = useDrawer()
 
   const { saveResult } = useQuizResult()
 
@@ -99,6 +100,12 @@ const Content = ({ id }: { id: string; }) => {
     }
   }, [finishedQuestions, questions])
 
+  useEffect(() => {
+    setOptions({
+      headerTitle: data.summaryTitle
+    })
+  }, [])
+
   if (isFinished) {
 
     let score = 0
@@ -133,7 +140,6 @@ const Content = ({ id }: { id: string; }) => {
   return (
     <View style={styles.screen}>
       <CountDownView onCountdownEnd={onCountdownEnd}>
-        <TitleHeader summaryTitle={data.summaryTitle} />
         <QuestionContainer question={question.question} />
         <OptionsContainer
           question={question}
@@ -145,23 +151,6 @@ const Content = ({ id }: { id: string; }) => {
   )
 }
 
-const TitleHeader = ({ summaryTitle }: { summaryTitle: string }) => {
-
-  const { top } = useSafeAreaInsets()
-
-  return (
-    <ThemedView style={[styles.titleContainer, { paddingTop: top * 1.5 }]}>
-      <ThemedText
-        style={styles.title}
-        size={"lg"}
-        adjustsFontSizeToFit
-        numberOfLines={3}
-      >
-        {summaryTitle}
-      </ThemedText>
-    </ThemedView>
-  )
-}
 
 const QuestionContainer = ({ question }: { question: string }) => {
 

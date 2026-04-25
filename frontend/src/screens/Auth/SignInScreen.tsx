@@ -21,7 +21,7 @@ export default function SignInScreen() {
 
   return (
     <ThemedScreen style={styles.screen}>
-      <View style={{ flex: 1, backgroundColor: "red" }}>
+      <View style={{ flex: 1 }}>
         <LottieView
           source={require("@/assets/lotties/welcome_character.json")}
           style={styles.lottieView}

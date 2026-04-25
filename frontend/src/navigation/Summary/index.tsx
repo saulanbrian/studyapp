@@ -67,7 +67,7 @@ export default function SummaryStackNavigator() {
   return (
     <Stack.Navigator screenOptions={{
       headerShown: false,
-      animation: "fade"
+      animation: "ios_from_right"
     }}>
       <Stack.Screen
         name={"SummaryList"}

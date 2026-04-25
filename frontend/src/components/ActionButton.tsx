@@ -1,6 +1,6 @@
 import { MutationStatus } from "@tanstack/react-query";
 import ThemedButton, { ThemedButtonProps } from "./ThemedButton";
-import { ActivityIndicator, StyleProp, TextStyle, View } from "react-native";
+import { ActivityIndicator, StyleProp, TextProps, TextStyle, View } from "react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import ThemedText from "./ThemedText";
 import Animated, { FadeInDown, FadeInUp, SlideInDown, SlideInUp } from "react-native-reanimated";
@@ -17,27 +17,40 @@ export default function ActionButton({
   title,
   pendingText,
   successText,
+  textStyle,
   ...props
 }: ActionButtonProps) {
 
   return (
     <ThemedButton title={title} {...props}>
       {status === "pending"
-        ? <PendingLabel pendingText={pendingText} />
+        ? <PendingLabel
+          pendingText={pendingText}
+          style={textStyle}
+        />
         : status === "success"
-          ? <SuccessLabel successText={successText} />
-          : <IdleLabel title={title} />
+          ? <SuccessLabel
+            successText={successText}
+            style={textStyle}
+          />
+          : <IdleLabel
+            title={title}
+            style={textStyle}
+          />
       }
     </ThemedButton>
   )
 }
 
+type ButtonTextProps<T> = T & {
+  style?: StyleProp<TextProps>
+}
 
 const PendingLabel = ({
   pendingText,
-}: {
-  pendingText?: string
-}) => {
+  style
+}: ButtonTextProps<{ pendingText?: string }>
+) => {
 
   const { buttonText } = useUnistyles().theme.colors
 
@@ -47,9 +60,7 @@ const PendingLabel = ({
       entering={FadeInDown.springify(500)}
     >
       <ActivityIndicator color={buttonText} />
-      <ThemedText
-        color={"buttonText"}
-      >
+      <ThemedText color={"buttonText"} style={style}>
         {pendingText ?? "pending..."}
       </ThemedText>
     </Animated.View>
@@ -58,16 +69,16 @@ const PendingLabel = ({
 
 const IdleLabel = ({
   title,
-}: {
-  title: string
-}) => {
+  style
+}: ButtonTextProps<{ title: string }>
+) => {
 
   return (
     <Animated.View
       entering={FadeInDown.springify(500)}
       style={styles.labelContainer}
     >
-      <ThemedText color={"buttonText"}>
+      <ThemedText color={"buttonText"} style={style}>
         {title}
       </ThemedText>
     </Animated.View>
@@ -75,10 +86,10 @@ const IdleLabel = ({
 }
 
 const SuccessLabel = ({
-  successText
-}: {
-  successText?: string
-}) => {
+  successText,
+  style
+}: ButtonTextProps<{ successText?: string }>
+) => {
 
   const { buttonText } = useUnistyles().theme.colors
 
@@ -92,7 +103,7 @@ const SuccessLabel = ({
         color={buttonText}
         size={16}
       />
-      <ThemedText color={"buttonText"}>
+      <ThemedText color={"buttonText"} style={style}>
         {successText ?? "success"}
       </ThemedText>
     </Animated.View>

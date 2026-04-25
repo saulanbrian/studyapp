@@ -16,7 +16,6 @@ type QuizResultRouteProp = RouteProp<QuizStackParamList, 'QuizResult'>
 
 export default function QuizResultScreen() {
 
-  const { top } = useSafeAreaInsets()
   const { params: { id } } = useRoute<QuizResultRouteProp>()
 
   const [isLoading, setIsLoading] = useState(true)
@@ -32,10 +31,7 @@ export default function QuizResultScreen() {
   if (isLoading) return <LoadingScreen />
 
   return (
-    <ThemedScreen style={[
-      { paddingTop: top },
-      styles.screen
-    ]}>
+    <ThemedScreen style={styles.screen}>
       {
         !result
           ? <NotFound />
@@ -172,7 +168,6 @@ const styles = StyleSheet.create(theme => ({
     backgroundColor: theme.colors.error
   },
   screen: {
-    backgroundColor: theme.colors.primaryLight,
   },
   text: {
     color: darkColors.textPrimary

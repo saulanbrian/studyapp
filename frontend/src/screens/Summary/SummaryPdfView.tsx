@@ -1,5 +1,5 @@
 import { useGetSummary } from "@/src/api/queries/summaries";
-import { BackScreenHeader, LoadingScreen, ThemedScreen, ThemedText, ThemedView } from "@/src/components";
+import { LoadingScreen, ThemedScreen, ThemedText, ThemedView } from "@/src/components";
 import { SummaryNavigationProp, SummaryStackParamList } from "@/src/navigation/Summary/types";
 import { supabase } from "@/supabase/client";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
@@ -7,10 +7,6 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import Pdf from "react-native-pdf"
 import RNFetchBlob from "react-native-blob-util"
 import { useDrawer } from "@/src/context/DrawerContext";
-import { Ionicons } from "@expo/vector-icons";
-import { StyleSheet, useUnistyles } from "react-native-unistyles";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-
 
 type _RouteProp = RouteProp<SummaryStackParamList, "SummaryPdfView">
 
@@ -29,7 +25,6 @@ export default function SummaryPdfView() {
 
   return (
     <ThemedScreen style={{ flex: 1, paddingHorizontal: 0 }}>
-      <BackScreenHeader />
       <Suspense>
         <Content id={summaryId} />
       </Suspense>

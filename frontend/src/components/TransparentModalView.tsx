@@ -1,4 +1,4 @@
-import React, { useImperativeHandle, useState } from "react";
+import React, { useCallback, useImperativeHandle, useState } from "react";
 import { Modal, ModalProps, Pressable, TouchableWithoutFeedback, View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
@@ -6,15 +6,24 @@ export type TransparentModalViewRef = {
   toggle: () => void;
 }
 
+type TransparentModalViewProps = Omit<ModalProps, "visible"> & {
+  onBackdropPress?: () => void;
+}
+
 const TransparentModalView = React.forwardRef<
-  TransparentModalViewRef, ModalProps
->(({ children, style, ...props }, ref) => {
+  TransparentModalViewRef, TransparentModalViewProps
+>(({ children, onBackdropPress, style, ...props }, ref) => {
 
   const [isVisible, setIsVisible] = useState(false)
 
   useImperativeHandle(ref, () => ({
     toggle: () => setIsVisible(visible => !visible)
   }))
+
+  const handleBackdropPress = useCallback(() => {
+    setIsVisible(false)
+    onBackdropPress?.()
+  }, [onBackdropPress])
 
   if (!isVisible) return
 
@@ -29,7 +38,7 @@ const TransparentModalView = React.forwardRef<
     >
       <Pressable
         style={[StyleSheet.absoluteFill, style]}
-        onPress={() => setIsVisible(false)}
+        onPress={handleBackdropPress}
       />
       <View
         style={styles.container}

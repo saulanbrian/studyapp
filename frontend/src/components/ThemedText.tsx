@@ -1,4 +1,5 @@
 import { Text, TextProps } from "react-native";
+import Animated from "react-native-reanimated";
 import { StyleSheet } from "react-native-unistyles";
 
 export type ThemedTextProps = TextProps & {
@@ -28,6 +29,8 @@ export default function ThemedText({
   return <Text style={[styles.text, style]} {...props} />
 
 }
+
+export const AnimatedThemedText = Animated.createAnimatedComponent(ThemedText)
 
 const styles = StyleSheet.create(theme => ({
   text: {

@@ -1,15 +1,15 @@
-import { LoadingScreen, ThemedView } from "../components";
-import { getFocusedRouteNameFromRoute, NavigationContainer, NavigationProp, useFocusEffect, useNavigation } from "@react-navigation/native";
-import { createDrawerNavigator } from "@react-navigation/drawer"
+import { LoadingScreen, ThemedView, AppHeader, AppLogo, ThemedText } from "../components";
+import { getFocusedRouteNameFromRoute, NavigationContainer, NavigationProp, NavigationState, useFocusEffect, useNavigation } from "@react-navigation/native";
+import { createDrawerNavigator, DrawerNavigationOptions } from "@react-navigation/drawer"
 import SummaryStackNavigator from "./Summary";
 import AuthStackNavigator from "./Auth";
 import { linking } from "./linking";
 import { RootNavigatorParamList } from "./types";
 import { navigationRef } from "./navigationRef";
-import { useUnistyles } from "react-native-unistyles";
-import { Dimensions } from "react-native";
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
+import { Dimensions, View } from "react-native";
 import { CustomDrawerContent } from "../components/Drawer";
-import { FontAwesome } from "@expo/vector-icons"
+import { FontAwesome, Ionicons } from "@expo/vector-icons"
 import { useCallback, useEffect, useState } from "react";
 import * as Fonts from "expo-font"
 import { QueryErrorResetBoundary } from "@tanstack/react-query"
@@ -18,7 +18,7 @@ import { supabase } from "@/supabase/client"
 import QuizStackNavigator from "./Quiz";
 import DrawerContextProvider, { useDrawer } from "../context/DrawerContext";
 import * as SystemNavigationBar from "expo-navigation-bar"
-
+import { darkColors } from "../constants/ui/Colors";
 
 SystemNavigationBar.setVisibilityAsync("hidden")
 
@@ -92,9 +92,9 @@ const MainDrawerNavigator = () => {
         drawerType: "slide",
         headerShadowVisible: false,
         headerStyle: {
-          backgroundColor: colors.surface
+          backgroundColor: colors.primary
         },
-        headerTintColor: colors.textPrimary,
+        headerTintColor: darkColors.textPrimary,
         drawerStyle: {
           backgroundColor: colors.surface
         },
@@ -108,7 +108,6 @@ const MainDrawerNavigator = () => {
         drawerIcon: ({ color, focused, size }) => {
           let icon = null
 
-
           switch (route.name) {
             case "Summary":
               icon = focused ? "folder" : "folder-o"
@@ -117,7 +116,6 @@ const MainDrawerNavigator = () => {
               icon = focused ? "play-circle" : "play-circle-o"
               break
           }
-
 
           return <FontAwesome
             name={icon as any}
@@ -128,11 +126,9 @@ const MainDrawerNavigator = () => {
         sceneStyle: {
           backgroundColor: colors.background
         },
-        swipeEdgeWidth: options.swipeEnabled
-          ? Dimensions.get('screen').width / 2
-          : -1
-        ,
+        swipeEdgeWidth:  Dimensions.get('screen').width / 2,
         swipeMinDistance: 20,
+        ...options
       })}
       drawerContent={props => <CustomDrawerContent {...props} />}
     >
@@ -140,29 +136,35 @@ const MainDrawerNavigator = () => {
         name={"Summary"}
         component={SummaryStackNavigator}
         options={({ route }) => {
-
-          const routeName = getFocusedRouteNameFromRoute(route)
-
           return {
-            headerTitle:"Home",
-            headerShown:routeName !== "SummaryPdfView" && routeName !== "SummaryDetail"
-          }
+            headerTitle: "Cut D' Crop",
+            ...options
         }}
+        }
       />
       <Drawer.Screen
         name={"Quiz"}
         component={QuizStackNavigator}
         options={({ route }) => {
-
-          const routeName = getFocusedRouteNameFromRoute(route) ?? "QuizList"
-
           return {
             headerTitle: "Quiz",
-            headerShown: routeName === "QuizList",
-            lazy: false
+            lazy: false,
+            ...options
           }
         }}
       />
-    </Drawer.Navigator>
+    </Drawer.Navigator >
   )
 }
+
+
+const styles = StyleSheet.create(theme => ({
+  headerTitle: {
+    flexDirection: "row",
+    gap: theme.spacing.xs,
+    alignItems: "center"
+  },
+  headerTitleText: {
+    color: darkColors.textPrimary
+  }
+}))

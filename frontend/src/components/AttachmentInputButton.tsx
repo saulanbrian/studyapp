@@ -6,7 +6,7 @@ import ThemedText from "./ThemedText";
 
 type AttachmentInputButtonProps = TouchableOpacityProps & {
   selectedFileName?: string;
-  placeholder?:string
+  placeholder?: string
 }
 
 export default function AttachmentInputButton({
@@ -29,7 +29,7 @@ export default function AttachmentInputButton({
         size={selectedFileName ? "xs" : "sm"}
         numberOfLines={1}
       >
-        {selectedFileName 
+        {selectedFileName
           ? selectedFileName
           : placeholder ?? "No file selected"
         }
@@ -45,6 +45,7 @@ const styles = StyleSheet.create(theme => ({
     borderRadius: theme.radii.pill,
     flexDirection: "row",
     padding: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.lg,
     justifyContent: "center",
     alignItems: "center",
     gap: theme.spacing.xs,

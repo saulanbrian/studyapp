@@ -18,6 +18,7 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
       >
         <UserCard />
         <DrawerItemList {...props} />
+        <Footer />
         <LogoutButton />
       </ScrollView>
     </ThemedView>
@@ -36,7 +37,7 @@ const LogoutButton = () => {
   }, [])
 
   return (
-    <View style={styles.logoutBtnContainer} >
+    <View>
       <TouchableOpacity
         style={styles.logoutBtn}
         onPress={handlePress}
@@ -73,6 +74,19 @@ const LogoutButton = () => {
   )
 }
 
+const Footer = () => {
+  return (
+    <View style={styles.footer}>
+      <ThemedText color={"secondary"} size={"xs"}>
+        Cut D' Crop v2.0.0
+      </ThemedText>
+      <ThemedText color={"secondary"} size={"xs"}>
+        © 2026 | Brian Saulan
+      </ThemedText>
+    </View>
+  )
+}
+
 const styles = StyleSheet.create(theme => ({
   container: {
     flex: 1,
@@ -90,8 +104,9 @@ const styles = StyleSheet.create(theme => ({
     padding: theme.spacing.md,
     alignItems: "center"
   },
-  logoutBtnContainer: {
+  footer: {
     marginTop: "auto",
+    paddingLeft: theme.spacing.sm
   },
   scrollView: {
     flex: 1,
