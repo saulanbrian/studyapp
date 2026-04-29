@@ -131,11 +131,6 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-CORS_ALLOW_ALL_ORIGIN = True
-
-CELERY_BROKER_URL=os.environ.get('CELERY_BROKER_URL')
-
 SUPABASE_URL=os.environ.get('SUPABASE_URL')
 SUPABASE_KEY=os.environ.get('SUPABASE_KEY')
 
