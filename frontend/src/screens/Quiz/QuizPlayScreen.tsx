@@ -56,8 +56,6 @@ const Content = ({ id }: { id: string; }) => {
   const [question, setQuestion] = useState(questions[0])
   const [finishedQuestions, setFinishedQuestions] = useState<QuizResultQuestion[]>([])
   const [isFinished, setIsFinished] = useState(false)
-  const { setOptions } = useDrawer()
-
   const { saveResult } = useQuizResult()
 
   const advanceFn = (answer: Choice) => {
@@ -99,12 +97,6 @@ const Content = ({ id }: { id: string; }) => {
       })
     }
   }, [finishedQuestions, questions])
-
-  useEffect(() => {
-    setOptions({
-      headerTitle: data.summaryTitle
-    })
-  }, [])
 
   if (isFinished) {
 
@@ -189,6 +181,7 @@ const OptionsContainer = ({ advanceFn, question }: OptionsProps) => {
               optionText={choice.text}
               onPress={() => handleSelect(choice)}
               style={styles.optionButton}
+              textStyle={styles.optionButtonText}
             />
           ))
           : question.choices.map((choice, i) => (
@@ -197,6 +190,7 @@ const OptionsContainer = ({ advanceFn, question }: OptionsProps) => {
               optionText={`${choice.value}`}
               onPress={() => handleSelect(choice)}
               style={styles.optionButton}
+              textStyle={styles.optionButtonText}
             />
           ))
       }
@@ -207,6 +201,7 @@ const OptionsContainer = ({ advanceFn, question }: OptionsProps) => {
 const styles = StyleSheet.create(theme => ({
   optionButton: {
     padding: theme.spacing.lg,
+    borderColor:darkColors.textPrimary,
     variants: {
       trueOrFalse: {
         true: {
@@ -219,6 +214,9 @@ const styles = StyleSheet.create(theme => ({
         }
       }
     }
+  },
+  optionButtonText:{
+    color:darkColors.textPrimary
   },
   optionsContainer: {
     padding: theme.spacing.md,

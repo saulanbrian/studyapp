@@ -1,4 +1,4 @@
-import { Pressable, PressableProps, PressableStateCallbackType, View, ViewStyle } from "react-native";
+import { Pressable, PressableProps, PressableStateCallbackType, StyleProp, TextStyle, View, ViewStyle } from "react-native";
 import ThemedText from "../ThemedText";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import { darkColors } from "@/src/constants/ui/Colors";
@@ -8,6 +8,7 @@ import { Entypo } from "@expo/vector-icons";
 type OptionButtonProps = {
   optionText: string;
   style?: ViewStyle,
+  textStyle?: StyleProp<TextStyle>
 } & Pick<PressableProps, 'onPress' | 'disabled'>
 
 export default function OptionButton({
@@ -15,6 +16,7 @@ export default function OptionButton({
   disabled,
   style,
   optionText,
+  textStyle
 }: OptionButtonProps) {
 
   const _true = useMemo(() => {
@@ -34,7 +36,7 @@ export default function OptionButton({
       {_true ? <CheckIcon />
         : _false ? <CrossIcon />
           : (
-            <ThemedText style={styles.buttonText}>
+            <ThemedText style={[styles.buttonText, textStyle]}>
               {optionText}
             </ThemedText>
           )
@@ -66,12 +68,12 @@ const styles = StyleSheet.create(theme => ({
   button: {
     borderWidth: StyleSheet.hairlineWidth,
     borderRadius: theme.spacing.sm,
-    borderColor: darkColors.textPrimary,
+    borderColor: theme.colors.textPrimary,
     justifyContent: "center",
     alignItems: "center",
     padding: theme.spacing.md
   },
   buttonText: {
-    color: darkColors.textPrimary
+    color: theme.colors.textPrimary
   }
 }))

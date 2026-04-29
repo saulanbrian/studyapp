@@ -170,9 +170,9 @@ const styles = StyleSheet.create(theme => ({
   screen: {
   },
   text: {
-    color: darkColors.textPrimary
+    color: theme.colors.textPrimary
   },
   textSecondary: {
-    color: darkColors.textSecondary
+    color: theme.colors.textSecondary
   }
 }))

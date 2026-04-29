@@ -3,8 +3,6 @@ import ThemedText from "../ThemedText";
 import { StyleSheet } from "react-native-unistyles";
 import { Image } from "expo-image"
 import { ActivityIndicator, ViewProps } from "react-native";
-import { supabase } from "@/supabase/client";
-import { useUser } from "@/src/api/hooks/auth/useUser";
 import { useGetProfile } from "@/src/api/queries/profiles";
 
 export default function UserCard({
@@ -23,7 +21,7 @@ export default function UserCard({
       {...props}
     >
       <Image
-        source={profile?.avatar_url ?? require("@/assets/images/react-logo.png")}
+        source={profile?.avatar_url ?? require("@/assets/images/new-icon.png")}
         style={styles.image}
         contentFit={"cover"}
       />

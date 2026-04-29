@@ -68,13 +68,13 @@ const PdfContent = () => {
   )
 
   return (
-    <ThemedView>
+    <View>
       <Pdf
         source={{ uri: localPath }}
         trustAllCerts
         style={styles.pdfContainer}
       />
-    </ThemedView>)
+    </View>)
 }
 
 const TryButton = () => {
@@ -142,7 +142,8 @@ const styles = StyleSheet.create(theme => ({
   },
   pdfContainer: {
     height: Dimensions.get('window').height * 0.5,
-    width: Dimensions.get('window').width * 0.8
+    width: Dimensions.get('window').width * 0.8,
+    borderRadius: theme.radii.sm
   },
   title: {
     color: darkColors.textPrimary

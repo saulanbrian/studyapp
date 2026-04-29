@@ -22,6 +22,11 @@ import getUserIdAsync from "@/src/api/services/auth/getUserIdAsync";
 
 const MaxDocumentSize = 5 * 1024 * 1024
 
+const SummaryRequirements = [
+  "The title of the summary must be unique to all you summaries",
+  "Your pdf file size must be not exceed 5mb"
+]
+
 export default function SummaryCreationPage() {
 
   return (
@@ -37,9 +42,18 @@ export default function SummaryCreationPage() {
           <CoverInput />
         </View>
         <SubmitButton />
-        <ThemedText color={"secondary"} >
-          Document must be:
+        <ThemedText color={"secondary"} size={"xs"}>
+          Note:
         </ThemedText>
+        {SummaryRequirements.map((r, i) => (
+          <ThemedText
+            key={i.toString()}
+            size={"xs"}
+            color={"secondary"}
+          >
+            {`${i + 1}. ${r}`}
+          </ThemedText>
+        ))}
         <SamplePdfModalButton />
         <SamplePdfModal />
         <ErrorModal />
@@ -282,8 +296,12 @@ const SamplePdfModalButton = () => {
     <TouchableOpacity
       onPress={() => sampleModalRef.current?.toggle()}
     >
-      <ThemedText size={"sm"} color={"themePrimary"}>
-        don't have a pdf? try our sample pdf
+      <ThemedText
+        size={"sm"}
+        color={"themePrimary"}
+        style={styles.samplePdfModalButtonText}
+      >
+        don't have a pdf? try a sample
       </ThemedText>
     </TouchableOpacity>
   )
@@ -340,6 +358,9 @@ const styles = StyleSheet.create(theme => ({
         }
       }
     }
+  },
+  samplePdfModalButtonText: {
+    marginVertical: theme.spacing.md
   },
   screen: {
     gap: theme.spacing.xs,

@@ -126,9 +126,9 @@ const MainDrawerNavigator = () => {
         sceneStyle: {
           backgroundColor: colors.background
         },
-        swipeEdgeWidth:  Dimensions.get('screen').width / 2,
+        swipeEdgeWidth: Dimensions.get('screen').width / 2,
         swipeMinDistance: 20,
-        ...options
+        swipeEnabled: options.swipeEnabled
       })}
       drawerContent={props => <CustomDrawerContent {...props} />}
     >
@@ -138,18 +138,27 @@ const MainDrawerNavigator = () => {
         options={({ route }) => {
           return {
             headerTitle: "Cut D' Crop",
-            ...options
-        }}
+          }
+        }
         }
       />
       <Drawer.Screen
         name={"Quiz"}
         component={QuizStackNavigator}
         options={({ route }) => {
+
+          const routeName = getFocusedRouteNameFromRoute(route) ?? "QuizList"
+
           return {
             headerTitle: "Quiz",
             lazy: false,
-            ...options
+            ...(
+              routeName === "QuizList"
+                ? {}
+                : {
+                  headerLeft: () => null
+                }
+            )
           }
         }}
       />
@@ -157,14 +166,3 @@ const MainDrawerNavigator = () => {
   )
 }
 
-
-const styles = StyleSheet.create(theme => ({
-  headerTitle: {
-    flexDirection: "row",
-    gap: theme.spacing.xs,
-    alignItems: "center"
-  },
-  headerTitleText: {
-    color: darkColors.textPrimary
-  }
-}))
