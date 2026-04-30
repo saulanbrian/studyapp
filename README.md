@@ -37,7 +37,7 @@ an intelligent app that helps you understand documents without wasting time on r
 ---
 
 ## 🎬 Demo (v2.0.0)
-[▶️ Watch Demo](https://github.com/user-attachments/assets/2a21606d-872a-4f70-81f9-e44792999813)
+[▶️ Watch Demo](https://github.com/user-attachments/assets/de7549fa-ed77-4413-a63f-175eeb4b3e3f)
 
 ---
 
